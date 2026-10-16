@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import uuid
+import os
 from decimal import Decimal
 
 import pytest
@@ -46,4 +47,11 @@ def usuario_repository():
 @pytest.fixture
 def cliente_ip() -> str:
     return "127.0.0.1"
+
+
+def pytest_sessionfinish(session, exitstatus):
+    if os.environ.get("QA_REQUIRE_ALL_TESTS") == "1":
+        reporter = session.config.pluginmanager.get_plugin("terminalreporter")
+        if reporter and (reporter.stats.get("skipped") or reporter.stats.get("xfailed")):
+            session.exitstatus = 1
 

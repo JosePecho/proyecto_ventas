@@ -4,12 +4,13 @@ from __future__ import annotations
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
+from src.shared.domain.clock import utc_now
 
 
 @dataclass(frozen=True)
 class DomainEvent:
     evento_id: uuid.UUID = field(default_factory=uuid.uuid4)
-    fecha: datetime = field(default_factory=datetime.now)
+    fecha: datetime = field(default_factory=utc_now)
     entidad: str = ""
 
     @property

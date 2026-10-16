@@ -84,6 +84,10 @@ def navegador(request):
         contexto.tracing.stop(path=str(carpeta / f"{nombre}.zip"))
         contexto.close()
         browser.close()
+        # Django mantiene conexiones por contexto async. Cerrarlas antes de
+        # detener el loop evita dejar el SQLite de pruebas abierto en Windows.
+        from django.db import connections
+        connections.close_all()
         motor.stop()
 
 

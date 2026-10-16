@@ -1,0 +1,19 @@
+---
+description: Pruebas y auditoria transversal de PuntoVenta Total
+globs: puntoventa_total/src/**/*.py,puntoventa_total/tests/**/*.py
+alwaysApply: false
+---
+
+Deriva criterios de las reglas de negocio documentadas; no conviertas el comportamiento actual en especificacion.
+Conserva cambios locales ajenos. Ejecuta comandos desde puntoventa_total y aplica las instrucciones AGENTS.md/RTK.md.
+Unit: dominio y casos de uso con puertos aislados, sin ORM ni servicios externos.
+Integration: ORM real; usa scripts/qa_inventory_mysql.py para locking, rollback y concurrencia InnoDB.
+System: HTTP, CSRF, roles, propiedad de recursos, Chromium y evidencia de ticket/stock.
+UAT: Gherkin y pytest-bdd; requiere aprobacion del responsable de negocio para declarar aceptacion.
+Una reparacion nunca reduce assertions, gates o permisos para conseguir verde.
+Los AUD-01/02/03 en test_auditoria_seguridad.py son regresiones obligatorias sin xfail.
+Si se corrige un defecto, quitar su xfail y verificar positivo/negativo, aislamiento y suite relacionada.
+Reportar aprobados, fallidos, omitidos, xfail, cobertura exacta y codigo de salida.
+No equiparar SQLite a MySQL, eager a worker Celery real o locmem a Redis.
+No afirmar zero-flakiness ni cobertura completa por una sola ejecucion.
+No usar credenciales reales, publicar artefactos ni enviar datos a MCP externos sin autorizacion.

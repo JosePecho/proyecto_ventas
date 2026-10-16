@@ -5,6 +5,9 @@ from src.modules.inventory.domain.entities.existencia import Existencia
 
 
 class StockRepository(ABC):
+    def disponibles(self, producto_ids) -> dict[str, int]:
+        return {str(pid): self.disponible(str(pid)) for pid in producto_ids}
+
     def listar_existencias(self) -> list[dict]:
         raise NotImplementedError
 

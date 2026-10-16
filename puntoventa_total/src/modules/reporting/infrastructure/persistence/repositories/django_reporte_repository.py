@@ -1,17 +1,18 @@
 """Consultas agregadas con ORM de Django (optimizadas con values/annotate)."""
 from __future__ import annotations
 
-from datetime import date, datetime, time
+from datetime import date
 from typing import Sequence
 
 from django.db.models import Count, Sum
+from src.shared.infrastructure.database.date_bounds import date_bound
 
 from src.modules.reporting.domain.repositories.reporte_repository import ReporteRepository
 
 
 class DjangoReporteRepository(ReporteRepository):
     def _rango(self, desde: date, hasta: date):
-        return datetime.combine(desde, time.min), datetime.combine(hasta, time.max)
+        return date_bound(desde), date_bound(hasta, end=True)
 
     def ventas_por_dia(self, desde: date, hasta: date) -> Sequence[dict]:
         from django.db.models.functions import TruncDate

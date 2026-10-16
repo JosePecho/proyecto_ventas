@@ -1,147 +1,94 @@
-// Nivel 3 - Performance: carga sobre el flujo de cobro del POS (k6).
-//
-// Requisitos: instalar k6 (https://k6.io/docs/get-started/installation/)
-//   Windows:  choco install k6    |  winget install k6
-//   macOS:    brew install k6     |  Linux: sudo apt install k6
-//
-// Ejecucion (con la app levantada: python manage.py runserver):
-//   k6 run tests/performance/k6_cobro.js --env BASE_URL=http://127.0.0.1:8000
-//
-// El script hace el flujo autentico: login -> apertura de caja -> escaneo
-// del producto -> cobro. Si el login falla, la prueba aborta con error claro.
+// Solo QA. Crear un cajero por VU: PMV_USERNAME_PREFIX1, PREFIX2, etc.
+// Sembrar producto con stock >= VUS*ITERATIONS. No reutilizar usuarios productivos.
+// k6 run -e BASE_URL=http://127.0.0.1:8000 -e PMV_USERNAME_PREFIX=qa_cajero_ \
+//   -e PMV_PASSWORD=... -e PMV_CODIGO=7751234567890 tests/performance/k6_cobro.js
+import http from 'k6/http';
+import { check, sleep } from 'k6';
+import { Trend, Rate } from 'k6/metrics';
 
-import http from "k6/http";
-import { check, sleep, fail } from "k6";
-import { Trend, Rate } from "k6/metrics";
-
-const BASE = __ENV.BASE_URL || "http://127.0.0.1:8000";
-const USERNAME = __ENV.PMV_USERNAME || "cajero_perf";
-const PASSWORD = __ENV.PMV_PASSWORD || "Secreta123";
-const CODIGO = __ENV.PMV_CODIGO || "7751234567890";
-
-// Presupuestos de negocio (docs/testing/test_strategy.md):
-// cobro < 100 ms, busqueda de catalogo < 200 ms
-const TIEMPO_COBRO_MS = new Trend("tiempo_cobro_ms", true);
-const TIEMPO_BUSQUEDA_MS = new Trend("tiempo_busqueda_ms", true);
-const TASA_ERRORES = new Rate("tasa_errores_negocio");
+const BASE = (__ENV.BASE_URL || '').replace(/\/$/, '');
+const TIEMPO_COBRO = new Trend('tiempo_cobro_ms', true);
+const TIEMPO_BUSQUEDA = new Trend('tiempo_busqueda_ms', true);
+const ERRORES = new Rate('tasa_errores_negocio');
+let sesionPreparada = false; // El runtime JS y el cookie jar son propios de cada VU.
 
 export const options = {
+  noCookiesReset: true,
   scenarios: {
     punto_de_venta: {
-      executor: "ramping-vus",
-      startVUs: 1,
-      stages: [
-        { duration: "1m", target: 10 },
-        { duration: "2m", target: 10 },
-        { duration: "30s", target: 0 },
-      ],
-      gracefulRampDown: "30s",
+      executor: 'per-vu-iterations', vus: Number(__ENV.VUS || 2),
+      iterations: Number(__ENV.ITERATIONS || 5), maxDuration: '2m',
     },
   },
   thresholds: {
-    // Quality gate: 95% de cobros por debajo de 500 ms y sin errores HTTP
-    http_req_duration: ["p(95)<500"],
-    http_req_failed: ["rate==0"],
-    tiempo_cobro_ms: ["p(95)<100"],
-    tasa_errores_negocio: ["rate==0"],
+    checks: ['rate==1'], http_req_failed: ['rate==0'], http_req_duration: ['p(95)<500'],
+    tiempo_cobro_ms: ['p(95)<100'], tiempo_busqueda_ms: ['p(95)<200'],
+    tasa_errores_negocio: ['rate==0'],
   },
 };
 
-function csrfDe(respuesta) {
-  const cookies = respuesta.cookies;
-  return cookies && cookies.csrftoken ? cookies.csrftoken[0].value : "";
+function token() {
+  const values = http.cookieJar().cookiesForURL(`${BASE}/`).csrftoken;
+  if (!values || !values.length) throw new Error('No se recibio cookie CSRF');
+  return values[0];
 }
 
-export function setup() {
-  const paginaLogin = http.get(`${BASE}/`);
-  const token = csrfDe(paginaLogin);
-
-  const login = http.post(
-    `${BASE}/login/`,
-    { username: USERNAME, password: PASSWORD, csrfmiddlewaretoken: token },
-    { headers: { Referer: BASE }, redirects: 0 }
-  );
-
-  if (login.status !== 302) {
-    fail(
-      `Login fallido (status ${login.status}). Crea el usuario primero: ` +
-        `python scripts/crear_admin.py --username ${USERNAME} --password ${PASSWORD}`
-    );
-  }
-  return { token: token };
+function post(path, data) {
+  // Django rota el token al iniciar sesion: leer siempre la cookie actual del VU.
+  const csrf = token();
+  return http.post(`${BASE}${path}`, { ...data, csrfmiddlewaretoken: csrf }, {
+    headers: { Referer: `${BASE}/`, 'X-CSRFToken': csrf }, redirects: 0,
+  });
 }
 
-export default function (setup) {
-  const encabezados = { Referer: BASE, "X-CSRFToken": setup.token };
+function exigir(response, nombre, assertion) {
+  if (!check(response, { [nombre]: assertion })) throw new Error(nombre);
+}
 
-  // 1. apertura de caja (ignora "TurnoYaAbierto": el cajero ya tiene turno)
-  http.post(
-    `${BASE}/caja/apertura/`,
-    { monto_apertura: "100.00", csrfmiddlewaretoken: setup.token },
-    { headers: encabezados, redirects: 0 }
-  );
-
-  // 2. abrir el POS (crea/carga la venta en sesion)
-  const pos = http.get(`${BASE}/pos/`);
-  check(pos, { "POS responde 200": (r) => r.status === 200 });
-
-  // 3. busqueda por codigo de barras (presupuesto < 200 ms)
-  const tBusqueda = Date.now();
-  const busqueda = http.get(`${BASE}/pos/buscar/?q=${CODIGO}`);
-  TIEMPO_BUSQUEDA_MS.add(Date.now() - tBusqueda);
-  const resultados = busqueda.json("resultados") || [];
-  check(busqueda, {
-    "encuentra el producto": () => resultados.length === 1,
-    "busqueda < 200ms": () => Date.now() - tBusqueda < 200,
-  });
-  if (resultados.length !== 1) {
-    TASA_ERRORES.add(1);
-    sleep(1);
-    return;
+export default function () {
+  let ok = false;
+  try {
+    if (!BASE || !__ENV.PMV_USERNAME_PREFIX || !__ENV.PMV_PASSWORD || !__ENV.PMV_CODIGO) {
+      throw new Error('Defina BASE_URL, PMV_USERNAME_PREFIX, PMV_PASSWORD y PMV_CODIGO de QA');
+    }
+    if (!sesionPreparada) {
+      http.cookieJar().clear(`${BASE}/`);
+      const loginPage = http.get(`${BASE}/login/`, { redirects: 0 });
+      exigir(loginPage, 'formulario login', (r) => r.status === 200);
+      const login = post('/login/', {
+        username: `${__ENV.PMV_USERNAME_PREFIX}${__VU}`, password: __ENV.PMV_PASSWORD,
+      });
+      exigir(login, 'login aceptado', (r) => r.status === 302 && r.headers.Location === '/catalogo/');
+      const apertura = post('/caja/apertura/', { monto_apertura: '100.00' });
+      exigir(apertura, 'caja abierta', (r) => r.status === 302 && r.headers.Location === '/pos/');
+      sesionPreparada = true;
+    }
+    const pos = http.get(`${BASE}/pos/`, { redirects: 0 });
+    exigir(pos, 'POS autenticado', (r) => r.status === 200 && r.body.includes('Ticket en curso:'));
+    const match = pos.body.match(/Ticket en curso:\s*([0-9a-f-]{36})/);
+    if (!match) throw new Error('El POS no contiene venta activa');
+    const ventaId = match[1];
+    const busqueda = http.get(`${BASE}/pos/buscar/?q=${encodeURIComponent(__ENV.PMV_CODIGO)}`, { redirects: 0 });
+    TIEMPO_BUSQUEDA.add(busqueda.timings.duration);
+    exigir(busqueda, 'busqueda correcta', (r) => r.status === 200);
+    const productos = busqueda.json('resultados');
+    if (!Array.isArray(productos) || productos.length !== 1) throw new Error('Producto QA no encontrado');
+    const agregar = post(`/pos/venta/${ventaId}/agregar/${productos[0].id}/`, { cantidad: '1' });
+    exigir(agregar, 'producto agregado', (r) => r.status === 200);
+    const total = agregar.json('total');
+    if (typeof total !== 'number' || !Number.isFinite(total) || total <= 0) throw new Error('Total invalido');
+    const cobro = post(`/pos/venta/${ventaId}/pago/`, {
+      metodo: 'EFECTIVO', monto: total.toFixed(2), monto_entregado: total.toFixed(2),
+    });
+    TIEMPO_COBRO.add(cobro.timings.duration);
+    exigir(cobro, 'cobro redirige al ticket', (r) =>
+      r.status === 302 && r.headers.Location === `/pos/venta/${ventaId}/ticket/`);
+    const ticket = http.get(`${BASE}${cobro.headers.Location}`, { redirects: 0 });
+    exigir(ticket, 'ticket PDF emitido', (r) =>
+      r.status === 200 && r.headers['Content-Type'].includes('application/pdf') && r.body.startsWith('%PDF'));
+    ok = true;
+  } finally {
+    ERRORES.add(ok ? 0 : 1);
+    sleep(0.5);
   }
-
-  const ventaMatch = pos.body.match(/Ticket en curso:\s*([0-9a-f-]{36})/);
-  if (!ventaMatch) {
-    TASA_ERRORES.add(1);
-    sleep(1);
-    return;
-  }
-  const ventaId = ventaMatch[1];
-  const productoId = resultados[0].id;
-
-  // 4. agregar producto al carrito
-  const agregar = http.post(
-    `${BASE}/pos/venta/${ventaId}/agregar/${productoId}/`,
-    { cantidad: "1", csrfmiddlewaretoken: setup.token },
-    { headers: encabezados }
-  );
-  check(agregar, { "agrega producto": (r) => r.status === 200 });
-
-  const total = agregar.json("total");
-  if (typeof total !== "number") {
-    TASA_ERRORES.add(1);
-    sleep(1);
-    return;
-  }
-
-  // 5. cobro en efectivo (presupuesto < 100 ms)
-  const tCobro = Date.now();
-  const cobro = http.post(
-    `${BASE}/pos/venta/${ventaId}/pago/`,
-    {
-      metodo: "EFECTIVO",
-      monto: total.toFixed(2),
-      monto_entregado: "20.00",
-      csrfmiddlewaretoken: setup.token,
-    },
-    { headers: encabezados }
-  );
-  TIEMPO_COBRO_MS.add(Date.now() - tCobro);
-
-  const ok = check(cobro, {
-    "el cobro redirige al ticket": (r) => r.status === 302 && r.headers.Location.includes("/ticket/"),
-  });
-  TASA_ERRORES.add(ok ? 0 : 1);
-
-  sleep(1);
 }

@@ -1,0 +1,81 @@
+name: Full quality audit
+on:
+  pull_request:
+  push:
+    branches: [main, 'qa/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: full-quality-${{ github.ref }}
+  cancel-in-progress: true
+defaults:
+  run:
+    working-directory: puntoventa_total
+jobs:
+  quality:
+    services:
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd="redis-cli ping" --health-interval=5s
+          --health-timeout=3s --health-retries=10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python: '3.11'
+            requirements: requirements/testing.txt
+            profile: production-declared
+          - python: '3.14.7'
+            requirements: requirements/qa-inventory-mysql.txt
+            profile: qa
+    name: quality (${{ matrix.profile }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      DJANGO_SETTINGS_MODULE: config.settings.testing
+      QA_REQUIRE_BROWSER: '1'
+      QA_REDIS_URL: redis://127.0.0.1:6379/15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: puntoventa_total/requirements/*.txt
+      - name: System dependencies
+        run: sudo apt-get update && sudo apt-get install -y pkg-config default-libmysqlclient-dev build-essential
+      - name: Python dependencies
+        run: python -m pip install -r ${{ matrix.requirements }}
+      - name: Django checks
+        run: python manage.py check --settings=config.settings.testing
+      - name: Migration consistency
+        run: python manage.py makemigrations --check --dry-run --settings=config.settings.testing
+      - name: '1 - Unit'
+        run: python -m pytest tests/unit -q --cov=src --cov-fail-under=0 --cov-report=json:reports/audit_unit_coverage.json --junitxml=reports/full-unit.xml
+      - name: Unit domain and application coverage gate
+        run: python scripts/qa_unit_gate.py
+      - name: '2 - Integration on disposable MySQL'
+        run: python scripts/qa_inventory_mysql.py tests/integration --runxfail --junitxml=reports/full-integration.xml
+      - name: Install Chromium
+        run: python -m playwright install --with-deps chromium
+      - uses: grafana/setup-k6-action@v1
+        with:
+          k6-version: '2.3.0'
+      - name: Locate k6
+        run: echo "QA_K6_BINARY=$(command -v k6)" >> "$GITHUB_ENV"
+      - name: '3 - System and performance budgets'
+        run: python scripts/qa_inventory_mysql.py tests/system tests/e2e tests/functional tests/performance --junitxml=reports/full-system.xml
+      - name: '4 - Acceptance'
+        run: python -m pytest tests/uat -q --junitxml=reports/full-uat.xml
+      - name: Global coverage gate (all levels)
+        env:
+          QA_REQUIRE_ALL_TESTS: '1'
+        run: python scripts/qa_inventory_mysql.py tests --runxfail --cov=src --cov-fail-under=80 --cov-report=xml:reports/full-coverage.xml --junitxml=reports/full-suite.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: full-quality-evidence-${{ matrix.profile }}
+          path: puntoventa_total/reports/

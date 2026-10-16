@@ -9,6 +9,15 @@ from src.modules.inventory.infrastructure.persistence.django_models.existencia_m
 
 
 class DjangoStockRepository(StockRepository):
+    def disponibles(self, producto_ids) -> dict[str, int]:
+        ids = [str(pid) for pid in producto_ids]
+        resultado = dict.fromkeys(ids, 0)
+        for pid, cantidad, reservada in ExistenciaModel.objects.filter(producto_id__in=ids).values_list(
+            "producto_id", "cantidad", "reservada"
+        ):
+            resultado[str(pid)] = cantidad - reservada
+        return resultado
+
     def obtener(self, producto_id: str) -> Optional[Existencia]:
         qs = ExistenciaModel.objects.filter(producto_id=producto_id)
         if connection.in_atomic_block:

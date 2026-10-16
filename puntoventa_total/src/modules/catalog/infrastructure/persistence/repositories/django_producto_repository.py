@@ -34,10 +34,9 @@ class DjangoProductoRepository(ProductoRepository):
         m = ProductoModel.objects.filter(codigo_barras=codigo).first()
         return self._mapper.a_dominio(m) if m else None
 
-    def listar(self, incluir_inactivos=False, termino=None, categoria_id=None, limit=None) -> Sequence[Producto]:
-        qs = self._queryset(incluir_inactivos, termino, categoria_id)
-        if limit:
-            qs = qs[:limit]
+    def listar(self, incluir_inactivos=False, termino=None, categoria_id=None, limit=None, offset=0) -> Sequence[Producto]:
+        qs = self._queryset(incluir_inactivos, termino, categoria_id).order_by("nombre", "id")
+        qs = qs[offset : offset + limit] if limit is not None else qs[offset:]
         return [self._mapper.a_dominio(m) for m in qs]
 
     def contar(self, incluir_inactivos=False, termino=None, categoria_id=None) -> int:

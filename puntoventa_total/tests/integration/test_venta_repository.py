@@ -22,8 +22,7 @@ def test_guardar_y_recuperar_agregado_completo():
 
 
 def test_siguiente_numero_ticket_es_unico():
-    # RN interna del repo: el correlativo se basa en el conteo de tickets del dia,
-    # por lo que avanza recien cuando la venta anterior quedo persistida.
+    # El correlativo se reserva en una secuencia persistente, independiente del conteo.
     repo = construir_venta_repository()
     primero = repo.siguiente_numero_ticket()
     repo.guardar(

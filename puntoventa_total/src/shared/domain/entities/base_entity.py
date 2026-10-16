@@ -7,6 +7,7 @@ from datetime import datetime
 from typing import Any
 
 from src.shared.domain.events.domain_event import DomainEvent
+from src.shared.domain.clock import utc_now
 from src.shared.domain.exceptions.validation_exception import ValidationException
 
 
@@ -19,8 +20,8 @@ class BaseEntity:
     """
 
     id: uuid.UUID = field(default_factory=uuid.uuid4)
-    fecha_creacion: datetime = field(default_factory=datetime.now)
-    fecha_actualizacion: datetime = field(default_factory=datetime.now)
+    fecha_creacion: datetime = field(default_factory=utc_now)
+    fecha_actualizacion: datetime = field(default_factory=utc_now)
     activo: bool = True
     _eventos: list[DomainEvent] = field(default_factory=list, repr=False, compare=False)
 
@@ -35,7 +36,7 @@ class BaseEntity:
             raise ValidationException(f"El campo '{nombre}' supera {max_len} caracteres")
 
     def marcar_actualizado(self) -> None:
-        self.fecha_actualizacion = datetime.now()
+        self.fecha_actualizacion = utc_now()
 
     def desactivar(self) -> None:
         self.activo = False

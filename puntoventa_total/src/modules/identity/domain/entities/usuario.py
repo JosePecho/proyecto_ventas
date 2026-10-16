@@ -2,14 +2,14 @@
 from __future__ import annotations
 
 import re
-import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
 from src.modules.identity.domain.enums.estado_usuario import EstadoUsuario
 from src.modules.identity.domain.enums.rol_usuario import RolUsuario
 from src.shared.domain.entities.base_entity import BaseEntity
+from src.shared.domain.clock import utc_now
 from src.shared.domain.exceptions.validation_exception import ValidationException
 
 PATRON_USERNAME = re.compile(r"^[\w.]{4,30}$")
@@ -53,7 +53,7 @@ class Usuario(BaseEntity):
 
     def registrar_acceso_exitoso(self) -> None:
         self.intentos_fallidos = 0
-        self.ultimo_acceso = datetime.now()
+        self.ultimo_acceso = utc_now()
         self.marcar_actualizado()
 
     def cambiar_rol(self, nuevo_rol: RolUsuario) -> None:

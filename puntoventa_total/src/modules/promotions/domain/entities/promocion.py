@@ -36,7 +36,8 @@ class Promocion(BaseEntity):
             raise ValidationException("Promocion NX1 requiere cantidad_requerida >= 2 y cantidad_gratuita >= 1")
 
     def esta_vigente(self, momento: datetime | None = None) -> bool:
-        momento = momento or datetime.now()
+        referencia = self.vigencia_desde or self.vigencia_hasta
+        momento = momento or datetime.now(tz=referencia.tzinfo if referencia else None)
         if self.estado != EstadoPromocion.ACTIVA:
             return False
         if self.vigencia_desde and momento < self.vigencia_desde:
@@ -48,7 +49,7 @@ class Promocion(BaseEntity):
     def programar(self, desde: datetime, hasta: datetime) -> None:
         if hasta <= desde:
             raise VigenciaInvalida()
-        if desde < datetime.now():
+        if desde < datetime.now(tz=desde.tzinfo):
             raise VigenciaInvalida()
         self.vigencia_desde, self.vigencia_hasta = desde, hasta
         self.estado = EstadoPromocion.PROGRAMADA

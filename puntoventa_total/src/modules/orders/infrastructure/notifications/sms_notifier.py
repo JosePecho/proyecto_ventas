@@ -12,9 +12,9 @@ class SmsNotifier(NotificacionPort):
     def _enviar(self, telefono: str, mensaje: str) -> bool:
         if not telefono:
             return False
-        logger.info("SMS a %s: %s", telefono, mensaje)
-        # TODO: integrar proveedor SMS (Twilio, Elit) usando ENCRYPTION_SERVICE
-        return True
+        # Ningun proveedor esta configurado: no registrar PII ni fingir entrega.
+        logger.warning("SMS no enviado: proveedor no configurado")
+        return False
 
     def notificar_pedido_confirmado(self, cliente_nombre: str, destino: str, numero: str) -> bool:
         return self._enviar(destino, f"Hola {cliente_nombre}, tu pedido {numero} fue confirmado.")

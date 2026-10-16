@@ -15,16 +15,19 @@ class ListarProductos:
         por_pagina: int = 20,
         termino: str | None = None,
         incluir_inactivos: bool = False,
+        categoria_id: str | None = None,
     ) -> PageDTO[ProductoOutputDTO]:
         pagina = max(pagina, 1)
-        total = self._repo.contar(incluir_inactivos=incluir_inactivos, termino=termino)
+        por_pagina = max(1, min(por_pagina, 100))
+        total = self._repo.contar(incluir_inactivos=incluir_inactivos, termino=termino, categoria_id=categoria_id)
+        pagina = min(pagina, max(1, -(-total // por_pagina)))
         productos = self._repo.listar(
             incluir_inactivos=incluir_inactivos,
             termino=termino,
             limit=por_pagina,
+            categoria_id=categoria_id,
+            offset=(pagina - 1) * por_pagina,
         )
-        # desplazamiento simple para paginar sin exponer ORM
-        inicio = (pagina - 1) * por_pagina
-        items = [ProductoOutputDTO.desde_entidad(p) for p in list(productos)[inicio : inicio + por_pagina]]
+        items = [ProductoOutputDTO.desde_entidad(p) for p in productos]
         return PageDTO(items=items, total=total, pagina=pagina, por_pagina=por_pagina)
 
