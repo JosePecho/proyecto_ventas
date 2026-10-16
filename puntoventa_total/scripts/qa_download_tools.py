@@ -13,8 +13,9 @@ def main():
     parser.add_argument("tool", choices=["k6", "redis"])
     parser.add_argument("--asset")
     args = parser.parse_args()
-    repo = {"k6": "grafana/k6", "redis": "redis-windows/redis-windows"}[args.tool]
-    request = Request(f"https://api.github.com/repos/{repo}/releases/latest", headers={"User-Agent": "PuntoVenta-QA"})
+    repo, tag = {"k6": ("grafana/k6", "v2.3.0"),
+                 "redis": ("redis-windows/redis-windows", "8.10.2")}[args.tool]
+    request = Request(f"https://api.github.com/repos/{repo}/releases/tags/{tag}", headers={"User-Agent": "PuntoVenta-QA"})
     with urlopen(request, timeout=30) as response:
         release = json.load(response)
     if not args.asset:

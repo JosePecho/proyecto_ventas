@@ -77,3 +77,12 @@ El adaptador SMS devuelve False mientras no exista proveedor configurado;
 no representa una entrega real. Las correcciones y evidencia se documentan en
 `docs/testing/full_fixes_results.md`.
 
+### Suite completa sin omisiones (Windows)
+
+La validacion con MySQL + Redis + worker real + SMTP local + navegador + k6 se
+documenta en `docs/testing/complete_validation.md`, con comandos y evidencias por
+perfil. El wrapper `scripts/qa_redis_native.py` crea procesos temporales aislados
+y `QA_REQUIRE_ALL_TESTS=1` rechaza cualquier skip/xfail en la ejecucion completa.
+En Linux, la carga usa Gunicorn con la configuracion del despliegue; el umbral de
+cobro sigue siendo p95 < 100 ms. En Windows utiliza el servidor de Django.
+

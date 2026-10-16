@@ -91,7 +91,7 @@ def main():
             command = [sys.executable, "-m", "pytest", "tests/integration/test_redis_celery_real.py", "-q", "-p", "no:cacheprovider"]
         result = subprocess.run(command, cwd=root, env=env)
         evidence = {"redis_version": version, "ephemeral": True, "exit_code": result.returncode,
-                    "mysql_full": bool(args.mysql_basedir), "k6": bool(args.k6_binary)}
+                    "mysql_full": bool(args.mysql_basedir and not args.target), "k6": bool(args.k6_binary)}
         (root / "reports").mkdir(exist_ok=True)
         (root / "reports/redis-real.json").write_text(json.dumps(evidence, indent=2), encoding="utf-8")
         print(json.dumps(evidence))

@@ -71,3 +71,30 @@ habilitado; no se inventaron credenciales ni se contrató un servicio de pago.
 La aceptación del Product Owner requiere una persona responsable y no puede
 sustituirse por una declaración del agente.
 El resultado de GitHub Actions se registrará con su enlace y commit verificables.
+
+## GitHub Actions verificado
+
+Ejecución aprobada: [Full quality audit / 38982584654](https://github.com/JosePecho/proyecto_ventas/actions/runs/38982584654),
+commit `c113a0edb7a2a4cea821559850ff5374ba04e2fa`, rama `qa/complete-validation-20261016`.
+
+| Perfil remoto Linux | Tests | Fallos / errores / omitidos | Cobertura | Checks k6 | Cobro p95 | Búsqueda p95 |
+|---|---:|---|---:|---:|---:|---:|
+| Producción declarada | 385 | 0 / 0 / 0 | 82,50 % | 100 % | 77,63 ms | 35,43 ms |
+| QA | 385 | 0 / 0 / 0 | 82,11 % | 100 % | 54,45 ms | 27,85 ms |
+
+La carga en Linux usa Gunicorn con la configuración de despliegue y conserva
+el límite de cobro p95 < 100 ms. Una medición anterior con wsgiref de Django
+superó ese límite; no se ocultó ni se relajó el threshold para aprobar.
+
+Se descargaron los artefactos de ambos jobs a `reports/remote/38982584654/`.
+`python scripts/qa_evidence_summary.py` comprueba JUnit, cobertura y métricas k6
+contra los gates y produce `reports/complete-evidence.json`.
+
+La protección de `main` está configurada y verificada: requiere los checks
+`quality (production-declared)` y `quality (qa)`, con rama actualizada. No se
+permiten force-push ni borrado, y la protección se aplica a administradores.
+La configuración verificada está en `reports/merge-gate.json`. No se hizo merge
+ni despliegue productivo; el código está disponible en la rama de revisión.
+
+El envío SMS real no forma parte de estas pruebas aprobadas: sigue sin haber
+proveedor/cuenta/remitente configurados. No se contabiliza como entrega probada.

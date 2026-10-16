@@ -101,7 +101,7 @@ def main():
                     "-q", "-p", "no:cacheprovider", f"--junitxml=reports/{args.report_prefix}.xml", *coverage_args],
                     cwd=root, env=env)
                 evidence = dict(engine=engine, version=version, ephemeral=True, container=False,
-                                full=args.full, exit_code=result.returncode,
+                                full=bool(args.full and not args.target), exit_code=result.returncode,
                                 executed_at=datetime.now(timezone.utc).isoformat(),
                                 timezone_fixture="UTC y America/Lima, fechas actuales")
                 (reports / f"{args.report_prefix}.json").write_text(json.dumps(evidence, indent=2), encoding="utf-8")
