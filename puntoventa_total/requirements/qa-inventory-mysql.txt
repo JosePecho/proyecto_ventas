@@ -1,0 +1,5 @@
+# Extras verificados en PyPI; ejecucion con contenedor pendiente en esta maquina.
+-r qa-inventory.txt
+mysqlclient==2.3.0
+testcontainers[mysql]==4.15.0
+PyMySQL[rsa]==1.2.3

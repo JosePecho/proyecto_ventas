@@ -1,7 +1,10 @@
 """Merma: salida justificada que descuenta lote y registra motivo."""
 from __future__ import annotations
 
+from datetime import date
+
 from src.modules.inventory.domain.entities.movimiento_stock import MovimientoStock
+from src.modules.inventory.domain.enums.motivo_merma import MotivoMerma
 from src.modules.inventory.domain.enums.tipo_movimiento import TipoMovimiento
 from src.modules.inventory.domain.exceptions.stock_exceptions import LoteNoEncontrado
 from src.modules.inventory.domain.repositories.lote_repository import LoteRepository
@@ -34,19 +37,43 @@ class RegistrarMerma:
         observacion: str = "",
     ) -> int:
         with self._uow:
+            try:
+                motivo = MotivoMerma(motivo).value
+            except ValueError as exc:
+                raise ValidationException("Motivo de merma invalido") from exc
+            existencia = self._stock.obtener(producto_id)
+            if existencia is None:
+                raise ValidationException("No hay existencia registrada para este producto")
             if lote_id:
                 lote = self._lotes.buscar_por_id(lote_id)
                 if lote is None:
                     raise LoteNoEncontrado(lote_id)
+                if str(lote.producto_id) != str(producto_id):
+                    raise ValidationException("El lote no pertenece al producto")
                 if not PoliticaStock.puede_registrar_merma(lote.cantidad_restante, cantidad):
                     raise ValidationException("Cantidad de merma invalida para el lote")
-                lote.descontar(cantidad)
-                self._lotes.guardar(lote)
-
-            existencia = self._stock.obtener(producto_id)
-            if existencia is None:
-                raise ValidationException("No hay existencia registrada para este producto")
+                plan = [(lote, cantidad)]
+            else:
+                # Las mermas tambien deben consumir lotes vencidos.
+                lotes = sorted(
+                    self._lotes.listar_por_producto(producto_id),
+                    key=lambda lote: (lote.fecha_vencimiento or date.max, lote.fecha_recepcion),
+                )
+                pendiente = cantidad
+                plan = []
+                for lote in lotes:
+                    tomar = min(lote.cantidad_restante, pendiente)
+                    if tomar:
+                        plan.append((lote, tomar))
+                        pendiente -= tomar
+                    if not pendiente:
+                        break
+                if pendiente:
+                    raise ValidationException("Los lotes no cubren la cantidad de merma")
             existencia.aplicar_salida(cantidad)
+            for lote, tomar in plan:
+                lote.descontar(tomar)
+                self._lotes.guardar(lote)
             self._stock.guardar(existencia)
 
             self._mov.guardar(

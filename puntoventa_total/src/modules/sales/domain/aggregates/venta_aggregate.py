@@ -69,7 +69,10 @@ class VentaAggregate:
         subtotal = CalculadoraVenta.subtotal(self.lineas)
         descuentos = CalculadoraVenta.descuentos(self.lineas)
         extra = subtotal.porcentaje(self.descuento_venta_pct) if self.descuento_venta_pct else Monto(0, subtotal.moneda)
-        total = subtotal - descuentos - extra
+        pendiente = subtotal - descuentos
+        if extra.valor > pendiente.valor:
+            extra = pendiente
+        total = pendiente - extra
         self.venta.subtotal = subtotal.a_float()
         self.venta.descuento = (descuentos + extra).a_float()
         self.venta.total = total.a_float()

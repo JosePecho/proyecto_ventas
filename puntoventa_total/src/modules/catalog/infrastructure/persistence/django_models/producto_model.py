@@ -19,6 +19,8 @@ class ProductoModel(models.Model):
     imagen = models.ImageField(upload_to="products/", blank=True, null=True)
     unidad_medida = models.CharField(max_length=10, default="UND")
     requiere_stock = models.BooleanField(default=True)
+    stock_minimo = models.PositiveIntegerField(default=5)
+    fecha_vencimiento = models.DateField(null=True, blank=True)
     activo = models.BooleanField(default=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)

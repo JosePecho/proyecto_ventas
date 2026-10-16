@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import date
 from typing import Optional
 
 
@@ -13,6 +14,8 @@ class ProductoInputDTO:
     imagen: str = ""
     unidad_medida: str = "UND"
     requiere_stock: bool = True
+    stock_minimo: int = 5
+    fecha_vencimiento: Optional[date] = None
 
 
 @dataclass(frozen=True)
@@ -23,4 +26,8 @@ class ActualizarProductoDTO:
     costo: Optional[float] = None
     precio_venta: Optional[float] = None
     categoria_id: Optional[str] = None
+    stock_minimo: Optional[int] = None
+    fecha_vencimiento: Optional[date] = None
+    actualizar_vencimiento: bool = False
+    codigo_barras: Optional[str] = None
 

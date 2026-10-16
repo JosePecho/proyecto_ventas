@@ -6,7 +6,7 @@
   <a class="btn btn-primary" href="{% url 'catalog:producto_nuevo' %}"><i class="bi bi-plus-lg"></i> Nuevo producto</a>
 </div>
 <table class="table table-sm table-hover align-middle">
-  <thead><tr><th>Nombre</th><th>Codigo</th><th>Costo</th><th>Precio</th><th>Margen</th><th>Estado</th><th></th></tr></thead>
+  <thead><tr><th>Nombre</th><th>Codigo</th><th>Costo</th><th>Precio</th><th>Margen</th><th>Stock minimo</th><th>Vencimiento</th><th>Estado</th><th></th></tr></thead>
   <tbody>
   {% for p in productos %}
     <tr>
@@ -15,17 +15,21 @@
       <td>S/ {{ p.precio.costo }}</td>
       <td>S/ {{ p.precio.venta }}</td>
       <td>{{ p.precio.margen_pct }}%</td>
+      <td>{{ p.stock_minimo }}</td>
+      <td>{{ p.fecha_vencimiento|date:'d/m/Y'|default:'Sin vencimiento' }}</td>
       <td><span class="badge bg-{% if p.activo %}success{% else %}secondary{% endif %}">{{ p.estado }}</span></td>
       <td class="text-end">
         <a class="btn btn-sm btn-outline-primary" href="{% url 'catalog:producto_editar' p.id %}">Editar</a>
+        {% if request.session.rol == 'ADMINISTRADOR' or request.session.rol == 'GERENTE' %}
         <form method="post" action="{% url 'catalog:producto_descontinuar' p.id %}" class="d-inline">
           {% csrf_token %}
           <button class="btn btn-sm btn-outline-warning" type="submit">Descontinuar</button>
         </form>
+        {% endif %}
       </td>
     </tr>
   {% empty %}
-    <tr><td colspan="7" class="text-center text-muted">Sin productos</td></tr>
+    <tr><td colspan="9" class="text-center text-muted">Sin productos</td></tr>
   {% endfor %}
   </tbody>
 </table>

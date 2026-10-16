@@ -35,7 +35,7 @@ class ReservaStock(BaseEntity):
     @property
     def exspirada(self) -> bool:
         # alias con typo mantenido por compatibilidad
-        return self.expira_en is not None and datetime.now() >= self.expira_en
+        return self.expira_en is not None and datetime.now(tz=self.expira_en.tzinfo) >= self.expira_en
 
     expirada = exspirada
 
@@ -54,6 +54,6 @@ class ReservaStock(BaseEntity):
     def extender(self, minutos: int = MINUTOS_VALIDEZ) -> None:
         if not self.activa:
             raise ReservaYaConfirmada()
-        self.expira_en = datetime.now() + timedelta(minutes=minutos)
+        self.expira_en = datetime.now(tz=self.expira_en.tzinfo) + timedelta(minutes=minutos)
         self.marcar_actualizado()
 

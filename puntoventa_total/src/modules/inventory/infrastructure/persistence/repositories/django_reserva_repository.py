@@ -1,5 +1,6 @@
-from datetime import datetime
 from typing import Optional, Sequence
+from django.db import connection
+from django.utils import timezone
 
 from src.modules.inventory.domain.entities.reserva_stock import ReservaStock
 from src.modules.inventory.domain.repositories.reserva_repository import ReservaRepository
@@ -22,14 +23,17 @@ class DjangoReservaRepository(ReservaRepository):
         )
 
     def buscar_por_id(self, reserva_id) -> Optional[ReservaStock]:
-        m = ReservaModel.objects.filter(pk=reserva_id).first()
+        qs = ReservaModel.objects.filter(pk=reserva_id)
+        if connection.in_atomic_block:
+            qs = qs.select_for_update()
+        m = qs.first()
         return self._a_dominio(m) if m else None
 
     def listar_por_referencia(self, referencia: str) -> Sequence[ReservaStock]:
         return [self._a_dominio(m) for m in ReservaModel.objects.filter(referencia=referencia)]
 
     def listar_activas_expiradas(self) -> Sequence[ReservaStock]:
-        qs = ReservaModel.objects.filter(confirmada=False, liberada=False, expira_en__lte=datetime.now())
+        qs = ReservaModel.objects.filter(confirmada=False, liberada=False, expira_en__lte=timezone.now())
         return [self._a_dominio(m) for m in qs]
 
     def guardar(self, reserva: ReservaStock) -> ReservaStock:
@@ -39,6 +43,8 @@ class DjangoReservaRepository(ReservaRepository):
         m.cantidad = reserva.cantidad
         m.referencia = reserva.referencia
         m.expira_en = reserva.expira_en
+        if m.expira_en is not None and timezone.is_naive(m.expira_en):
+            m.expira_en = timezone.make_aware(m.expira_en)
         m.confirmada = reserva.confirmada
         m.liberada = reserva.liberada
         m.activo = reserva.activo

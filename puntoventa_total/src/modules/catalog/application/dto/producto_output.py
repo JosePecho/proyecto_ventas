@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import date
 from typing import Optional
 
 
@@ -15,6 +16,8 @@ class ProductoOutputDTO:
     estado: str
     imagen: str
     stock_disponible: Optional[int] = None
+    stock_minimo: int = 5
+    fecha_vencimiento: Optional[date] = None
 
     @classmethod
     def desde_entidad(cls, producto, categoria_nombre: str | None = None, stock: int | None = None):
@@ -30,5 +33,7 @@ class ProductoOutputDTO:
             estado=producto.estado.value,
             imagen=producto.imagen,
             stock_disponible=stock,
+            stock_minimo=producto.stock_minimo,
+            fecha_vencimiento=producto.fecha_vencimiento,
         )
 

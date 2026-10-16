@@ -39,7 +39,8 @@ class RecibirMercaderia:
                 cantidad_restante=datos.cantidad,
                 costo_unitario=Monto(datos.costo_unitario, self._moneda),
                 proveedor=datos.proveedor,
-                fecha_vencimiento=date.fromisoformat(datos.fecha_vencimiento) if datos.fecha_vencimiento else None,
+                fecha_vencimiento=(date.fromisoformat(datos.fecha_vencimiento)
+                                   if isinstance(datos.fecha_vencimiento, str) else datos.fecha_vencimiento),
             )
             existencia = self._stock.obtener(datos.producto_id) or Existencia(producto_id=datos.producto_id)
             stock_anterior = existencia.cantidad

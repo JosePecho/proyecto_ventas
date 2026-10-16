@@ -5,18 +5,18 @@
 <div class="row">
   <div class="col-md-4">
     <div class="card border-danger mb-3">
-      <div class="card-header bg-danger text-white">Stock minimo (&le; {{ umbral }})</div>
+      <div class="card-header bg-danger text-white">Stock inferior al minimo del producto</div>
       <ul class="list-group list-group-flush">
-        {% for a in bajo_minimo %}<li class="list-group-item">{{ a.producto_id }}: {{ a.disponible }} u.</li>
+        {% for a in bajo_minimo %}<li class="list-group-item">{{ a.producto_nombre }}: {{ a.disponible }} u. (minimo {{ a.stock_minimo }})</li>
         {% empty %}<li class="list-group-item text-muted">Sin alertas</li>{% endfor %}
       </ul>
     </div>
   </div>
   <div class="col-md-4">
     <div class="card border-warning mb-3">
-      <div class="card-header bg-warning">Por vencer</div>
+      <div class="card-header bg-warning">Vencen en los proximos 30 dias</div>
       <ul class="list-group list-group-flush">
-        {% for l in por_vencer %}<li class="list-group-item">Lote {{ l.numero_lote }} ({{ l.dias_para_vencer }} dias)</li>
+        {% for l in por_vencer %}<li class="list-group-item">{{ l.producto_nombre }} — Lote {{ l.numero_lote }}: {{ l.fecha_vencimiento }} ({{ l.dias_para_vencer }} dias)</li>
         {% empty %}<li class="list-group-item text-muted">Sin alertas</li>{% endfor %}
       </ul>
     </div>

@@ -42,8 +42,10 @@ class InventarioAdapter(InventarioPort):
             construir_reserva_repository(),
             construir_movimiento_repository(),
             uow=transaction.atomic(),
+            lote_repo=construir_lote_repository(),
         ).ejecutar(reserva_id, referencia, usuario_id)
 
+    @transaction.atomic
     def devolver(self, producto_id: str, cantidad: int, referencia: str, usuario_id: str = "") -> int:
         """Devolucion por anulacion: entrada de stock compensatoria."""
         mov_repo: MovimientoRepository = construir_movimiento_repository()
@@ -53,6 +55,28 @@ class InventarioAdapter(InventarioPort):
 
         existencia = existencia or Existencia(producto_id=producto_id)
         existencia.aplicar_entrada(cantidad)
+        # Repone los lotes consumidos por la venta, conservando su vencimiento.
+        lotes_repo = construir_lote_repository()
+        referencia_venta = referencia.replace("ANULACION:", "VENTA:", 1)
+        pendiente = cantidad
+        for salida in mov_repo.kardex(producto_id, limite=None):
+            if salida.tipo != TipoMovimiento.SALIDA_VENTA or salida.referencia != referencia_venta or not salida.lote_id:
+                continue
+            lote = lotes_repo.buscar_por_id(salida.lote_id)
+            if lote is None:
+                continue
+            tomar = min(pendiente, salida.cantidad, lote.cantidad_inicial - lote.cantidad_restante)
+            lote.cantidad_restante += tomar
+            lotes_repo.guardar(lote)
+            pendiente -= tomar
+            if not pendiente:
+                break
+        if pendiente:
+            # Compatibilidad con ventas historicas sin trazabilidad por lote.
+            from src.modules.inventory.domain.entities.lote import Lote
+            from uuid import uuid4
+            lotes_repo.guardar(Lote(producto_id=producto_id, numero_lote=f"DEV-{uuid4().hex[:12]}",
+                                   cantidad_inicial=pendiente, cantidad_restante=pendiente))
         construir_stock_repository().guardar(existencia)
         mov_repo.guardar(
             MovimientoStock(

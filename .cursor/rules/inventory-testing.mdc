@@ -1,0 +1,26 @@
+---
+description: Pruebas del modulo Inventario RF-016 a RF-024
+globs: ["puntoventa_total/src/modules/inventory/**/*.py", "puntoventa_total/src/modules/catalog/**/*.py", "puntoventa_total/tests/**/*inventario*.py"]
+alwaysApply: false
+---
+
+Antes de cambiar pruebas, leer docs/requirements/inventario_rf016_rf024.md y
+docs/testing/inventory_master_plan.md (rutas relativas a puntoventa_total).
+
+- Derivar cada asercion de RF-016..024 o de una invariante documentada.
+- Unitarias: tests/unit/inventory, puertos con Mock(spec=...), sin ORM/red/broker.
+- Integracion: tests/integration; probar rollback y stock/lotes/kardex juntos.
+  SQLite no demuestra bloqueos. Ejecutar scripts/qa_inventory_mysql.py con Docker.
+- Sistema: Chromium, CSRF, permisos y carga HTTP; guardar trazas. En CI un navegador
+  ausente debe fallar con QA_REQUIRE_BROWSER=1. No sustituir errores por skip.
+- UAT: actualizar Gherkin y steps reales en tests/uat. La aprobacion del cliente
+  es humana y separada del resultado automatizado.
+- Congelar reloj o usar fechas relativas coherentes; nunca usar sleeps para sincronizar.
+- No debilitar aserciones, subir umbrales de latencia, reducir cobertura, agregar
+  xfail/skip/retries ni cambiar requisitos para lograr un resultado verde.
+- Un test roto por cambio de negocio necesita evidencia del requisito revisado.
+  Si es defecto del producto, conservar una regresion y reportar/corregir el defecto.
+- Ejecutar en orden unitarias, integracion, sistema y UAT. Reportar comando,
+  runtime, infraestructura, conteos y exit code. Distinguir ejecutado de propuesto.
+- No publicar a Postman ni cambiar protecciones de GitHub sin autorizacion.
+- Usar las instrucciones AGENTS.md/RTK.md aplicables al ejecutar comandos.

@@ -10,5 +10,7 @@ class MotivoMerma(str, Enum):
 
     @classmethod
     def opciones(cls):
-        return [(m.value, m.value) for m in cls]
+        etiquetas = {"VENCIDO": "Vencimiento", "DANADO": "Daño", "ROBO": "Robo",
+                     "ERROR_INVENTARIO": "Error de inventario", "OTRO": "Otro"}
+        return [(m.value, etiquetas[m.value]) for m in cls]
 

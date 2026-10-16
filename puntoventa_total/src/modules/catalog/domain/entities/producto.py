@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date
 from decimal import Decimal
 from typing import Optional
 
@@ -24,9 +25,13 @@ class Producto(BaseEntity):
     imagen: str = ""
     unidad_medida: str = "UND"
     requiere_stock: bool = True
+    stock_minimo: int = 5
+    fecha_vencimiento: Optional[date] = None
 
     def __post_init__(self) -> None:
         self._requerir(self.nombre, "nombre", 150)
+        if self.stock_minimo < 0:
+            raise ValueError("El stock minimo no puede ser negativo")
         if self.codigo_barras is None or not isinstance(self.codigo_barras, CodigoBarras):
             self.codigo_barras = CodigoBarras(self.codigo_barras)
         if self.precio is None or not isinstance(self.precio, Precio):

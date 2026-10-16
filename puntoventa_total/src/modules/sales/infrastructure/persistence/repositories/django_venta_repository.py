@@ -1,5 +1,6 @@
 from datetime import date, datetime, time, timedelta
 from typing import Optional, Sequence
+from django.db import connection
 
 from src.modules.sales.domain.aggregates.venta_aggregate import VentaAggregate
 from src.modules.sales.domain.repositories.venta_repository import VentaRepository
@@ -9,7 +10,10 @@ from src.modules.sales.infrastructure.persistence.mappers.venta_mapper import Ve
 
 class DjangoVentaRepository(VentaRepository):
     def buscar_por_id(self, venta_id) -> Optional[VentaAggregate]:
-        m = VentaModel.objects.filter(pk=venta_id).prefetch_related("detalles", "pagos").first()
+        qs = VentaModel.objects.filter(pk=venta_id)
+        if connection.in_atomic_block:
+            qs = qs.select_for_update()
+        m = qs.prefetch_related("detalles", "pagos").first()
         return VentaMapper.agregado_a_dominio(m) if m else None
 
     def buscar_por_numero_ticket(self, numero_ticket: str) -> Optional[VentaAggregate]:

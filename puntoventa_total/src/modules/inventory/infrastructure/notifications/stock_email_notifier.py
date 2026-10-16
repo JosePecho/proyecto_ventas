@@ -12,7 +12,7 @@ class StockEmailNotifier(NotificacionStockPort):
             subject=f"[Stock minimo] Producto {producto_id}",
             message=f"El producto {producto_id} tiene {stock_actual} unidades (umbral: {umbral}).",
             from_email=settings.DEFAULT_FROM_EMAIL if hasattr(settings, "DEFAULT_FROM_EMAIL") else "sistema@puntoventa.local",
-            recipient_list=self.DESTINATARIOS_DEFECTO,
+            recipient_list=getattr(settings, "STOCK_ALERTA_DESTINATARIOS", self.DESTINATARIOS_DEFECTO),
             fail_silently=True,
         )
 
@@ -21,7 +21,7 @@ class StockEmailNotifier(NotificacionStockPort):
             subject=f"[Vencimiento] Lote {lote_id}",
             message=f"El lote {lote_id} del producto {producto_id} vence en {dias_restantes} dias.",
             from_email=settings.DEFAULT_FROM_EMAIL if hasattr(settings, "DEFAULT_FROM_EMAIL") else "sistema@puntoventa.local",
-            recipient_list=self.DESTINATARIOS_DEFECTO,
+            recipient_list=getattr(settings, "STOCK_ALERTA_DESTINATARIOS", self.DESTINATARIOS_DEFECTO),
             fail_silently=True,
         )
 

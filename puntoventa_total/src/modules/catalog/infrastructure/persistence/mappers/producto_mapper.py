@@ -23,6 +23,8 @@ class ProductoMapper:
             imagen=m.imagen.name if m.imagen else "",
             unidad_medida=m.unidad_medida,
             requiere_stock=m.requiere_stock,
+            stock_minimo=m.stock_minimo,
+            fecha_vencimiento=m.fecha_vencimiento,
             activo=m.activo,
             fecha_creacion=m.fecha_creacion,
             fecha_actualizacion=m.fecha_actualizacion,
@@ -40,6 +42,9 @@ class ProductoMapper:
         m.estado = e.estado.value
         m.unidad_medida = e.unidad_medida
         m.requiere_stock = e.requiere_stock
+        m.stock_minimo = e.stock_minimo
+        m.fecha_vencimiento = e.fecha_vencimiento
+        m.categoria_id = e.categoria_id
         m.activo = e.activo
         if e.imagen and not m.imagen:
             m.imagen = e.imagen

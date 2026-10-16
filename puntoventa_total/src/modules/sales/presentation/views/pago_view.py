@@ -8,6 +8,8 @@ from django.shortcuts import redirect, render
 
 from src.modules.sales.application.use_cases.procesar_pago import ProcesarPago
 from src.modules.sales.domain.exceptions.venta_exceptions import VentaException
+from src.modules.inventory.domain.exceptions.stock_exceptions import StockException
+from src.shared.domain.exceptions.validation_exception import ValidationException
 from src.modules.sales.infrastructure.factories import (
     construir_auditoria_port,
     construir_inventario_port,
@@ -44,7 +46,7 @@ def pago_view(request, venta_id):
                         referencia=form.cleaned_data.get("referencia", ""),
                     )
                 )
-            except VentaException as exc:
+            except (VentaException, StockException, ValidationException) as exc:
                 messages.error(request, str(exc))
             else:
                 request.session.pop("venta_actual", None)

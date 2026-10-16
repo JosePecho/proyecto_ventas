@@ -2,25 +2,34 @@
 {% block title %}Inventario{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between mb-3">
-  <h4><i class="bi bi-box-seam"></i> Existencias <small class="text-muted">(umbral minimo: {{ umbral }})</small></h4>
+  <h4><i class="bi bi-box-seam"></i> Existencias</h4>
   <a class="btn btn-primary" href="{% url 'inventory:recepcion' %}"><i class="bi bi-truck"></i> Recepcion de mercaderia</a>
 </div>
+<div class="d-flex gap-2 mb-3 flex-wrap">
+  <a class="btn btn-outline-primary" href="{% url 'catalog:producto_nuevo' %}">Registrar producto</a>
+  <a class="btn btn-outline-secondary" href="{% url 'catalog:productos_admin' %}">Administrar productos</a>
+  <a class="btn btn-outline-danger" href="{% url 'inventory:mermas' %}">Registrar merma</a>
+  <a class="btn btn-outline-warning" href="{% url 'inventory:alertas' %}">Alertas</a>
+  <a class="btn btn-outline-primary" href="{% url 'inventory:kardex' %}">Kardex</a>
+  <a class="btn btn-outline-primary" href="{% url 'reporting:inventario' %}">Baja rotacion y mayor ganancia</a>
+</div>
 <table class="table table-sm table-hover align-middle">
-  <thead><tr><th>Producto</th><th>Stock</th><th>Reservada</th><th>Disponible</th><th>Estado</th></tr></thead>
+  <thead><tr><th>Producto</th><th>Stock</th><th>Reservada</th><th>Disponible</th><th>Minimo</th><th>Estado</th></tr></thead>
   <tbody>
   {% for e in existencias %}
     <tr>
-      <td>{{ e.producto_id }}</td>
+      <td><a href="{% url 'inventory:kardex' %}?producto_id={{ e.producto_id }}">{{ e.producto_nombre }}</a></td>
       <td>{{ e.cantidad }}</td>
       <td>{{ e.reservada }}</td>
       <td class="fw-bold">{{ e.disponible }}</td>
+      <td>{{ e.stock_minimo }}</td>
       <td>
         {% if e.bajo_minimo %}<span class="badge bg-danger">Bajo minimo</span>
         {% else %}<span class="badge bg-success">OK</span>{% endif %}
       </td>
     </tr>
   {% empty %}
-    <tr><td colspan="5" class="text-center text-muted">Sin existencias registradas</td></tr>
+    <tr><td colspan="6" class="text-center text-muted">Sin productos registrados</td></tr>
   {% endfor %}
   </tbody>
 </table>

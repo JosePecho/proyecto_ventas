@@ -126,7 +126,13 @@ CELERY_TASK_TRACK_STARTED = True
 # Negocio
 DEFAULT_CURRENCY = env("DEFAULT_CURRENCY", default="PEN")
 STOCK_MINIMO_ALERTA = 5
+STOCK_ALERTA_DESTINATARIOS = env.list("STOCK_ALERTA_DESTINATARIOS", default=["compras@puntoventa.local"])
 DIAS_ALERTA_VENCIMIENTO = 30
+
+CELERY_IMPORTS = (
+    "src.modules.inventory.infrastructure.tasks.verificar_stock_minimo",
+    "src.modules.inventory.infrastructure.tasks.verificar_vencimientos",
+)
 
 LOGGING = {
     "version": 1,

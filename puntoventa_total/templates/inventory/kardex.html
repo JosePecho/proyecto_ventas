@@ -3,9 +3,9 @@
 {% block content %}
 <h4 class="mb-3"><i class="bi bi-journal-text"></i> Kardex de movimientos</h4>
 <form class="row g-2 mb-3" method="get">
-  <div class="col-md-4"><input class="form-control" name="producto_id" value="{{ producto_id }}" placeholder="Producto ID"></div>
-  <div class="col-md-2"><input class="form-control" type="date" name="desde" value="{{ request.GET.desde }}"></div>
-  <div class="col-md-2"><input class="form-control" type="date" name="hasta" value="{{ request.GET.hasta }}"></div>
+  {{ form.non_field_errors }}
+  {% for campo in form.visible_fields %}<div class="col-md-3">{{ campo.label_tag }}{{ campo }}{{ campo.errors }}</div>{% endfor %}
+  {{ form.pagina.errors }}
   <div class="col-md-2"><button class="btn btn-primary w-100" type="submit">Consultar</button></div>
 </form>
 {% if pagina_dto %}
@@ -24,7 +24,11 @@
   {% endfor %}
   </tbody>
 </table>
-{% include 'components/pagination.html' %}
+<nav>
+  {% if pagina_dto.tiene_anterior %}<a href="?producto_id={{ producto_id|urlencode }}&desde={{ request.GET.desde|urlencode }}&hasta={{ request.GET.hasta|urlencode }}&pagina={{ pagina_dto.pagina|add:'-1' }}">Anterior</a>{% endif %}
+  <span>Pagina {{ pagina_dto.pagina }} / {{ pagina_dto.total_paginas }}</span>
+  {% if pagina_dto.tiene_siguiente %}<a href="?producto_id={{ producto_id|urlencode }}&desde={{ request.GET.desde|urlencode }}&hasta={{ request.GET.hasta|urlencode }}&pagina={{ pagina_dto.pagina|add:'1' }}">Siguiente</a>{% endif %}
+</nav>
 {% endif %}
 {% endblock %}
 

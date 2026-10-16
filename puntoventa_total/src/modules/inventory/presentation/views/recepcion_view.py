@@ -16,6 +16,7 @@ from src.modules.inventory.infrastructure.factories import (
 )
 from src.modules.inventory.presentation.forms.recepcion_form import RecepcionForm
 from src.modules.identity.presentation.permissions.role_required import role_required
+from src.shared.domain.exceptions.validation_exception import ValidationException
 
 
 @login_required
@@ -41,8 +42,8 @@ def recepcion_view(request):
                     ),
                     usuario_id=str(request.session.get("usuario_id", "")),
                 )
-            except StockException as exc:
-                messages.error(request, str(exc))
+            except (StockException, ValidationException, ValueError) as exc:
+                form.add_error(None, str(exc))
             else:
                 messages.success(request, f"Lote {lote.numero_lote} registrado")
                 return redirect("inventory:inventario")

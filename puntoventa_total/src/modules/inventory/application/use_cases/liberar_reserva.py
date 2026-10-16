@@ -25,6 +25,8 @@ class LiberarReserva:
                 raise ReservaNoEncontrada(reserva_id)
             if reserva.confirmada:
                 raise ReservaYaConfirmada()
+            if reserva.liberada:
+                return
 
             existencia = self._stock.obtener(reserva.producto_id)
             if existencia:

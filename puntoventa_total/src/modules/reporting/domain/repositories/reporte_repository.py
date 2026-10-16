@@ -5,6 +5,9 @@ from typing import Sequence
 
 
 class ReporteRepository(ABC):
+    def productos_mayor_ganancia(self) -> Sequence[dict]:
+        raise NotImplementedError
+
     @abstractmethod
     def ventas_por_dia(self, desde: date, hasta: date) -> Sequence[dict]:
         """[{fecha, cantidad, total, igv}, ...]"""
@@ -21,7 +24,7 @@ class ReporteRepository(ABC):
         ...
 
     @abstractmethod
-    def rotacion_inventario(self, desde: date, hasta: date, dias_umbral: int = 90) -> Sequence[dict]:
+    def rotacion_inventario(self, desde: date, hasta: date, dias_umbral: int = 60) -> Sequence[dict]:
         """Productos sin movimiento en el umbral dado."""
         ...
 

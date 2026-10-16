@@ -1,7 +1,8 @@
 # Migraciones
 
-- Cada modulo gestiona sus migraciones en
-  `src/modules/<modulo>/infrastructure/persistence/migrations/`.
+- Django descubre las migraciones en `src/modules/<modulo>/migrations/` por defecto.
+  Las carpetas `infrastructure/persistence/migrations/` no se usan sin configurar
+  explicitamente `MIGRATION_MODULES`.
 - Los modelos se importan en `src/modules/<modulo>/models.py` para que las aplicaciones
   los descubran en el arranque.
 
@@ -10,6 +11,11 @@
     python manage.py makemigrations identity catalog inventory sales cash_register \
                                 orders customers promotions auditing
     python manage.py migrate
+
+Para bases anteriores sin historial de migraciones de catalogo, usar
+`python manage.py migrate catalog --fake-initial`. La migracion inicial representa
+el esquema anterior; la siguiente agrega minimo y vencimiento. Ver
+`docs/requirements/inventario_rf016_rf024.md`.
 
 ## Reglas
 

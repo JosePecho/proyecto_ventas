@@ -4,6 +4,7 @@
 <h4 class="mb-3">{% if producto %}Editar producto{% else %}Nuevo producto{% endif %}</h4>
 <form method="post" enctype="multipart/form-data" class="card card-body col-md-8">
   {% csrf_token %}
+  {{ form.non_field_errors }}
   {% for campo in form %}
     <div class="mb-3">
       <label class="form-label">{{ campo.label }}</label>

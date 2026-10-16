@@ -32,6 +32,8 @@ class CrearProducto:
             imagen=datos.imagen,
             unidad_medida=datos.unidad_medida,
             requiere_stock=datos.requiere_stock,
+            stock_minimo=datos.stock_minimo,
+            fecha_vencimiento=datos.fecha_vencimiento,
         )
         self._repo.guardar(producto)
         return ProductoOutputDTO.desde_entidad(producto)

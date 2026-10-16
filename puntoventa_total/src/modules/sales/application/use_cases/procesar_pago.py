@@ -32,6 +32,7 @@ class ProcesarPago:
 
                 raise VentaNoEncontrada(datos.venta_id)
 
+            agregado.venta.verificar_modificable()
             total_anterior = agregado.venta.total
             pago = Pago(
                 venta_id=datos.venta_id,
@@ -56,7 +57,7 @@ class ProcesarPago:
             for linea in agregado.lineas:
                 if linea.cantidad > 0:
                     self._inventario.descontar(
-                        linea.producto_id, linea.cantidad, referencia, str(pago.id)
+                        linea.producto_id, linea.cantidad, referencia, agregado.venta.cajero_id
                     )
 
             agregado.cerrar()

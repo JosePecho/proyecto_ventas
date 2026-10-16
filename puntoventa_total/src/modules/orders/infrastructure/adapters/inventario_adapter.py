@@ -5,6 +5,7 @@ from src.modules.inventory.application.use_cases.consultar_stock import Consulta
 from src.modules.inventory.application.use_cases.liberar_reserva import LiberarReserva
 from src.modules.inventory.application.use_cases.reservar_stock import ReservarStock
 from src.modules.inventory.infrastructure.factories import (
+    construir_lote_repository,
     construir_movimiento_repository,
     construir_reserva_repository,
     construir_stock_repository,
@@ -26,6 +27,7 @@ class InventarioAdapter(InventarioPort):
             construir_reserva_repository(),
             construir_movimiento_repository(),
             uow=transaction.atomic(),
+            lote_repo=construir_lote_repository(),
         ).ejecutar(reserva_id, referencia, usuario_id)
 
     def liberar(self, reserva_id: str) -> None:

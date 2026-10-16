@@ -10,8 +10,8 @@ class AlertarStockMinimo:
 
     def ejecutar(self) -> int:
         umbral = PoliticaStock.umbral_minimo()
-        alertas = self._repo.productos_bajo_minimo(umbral)
+        alertas = self._repo.productos_bajo_minimo()
         for item in alertas:
-            self._notificador.notificar_stock_minimo(item["producto_id"], item["disponible"], umbral)
+            self._notificador.notificar_stock_minimo(item["producto_id"], item["disponible"], item.get("stock_minimo", umbral))
         return len(alertas)
 

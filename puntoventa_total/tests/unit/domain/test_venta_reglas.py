@@ -167,16 +167,20 @@ def test_cantidad_a_cero_en_linea_es_rechazada():
         agregado.modificar_cantidad("p1", 0)
 
 
-@pytest.mark.xfail(
-    reason="BUG RN-07: si una linea ya tiene 100% de descuento, aplicar el 50% "
-    "de venta hace que Monto.__sub__ relice una resta negativa y lanza "
-    "ValidationException en lugar de calcular total=0. Corregir en "
-    "VentaAggregate.calcular_totales con un tope en `extra`.",
-    strict=True,
-)
 def test_descuento_venta_sobre_linea_al_100_por_ciento_no_deberia_crashear():
     agregado = _agregado_con_linea(precio="10.00")
     agregado.aplicar_descuento_linea("p1", Decimal("100"))
     agregado.aplicar_descuento_venta(Decimal("50"))
     totales = agregado.calcular_totales()
     assert totales["total"] == 0.0
+
+
+@pytest.mark.parametrize("linea,total", [("0", 5.0), ("25", 2.5), ("50", 0.0), ("75", 0.0), ("100", 0.0)])
+def test_descuentos_combinados_no_superan_el_subtotal(linea, total):
+    agregado = _agregado_con_linea(precio="10.00")
+    agregado.aplicar_descuento_linea("p1", Decimal(linea))
+    agregado.aplicar_descuento_venta(Decimal("50"))
+    totales = agregado.calcular_totales()
+    assert totales["total"] == total
+    assert totales["descuento"] == 10.0 - total
+    assert totales["subtotal"] == totales["descuento"] + totales["total"]

@@ -33,20 +33,19 @@ class DescontarStock:
 
             existencia.aplicar_salida(cantidad)
             lotes = self._lotes.listar_por_producto(producto_id)
+            stock_resultante = existencia.cantidad + cantidad
             for lote, tomar in PoliticaStock.planificar_salida_peps(lotes, cantidad):
                 lote.descontar(tomar)
                 self._lotes.guardar(lote)
+                stock_resultante -= tomar
+                self._mov.guardar(
+                    MovimientoStock(
+                        producto_id=producto_id, tipo=TipoMovimiento.SALIDA_VENTA,
+                        cantidad=tomar, stock_resultante=stock_resultante,
+                        referencia=referencia, usuario_id=usuario_id, lote_id=str(lote.id),
+                    )
+                )
 
             self._stock.guardar(existencia)
-            self._mov.guardar(
-                MovimientoStock(
-                    producto_id=producto_id,
-                    tipo=TipoMovimiento.SALIDA_VENTA,
-                    cantidad=cantidad,
-                    stock_resultante=existencia.cantidad,
-                    referencia=referencia,
-                    usuario_id=usuario_id,
-                )
-            )
             return existencia.cantidad
 

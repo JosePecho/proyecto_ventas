@@ -8,6 +8,7 @@ Si Chromium no esta instalado o el modulo falta, el test se omite sin romper
 la suite (el nivel 3 ya queda cubierto igualmente por test_flujo_pos_sistema).
 """
 import os
+from pathlib import Path
 import re
 import uuid
 from datetime import date
@@ -21,9 +22,12 @@ import pytest
 # seguro (documentado por Django como "unsafe" solo para escenarios como este).
 os.environ.setdefault("DJANGO_ALLOW_ASYNC_UNSAFE", "1")
 
-playwright_sync = pytest.importorskip(
-    "playwright.sync_api", reason="Requiere: pip install playwright"
-)
+try:
+    import playwright.sync_api as playwright_sync
+except ImportError:
+    if os.environ.get("QA_REQUIRE_BROWSER") == "1":
+        raise
+    pytest.skip("Requiere: pip install playwright", allow_module_level=True)
 
 from src.modules.identity.application.dto.usuario_input import UsuarioInputDTO  # noqa: E402
 from src.modules.identity.application.use_cases.crear_usuario import CrearUsuario  # noqa: E402
@@ -56,16 +60,31 @@ PASSWORD = "Secreta123"
 
 
 @pytest.fixture
-def navegador():
+def navegador(request):
+    motor = playwright_sync.sync_playwright().start()
     try:
-        with playwright_sync.sync_playwright() as p:
-            navegador = p.chromium.launch()
-            contexto = navegador.new_context()
-            yield contexto
-            contexto.close()
-            navegador.close()
-    except Exception as exc:  # noqa: BLE001 - chromium ausente/no instalable
+        browser = motor.chromium.launch()
+    except playwright_sync.Error as exc:
+        motor.stop()
+        if os.environ.get("QA_REQUIRE_BROWSER") == "1":
+            pytest.fail(f"Chromium requerido por el gate de CI: {exc}")
         pytest.skip(f"Chromium no disponible (playwright install chromium): {exc}")
+    contexto = browser.new_context()
+    # La suite valida recursos locales; no depende de disponibilidad de CDN.
+    from urllib.parse import urlsplit
+    contexto.route("**/*", lambda route: route.continue_()
+                   if urlsplit(route.request.url).hostname in {"localhost", "127.0.0.1"} else route.abort())
+    contexto.tracing.start(screenshots=True, snapshots=True, sources=True)
+    try:
+        yield contexto
+    finally:
+        carpeta = Path("reports/browser")
+        carpeta.mkdir(parents=True, exist_ok=True)
+        nombre = re.sub(r"[^a-zA-Z0-9_-]", "_", request.node.nodeid)
+        contexto.tracing.stop(path=str(carpeta / f"{nombre}.zip"))
+        contexto.close()
+        browser.close()
+        motor.stop()
 
 
 @pytest.fixture
@@ -136,8 +155,14 @@ def test_flujo_completo_del_pos_en_el_navegador(live_server, navegador, datos_po
     page.select_option("select[name=metodo]", "EFECTIVO")
     page.fill("input[name=monto]", "8.50")
     page.fill("input[name=monto_entregado]", "10.00")
-    page.click("button:has-text('Confirmar cobro')")
-    page.wait_for_url(f"**/pos/venta/{venta_id}/ticket/")
+    # Chromium sin interfaz puede descargar el PDF inline sin cambiar la URL.
+    # La respuesta del ticket y la BD prueban el cobro en ambos modos.
+    with page.expect_response(
+        lambda response: response.url.endswith(f"/pos/venta/{venta_id}/ticket/")
+    ) as ticket_emitido:
+        page.click("button:has-text('Confirmar cobro')")
+    assert ticket_emitido.value.status == 200
+    assert ticket_emitido.value.headers["content-type"] == "application/pdf"
 
     # 6. verificacion de negocio directamente en la BD
     venta = VentaModel.objects.get(pk=venta_id)
@@ -145,7 +170,8 @@ def test_flujo_completo_del_pos_en_el_navegador(live_server, navegador, datos_po
     assert venta.total == Decimal("8.50")
     assert ExistenciaModel.objects.get(producto_id=datos_pos.id).cantidad == 9
 
-    # 7. el ticket abre como PDF en el navegador
-    ticket = page.goto(f"{live_server.url}/pos/venta/{venta_id}/ticket/")
+    # 7. descarga autenticada con las mismas cookies del navegador
+    ticket = page.context.request.get(f"{live_server.url}/pos/venta/{venta_id}/ticket/")
     assert ticket.status == 200
     assert ticket.headers["content-type"] == "application/pdf"
+    assert ticket.body().startswith(b"%PDF")

@@ -1,4 +1,5 @@
 import uuid
+from django.utils import timezone
 
 from src.modules.inventory.domain.entities.movimiento_stock import MovimientoStock
 from src.modules.inventory.domain.enums.tipo_movimiento import TipoMovimiento
@@ -34,6 +35,6 @@ class MovimientoMapper:
         m.usuario_id = uuid.UUID(str(e.usuario_id)) if e.usuario_id else None
         m.lote_id = uuid.UUID(str(e.lote_id)) if e.lote_id else None
         m.observacion = e.observacion
-        m.fecha = e.fecha
+        m.fecha = timezone.make_aware(e.fecha) if timezone.is_naive(e.fecha) else e.fecha
         return m
 

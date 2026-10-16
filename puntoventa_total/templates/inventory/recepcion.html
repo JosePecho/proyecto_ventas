@@ -4,6 +4,7 @@
 <h4 class="mb-3"><i class="bi bi-truck"></i> Recepcion de mercaderia</h4>
 <form method="post" class="card card-body col-md-6">
   {% csrf_token %}
+  {{ form.non_field_errors }}
   {% for campo in form %}
     <div class="mb-3">
       <label class="form-label">{{ campo.label }}</label>

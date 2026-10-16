@@ -24,4 +24,7 @@ collectstatic/
 .coverage
 htmlcov/
 .pytest_cache/
+reports/
+test-results/
+.hypothesis/
 

@@ -16,13 +16,20 @@ class DjangoMovimientoRepository(MovimientoRepository):
         self._mapper.a_modelo(movimiento, m).save()
         return movimiento
 
-    def kardex(self, producto_id: str, desde=None, hasta=None, limite: int = 200) -> Sequence[MovimientoStock]:
+    def _kardex_queryset(self, producto_id: str, desde=None, hasta=None):
         qs = MovimientoModel.objects.filter(producto_id=producto_id)
         if isinstance(desde, date):
             qs = qs.filter(fecha__date__gte=desde)
         if isinstance(hasta, date):
             qs = qs.filter(fecha__date__lte=hasta)
-        return [self._mapper.a_dominio(m) for m in qs.order_by("-fecha")[:limite]]
+        return qs
+
+    def contar_kardex(self, producto_id: str, desde=None, hasta=None) -> int:
+        return self._kardex_queryset(producto_id, desde, hasta).count()
+
+    def kardex(self, producto_id: str, desde=None, hasta=None, limite: int | None = 200) -> Sequence[MovimientoStock]:
+        qs = self._kardex_queryset(producto_id, desde, hasta)
+        return [self._mapper.a_dominio(m) for m in qs.order_by("-fecha", "-id")[:limite]]
 
     def total_entradas(self, producto_id: str) -> int:
         from django.db.models import Sum

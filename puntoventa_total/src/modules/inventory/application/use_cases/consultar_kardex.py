@@ -23,12 +23,16 @@ class ConsultarKardex:
 
         desde_dt = dt.date.fromisoformat(desde) if desde else None
         hasta_dt = dt.date.fromisoformat(hasta) if hasta else None
+        if pagina < 1 or por_pagina < 1:
+            raise ValueError("La pagina debe ser positiva")
+        if desde_dt and hasta_dt and desde_dt > hasta_dt:
+            raise ValueError("La fecha inicial no puede superar la final")
         movimientos = self._repo.kardex(producto_id, desde_dt, hasta_dt, limite=por_pagina * pagina)
         inicio = (pagina - 1) * por_pagina
         fragmento = list(movimientos)[inicio : inicio + por_pagina]
         return PageDTO(
             items=[MovimientoDTO.desde_entidad(m) for m in fragmento],
-            total=len(list(movimientos)),
+            total=self._repo.contar_kardex(producto_id, desde_dt, hasta_dt),
             pagina=pagina,
             por_pagina=por_pagina,
         )

@@ -5,6 +5,12 @@ from src.modules.inventory.domain.entities.existencia import Existencia
 
 
 class StockRepository(ABC):
+    def listar_existencias(self) -> list[dict]:
+        raise NotImplementedError
+
+    def umbral_minimo(self, producto_id: str, defecto: int = 5) -> int:
+        return defecto
+
     @abstractmethod
     def obtener(self, producto_id: str) -> Optional[Existencia]:
         ...
@@ -18,6 +24,6 @@ class StockRepository(ABC):
         ...
 
     @abstractmethod
-    def productos_bajo_minimo(self, umbral: int) -> list[dict]:
+    def productos_bajo_minimo(self, umbral: int | None = None) -> list[dict]:
         ...
 

@@ -5,12 +5,15 @@ from src.modules.inventory.domain.entities.movimiento_stock import MovimientoSto
 
 
 class MovimientoRepository(ABC):
+    def contar_kardex(self, producto_id: str, desde=None, hasta=None) -> int:
+        return len(self.kardex(producto_id, desde, hasta, limite=None))
+
     @abstractmethod
     def guardar(self, movimiento: MovimientoStock) -> MovimientoStock:
         ...
 
     @abstractmethod
-    def kardex(self, producto_id: str, desde=None, hasta=None, limite: int = 200) -> Sequence[MovimientoStock]:
+    def kardex(self, producto_id: str, desde=None, hasta=None, limite: int | None = 200) -> Sequence[MovimientoStock]:
         ...
 
     @abstractmethod

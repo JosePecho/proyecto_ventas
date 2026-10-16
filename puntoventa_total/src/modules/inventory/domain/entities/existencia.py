@@ -15,6 +15,8 @@ class Existencia(BaseEntity):
 
     def __post_init__(self) -> None:
         self._requerir(self.producto_id, "producto_id")
+        if type(self.cantidad) is not int or type(self.reservada) is not int:
+            raise StockException("Las cantidades de stock deben ser enteras")
         if self.cantidad < 0 or self.reservada < 0:
             raise ExistenciaNegativa(self.producto_id)
         if self.reservada > self.cantidad:
@@ -59,9 +61,9 @@ class Existencia(BaseEntity):
         self.marcar_actualizado()
 
     def _validar_cantidad(self, cantidad: int) -> None:
-        if cantidad <= 0:
+        if type(cantidad) is not int or cantidad <= 0:
             raise StockException(f"La cantidad debe ser positiva (recibido: {cantidad})")
 
     def con_stock_minimo(self, umbral: int) -> bool:
-        return self.disponible <= umbral
+        return self.disponible < umbral
 

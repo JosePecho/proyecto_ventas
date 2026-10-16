@@ -93,13 +93,13 @@ class DjangoReporteRepository(ReporteRepository):
             )
         return resultado
 
-    def rotacion_inventario(self, desde: date, hasta: date, dias_umbral: int = 90) -> Sequence[dict]:
+    def rotacion_inventario(self, desde: date, hasta: date, dias_umbral: int = 60) -> Sequence[dict]:
         from src.modules.sales.infrastructure.persistence.django_models.detalle_venta_model import DetalleVentaModel
 
         inicio, fin = self._rango(desde, hasta)
         vendidos = {
             str(f["producto_id"])
-            for f in DetalleVentaModel.objects.filter(venta__fecha_creacion__range=(inicio, fin))
+            for f in DetalleVentaModel.objects.filter(venta__estado="PAGADA", venta__fecha_creacion__date__range=(desde, hasta))
             .values("producto_id")
             .distinct()
         }
@@ -121,10 +121,23 @@ class DjangoReporteRepository(ReporteRepository):
                 "producto_id": str(p.id),
                 "producto_nombre": p.nombre,
                 "disponible": existencias.get(str(p.id), 0),
+                "stock_minimo": p.stock_minimo,
                 "valorizado": round(existencias.get(str(p.id), 0) * float(p.costo), 2),
             }
             for p in ProductoModel.objects.filter(activo=True)
         ]
+
+    def productos_mayor_ganancia(self) -> Sequence[dict]:
+        from decimal import Decimal
+        from src.modules.catalog.infrastructure.persistence.django_models.producto_model import ProductoModel
+        resultado = []
+        for p in ProductoModel.objects.filter(activo=True):
+            ganancia = p.precio_venta - p.costo
+            margen = ((ganancia / p.costo * 100) if p.costo else Decimal("100")).quantize(Decimal("0.01"))
+            resultado.append({"producto_id": str(p.id), "producto_nombre": p.nombre,
+                              "costo": p.costo, "precio_venta": p.precio_venta,
+                              "ganancia_unitaria": ganancia, "margen_pct": margen})
+        return sorted(resultado, key=lambda p: (-p["margen_pct"], -p["ganancia_unitaria"], p["producto_nombre"]))
 
     def totales_por_metodo_pago(self, desde: date, hasta: date) -> dict:
         from src.modules.sales.domain.enums.estado_venta import EstadoVenta
