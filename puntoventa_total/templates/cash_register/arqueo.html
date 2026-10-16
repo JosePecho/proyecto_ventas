@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Arqueo{% endblock %}
+{% block content %}
+<h4 class="mb-3"><i class="bi bi-scale"></i> Arqueo de caja</h4>
+{% if arqueo %}
+<table class="table table-sm col-md-6" style="max-width: 520px;">
+  <tr><td>Apertura</td><td class="text-end">S/ {{ arqueo.monto_apertura }}</td></tr>
+  <tr><td>Ingresos</td><td class="text-end">S/ {{ arqueo.ingresos }}</td></tr>
+  <tr><td>Egresos</td><td class="text-end">S/ {{ arqueo.egresos }}</td></tr>
+  <tr><td>Saldo sistema</td><td class="text-end">S/ {{ arqueo.saldo_sistema }}</td></tr>
+  <tr><td>Conteo fisico</td><td class="text-end">S/ {{ arqueo.monto_fisico }}</td></tr>
+  <tr class="fw-bold {% if arqueo.congruente %}text-success{% else %}text-danger{% endif %}">
+    <td>Diferencia</td><td class="text-end">S/ {{ arqueo.diferencia }}</td>
+  </tr>
+</table>
+{% else %}<p class="text-muted">Indique un turno para consultar el arqueo.</p>{% endif %}
+{% endblock %}
+

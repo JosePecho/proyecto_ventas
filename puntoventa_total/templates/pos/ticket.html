@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Ticket {{ venta.numero_ticket }}{% endblock %}
+{% block content %}
+<div class="text-center no-print">
+  <h4><i class="bi bi-receipt"></i> Ticket {{ venta.numero_ticket }}</h4>
+  <a class="btn btn-primary" href="{% url 'sales:ticket' venta.id %}" target="_blank">
+    <i class="bi bi-printer"></i> Imprimir / PDF
+  </a>
+  <a class="btn btn-outline-secondary" href="{% url 'sales:pos' %}">Nueva venta</a>
+</div>
+{% endblock %}
+

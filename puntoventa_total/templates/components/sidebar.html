@@ -1,0 +1,14 @@
+<aside class="col-md-2 bg-light border-end p-3 no-print" id="sidebar">
+  <ul class="nav nav-pills flex-column small">
+    <li><a class="nav-link" href="{% url 'catalog:catalogo' %}"><i class="bi bi-grid"></i> Catalogo</a></li>
+    <li><a class="nav-link" href="{% url 'sales:pos' %}"><i class="bi bi-upc-scan"></i> Punto de venta</a></li>
+    <li><a class="nav-link" href="{% url 'inventory:inventario' %}"><i class="bi bi-box-seam"></i> Inventario</a></li>
+    <li><a class="nav-link" href="{% url 'inventory:alertas' %}"><i class="bi bi-exclamation-triangle"></i> Alertas</a></li>
+    <li><a class="nav-link" href="{% url 'cash_register:apertura' %}"><i class="bi bi-cash-stack"></i> Caja</a></li>
+    <li><a class="nav-link" href="{% url 'orders:cocina' %}"><i class="bi bi-journal-check"></i> Pedidos</a></li>
+    <li><a class="nav-link" href="{% url 'promotions:activas' %}"><i class="bi bi-tags"></i> Promociones</a></li>
+    <li><a class="nav-link" href="{% url 'reporting:dashboard' %}"><i class="bi bi-graph-up"></i> Reportes</a></li>
+    <li><a class="nav-link" href="{% url 'auditing:registros' %}"><i class="bi bi-shield-lock"></i> Auditoria</a></li>
+  </ul>
+</aside>
+

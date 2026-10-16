@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "puntoventa-total"
+version = "1.0.0"
+description = "Sistema integral de punto de venta, inventario y pedidos (Django Modular Monolith - Clean Architecture)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+
+[tool.setuptools]
+packages = { find = { include = ["config*", "src*"] } }
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+exclude = ["**/migrations/*", ".venv", "staticfiles"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "C4"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.testing"
+python_files = ["test_*.py"]
+addopts = "-ra --strict-markers --tb=short"
+markers = [
+    "unit: pruebas de dominio/aplicacion sin infraestructura",
+    "integration: pruebas con base de datos",
+    "functional: pruebas de vistas/flujo HTTP",
+    "e2e: pruebas de extremo a extremo",
+    "system: pruebas de sistema (flujo HTTP completo con BD real)",
+    "uat: pruebas de aceptacion BDD (Gherkin)",
+    "performance: pruebas de rendimiento",
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "*/migrations/*",
+    "*/tests/*",
+    "src/modules/*/apps.py",
+    "src/modules/*/models.py",
+]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]
+

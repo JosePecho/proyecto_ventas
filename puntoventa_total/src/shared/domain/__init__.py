@@ -1,0 +1,2 @@
+"""Primitivas de dominio compartidas."""
+

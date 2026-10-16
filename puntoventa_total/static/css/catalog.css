@@ -1,0 +1,19 @@
+.producto-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.producto-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.producto-card img {
+  height: 160px;
+  object-fit: cover;
+}
+
+#productos-grid .card-title {
+  font-size: 0.95rem;
+  min-height: 2.4em;
+}
+

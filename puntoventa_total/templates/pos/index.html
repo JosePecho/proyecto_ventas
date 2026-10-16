@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Punto de venta{% endblock %}
+{% block extra_css %}<link href="{% static 'css/pos.css' %}" rel="stylesheet">{% endblock %}
+{% block content %}
+<h4 class="mb-3 no-print"><i class="bi bi-upc-scan"></i> Punto de venta
+  <small class="text-muted">Ticket en curso: {{ venta_id }}</small>
+</h4>
+<div class="row">
+  <div class="col-md-7">
+    <div class="input-group mb-3">
+      <span class="input-group-text"><i class="bi bi-upc"></i></span>
+      <input id="buscador-pos" class="form-control form-control-lg" autofocus
+             placeholder="Escanee el codigo de barras o escriba el nombre...">
+      <button id="btn-buscar" class="btn btn-primary" type="button">Buscar</button>
+    </div>
+    <div id="resultados-busqueda" class="list-group"></div>
+  </div>
+  <div class="col-md-5">
+    {% include 'pos/partials/carrito.html' with venta_id=venta_id %}
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/pos/scanner.js' %}"></script>
+<script src="{% static 'js/pos/carrito.js' %}"></script>
+<script src="{% static 'js/pos/shortcuts.js' %}"></script>
+<script>POS.init('{{ venta_id }}');</script>
+{% endblock %}
+

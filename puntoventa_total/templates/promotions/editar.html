@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block title %}Editar promocion{% endblock %}
+{% block content %}
+<h4 class="mb-3">Editar: {{ promocion.nombre }}</h4>
+<p>Estado actual: <span class="badge bg-secondary">{{ promocion.estado }}</span></p>
+<a class="btn btn-outline-secondary" href="{% url 'promotions:promociones' %}">Volver</a>
+{% endblock %}
+

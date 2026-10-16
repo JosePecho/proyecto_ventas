@@ -1,0 +1,17 @@
+{
+  "name": "PuntoVenta Total",
+  "short_name": "PuntoVenta",
+  "description": "Sistema de punto de venta con soporte offline",
+  "start_url": "/pos/",
+  "display": "standalone",
+  "background_color": "#f4f6f8",
+  "theme_color": "#1d6fd1",
+  "icons": [
+    {
+      "src": "/static/images/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Perfil de cliente{% endblock %}
+{% block content %}
+<h4 class="mb-3"><i class="bi bi-person-vcard"></i> Perfil: {{ cliente.nombre }}</h4>
+<div class="row">
+  <div class="col-md-6">
+    <form method="post" class="card card-body">
+      {% csrf_token %}
+      {% for campo in form %}
+        <div class="mb-3"><label class="form-label">{{ campo.label }}</label>{{ campo }}</div>
+      {% endfor %}
+      <button class="btn btn-primary" type="submit">Guardar cambios</button>
+    </form>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <p><strong>Puntos de fidelidad:</strong> {{ cliente.puntos_fidelidad }}</p>
+        <a class="btn btn-outline-primary btn-sm" href="{% url 'customers:historial' cliente.id %}">Ver historial de compras</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Mi carrito{% endblock %}
+{% block content %}
+<h4 class="mb-3"><i class="bi bi-bag"></i> Mi carrito</h4>
+{% if lineas %}
+<table class="table table-sm align-middle col-md-8">
+  <thead><tr><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Subtotal</th></tr></thead>
+  <tbody>
+  {% for linea in lineas %}
+    <tr>
+      <td>{{ linea.nombre }}</td>
+      <td>{{ linea.cantidad }}</td>
+      <td>S/ {{ linea.precio }}</td>
+      <td>S/ {{ linea.subtotal }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+  <tfoot><tr class="fw-bold"><td colspan="3" class="text-end">Total</td><td>S/ {{ total }}</td></tr></tfoot>
+</table>
+<a class="btn btn-success" href="{% url 'orders:checkout' %}"><i class="bi bi-credit-card"></i> Continuar al pago</a>
+{% else %}
+<div class="alert alert-info">Su carrito esta vacio. <a href="{% url 'catalog:catalogo' %}">Volver al catalogo</a></div>
+{% endif %}
+{% endblock %}
+

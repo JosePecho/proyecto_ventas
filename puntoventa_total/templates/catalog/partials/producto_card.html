@@ -1,0 +1,15 @@
+{% load static %}
+<div class="col">
+  <a href="{% url 'catalog:producto_detalle' producto.id %}" class="text-decoration-none">
+    <div class="card h-100 producto-card">
+      {% if producto.imagen %}<img src="{{ producto.imagen }}" class="card-img-top" alt="{{ producto.nombre }}">
+      {% else %}<img src="{% static 'images/placeholder.png' %}" class="card-img-top" alt="">{% endif %}
+      <div class="card-body">
+        <h6 class="card-title text-dark">{{ producto.nombre }}</h6>
+        <span class="fw-bold text-primary">S/ {{ producto.precio_venta }}</span>
+        {% if producto.stock_disponible == 0 %}<span class="badge bg-danger ms-1">Agotado</span>{% endif %}
+      </div>
+    </div>
+  </a>
+</div>
+

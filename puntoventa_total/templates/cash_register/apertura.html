@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Apertura de caja{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-5">
+    <div class="card shadow-sm">
+      <div class="card-header"><i class="bi bi-cash-stack"></i> Apertura de caja</div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label">Monto de apertura (S/)</label>
+            {{ form.monto_apertura }}
+            {% for error in form.monto_apertura.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+          </div>
+          <button class="btn btn-success w-100" type="submit">Abrir caja</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

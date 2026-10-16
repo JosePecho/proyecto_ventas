@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Pedido {{ pedido.numero }}{% endblock %}
+{% block content %}
+<h4 class="mb-3">Pedido {{ pedido.numero }} <span class="badge bg-info">{{ pedido.estado }}</span></h4>
+<table class="table table-sm col-md-7">
+  <thead><tr><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Subtotal</th></tr></thead>
+  <tbody>
+  {% for linea in pedido.lineas %}
+    <tr><td>{{ linea.nombre }}</td><td>{{ linea.cantidad }}</td><td>S/ {{ linea.precio }}</td><td>S/ {{ linea.subtotal }}</td></tr>
+  {% endfor %}
+  </tbody>
+  <tfoot><tr class="fw-bold"><td colspan="3" class="text-end">Total</td><td>S/ {{ pedido.total }}</td></tr></tfoot>
+</table>
+<p class="text-muted">Recojo estimado: {{ pedido.hora_recojo|default:"A coordinar" }}</p>
+<a class="btn btn-outline-secondary" href="{% url 'orders:mis_pedidos' %}">Volver</a>
+{% endblock %}
+

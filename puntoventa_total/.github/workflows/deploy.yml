@@ -1,0 +1,40 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  desplegar:
+    runs-on: ubuntu-latest
+    needs: tests
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Desplegar en el servidor
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER: deploy
+        run: |
+          ssh -o StrictHostKeyChecking=accept-new $USER@$HOST <<'EOF'
+            set -e
+            cd /opt/puntoventa_total
+            git pull --ff-only
+            docker compose pull
+            docker compose run --rm web python manage.py migrate --noinput
+            docker compose run --rm web python manage.py collectstatic --noinput
+            docker compose up -d --remove-orphans
+            ./scripts/check_health.sh || exit 1
+          EOF
+
+      - name: Notificar resultado
+        if: always()
+        run: echo "Deploy finalizado con estado $?"

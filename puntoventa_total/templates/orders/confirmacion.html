@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Pedido confirmado{% endblock %}
+{% block content %}
+<div class="text-center">
+  <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+  <h3>Pedido confirmado</h3>
+  <p>Numero: <strong>{{ pedido.numero }}</strong></p>
+  <p>Podra seguir su pedido en <a href="{% url 'orders:seguimiento' %}?numero={{ pedido.numero }}">este enlace</a>.</p>
+</div>
+{% endblock %}
+

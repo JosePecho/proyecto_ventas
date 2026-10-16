@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Seguimiento de pedido{% endblock %}
+{% block content %}
+<h4 class="mb-3"><i class="bi bi-search"></i> Seguimiento de pedido</h4>
+
+<form class="row g-2 mb-4" method="get">
+  <div class="col-md-5">
+    <input class="form-control form-control-lg" name="numero" value="{{ numero }}"
+           placeholder="Ingrese el numero de pedido (ej. P-0001)" autofocus>
+  </div>
+  <div class="col-md-2">
+    <button class="btn btn-primary w-100" type="submit">Rastrear</button>
+  </div>
+</form>
+
+{% if error %}
+<div class="alert alert-danger"><i class="bi bi-exclamation-triangle"></i> {{ error }}</div>
+{% endif %}
+
+{% if pedido %}
+<div class="card mb-4">
+  <div class="card-body">
+    <h5 class="card-title">Pedido {{ pedido.numero }}
+      <span class="badge bg-info">{{ pedido.estado }}</span>
+    </h5>
+    <p class="card-text">
+      Cliente: {{ pedido.cliente_nombre }}<br>
+      Total: {{ pedido.moneda }} {{ pedido.total }}<br>
+      Recojo: {{ pedido.hora_recojo|default:"Por confirmar" }}
+    </p>
+  </div>
+</div>
+
+<ul class="list-group mb-4">
+  {% for paso in pasos %}
+    <li class="list-group-item d-flex justify-content-between align-items-center
+      {% if forloop.counter0 < paso_actual %}list-group-item-success{% endif %}
+      {% if forloop.counter0 == paso_actual %}list-group-item-warning fw-bold{% endif %}">
+      {{ paso|cut:"_"|title }}
+      {% if forloop.counter0 < paso_actual %}<i class="bi bi-check-circle"></i>{% endif %}
+      {% if forloop.counter0 == paso_actual %}<span class="badge bg-dark">Actual</span>{% endif %}
+    </li>
+  {% endfor %}
+</ul>
+
+<h6>Resumen</h6>
+<table class="table table-sm">
+  <thead><tr><th>Producto</th><th>Cant.</th><th>Precio</th><th>Total</th></tr></thead>
+  <tbody>
+  {% for linea in pedido.lineas %}
+    <tr>
+      <td>{{ linea.nombre }}</td>
+      <td>{{ linea.cantidad }}</td>
+      <td>{{ linea.precio_unitario }}</td>
+      <td>{{ linea.total }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,14 @@
+<li class="list-group-item d-flex justify-content-between align-items-center" data-producto="{{ linea.producto_id }}">
+  <div>
+    <strong>{{ linea.nombre }}</strong><br>
+    <small class="text-muted">S/ {{ linea.precio_unitario }}</small>
+  </div>
+  <div class="input-group input-group-sm" style="width: 130px;">
+    <button class="btn btn-outline-secondary btn-menos" type="button">-</button>
+    <input class="form-control text-center cantidad" value="{{ linea.cantidad }}" readonly>
+    <button class="btn btn-outline-secondary btn-mas" type="button">+</button>
+  </div>
+  <span class="fw-bold">S/ {{ linea.total }}</span>
+  <button class="btn btn-sm btn-outline-danger btn-eliminar">&times;</button>
+</li>
+

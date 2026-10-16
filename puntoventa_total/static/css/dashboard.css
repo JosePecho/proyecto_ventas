@@ -1,0 +1,10 @@
+.kpi .kpi-valor {
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--pv-primary);
+}
+
+.kpi {
+  border-left: 4px solid var(--pv-primary);
+}
+

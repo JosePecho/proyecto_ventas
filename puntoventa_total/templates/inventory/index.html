@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Inventario{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+  <h4><i class="bi bi-box-seam"></i> Existencias <small class="text-muted">(umbral minimo: {{ umbral }})</small></h4>
+  <a class="btn btn-primary" href="{% url 'inventory:recepcion' %}"><i class="bi bi-truck"></i> Recepcion de mercaderia</a>
+</div>
+<table class="table table-sm table-hover align-middle">
+  <thead><tr><th>Producto</th><th>Stock</th><th>Reservada</th><th>Disponible</th><th>Estado</th></tr></thead>
+  <tbody>
+  {% for e in existencias %}
+    <tr>
+      <td>{{ e.producto_id }}</td>
+      <td>{{ e.cantidad }}</td>
+      <td>{{ e.reservada }}</td>
+      <td class="fw-bold">{{ e.disponible }}</td>
+      <td>
+        {% if e.bajo_minimo %}<span class="badge bg-danger">Bajo minimo</span>
+        {% else %}<span class="badge bg-success">OK</span>{% endif %}
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="5" class="text-center text-muted">Sin existencias registradas</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
+

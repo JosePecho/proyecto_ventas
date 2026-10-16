@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Registro de cliente{% endblock %}
+{% block content %}
+<h4 class="mb-3"><i class="bi bi-person-plus"></i> Registrar cliente</h4>
+<form method="post" class="card card-body col-md-6">
+  {% csrf_token %}
+  {% for campo in form %}
+    <div class="mb-3"><label class="form-label">{{ campo.label }}</label>{{ campo }}
+      {% for error in campo.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+    </div>
+  {% endfor %}
+  <button class="btn btn-primary" type="submit">Registrar</button>
+</form>
+{% endblock %}
+

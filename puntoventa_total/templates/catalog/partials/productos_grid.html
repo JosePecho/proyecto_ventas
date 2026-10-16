@@ -1,0 +1,8 @@
+<div class="row row-cols-2 row-cols-md-4 row-cols-lg-5 g-3" id="productos-grid">
+  {% for producto in items %}
+    {% include 'catalog/partials/producto_card.html' %}
+  {% empty %}
+    <p class="text-muted">No hay productos para mostrar.</p>
+  {% endfor %}
+</div>
+

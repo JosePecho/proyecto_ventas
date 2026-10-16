@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Pedidos{% endblock %}
+{% block content %}
+<h4 class="mb-3">{% if cocina %}<i class="bi bi-journal-check"></i> Pedidos en cocina{% else %}<i class="bi bi-bag-check"></i> Mis pedidos{% endif %}</h4>
+<table class="table table-sm table-hover">
+  <thead><tr><th>Numero</th><th>Cliente</th><th>Estado</th><th>Total</th><th>Recojo</th><th></th></tr></thead>
+  <tbody>
+  {% for p in pedidos %}
+    <tr>
+      <td>{{ p.numero }}</td>
+      <td>{{ p.cliente_nombre }}</td>
+      <td><span class="badge bg-info">{{ p.estado }}</span></td>
+      <td>S/ {{ p.total }}</td>
+      <td>{{ p.hora_recojo|default:"-" }}</td>
+      <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'orders:detalle' p.id %}">Ver</a></td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="6" class="text-center text-muted">Sin pedidos</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
+

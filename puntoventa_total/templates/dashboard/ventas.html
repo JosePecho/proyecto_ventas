@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Reporte de ventas{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+  <h4><i class="bi bi-bar-chart"></i> Ventas {{ desde }} - {{ hasta }}</h4>
+  <div class="d-flex gap-2">
+    <a class="btn btn-sm btn-outline-success" href="?desde={{ desde }}&hasta={{ hasta }}&formato=csv">CSV</a>
+    <a class="btn btn-sm btn-outline-danger" href="?desde={{ desde }}&hasta={{ hasta }}&formato=pdf">PDF</a>
+  </div>
+</div>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-md-3"><input type="date" class="form-control" name="desde" value="{{ desde }}"></div>
+  <div class="col-md-3"><input type="date" class="form-control" name="hasta" value="{{ hasta }}"></div>
+  <div class="col-md-2"><button class="btn btn-primary w-100" type="submit">Filtrar</button></div>
+</form>
+<table class="table table-sm table-striped">
+  <thead><tr><th>Fecha</th><th>Tickets</th><th>Total</th><th>IGV</th></tr></thead>
+  <tbody>
+  {% for fila in reporte.por_dia %}
+    <tr><td>{{ fila.fecha }}</td><td>{{ fila.cantidad }}</td><td>S/ {{ fila.total }}</td><td>S/ {{ fila.igv }}</td></tr>
+  {% empty %}<tr><td colspan="4" class="text-center text-muted">Sin ventas en el rango</td></tr>{% endfor %}
+  </tbody>
+  <tfoot>
+    <tr class="fw-bold"><td>Totales</td><td>{{ reporte.cantidad_tickets }}</td>
+      <td>S/ {{ reporte.total_ventas }}</td><td>S/ {{ reporte.total_igv }}</td></tr>
+  </tfoot>
+</table>
+{% endblock %}
+

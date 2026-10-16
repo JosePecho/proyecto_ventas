@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Ventas del dia{% endblock %}
+{% block content %}
+<h4 class="mb-3"><i class="bi bi-receipt-cutoff"></i> Ventas del dia
+  <small class="text-muted">{{ pagina_dto.total }} tickets</small>
+</h4>
+<table class="table table-sm table-striped">
+  <thead><tr><th>Ticket</th><th>Estado</th><th>Subtotal</th><th>Descuento</th><th>IGV</th><th>Total</th><th>Pagado</th><th></th></tr></thead>
+  <tbody>
+  {% for v in pagina_dto.items %}
+    <tr>
+      <td><small>{{ v.numero_ticket }}</small></td>
+      <td><span class="badge bg-dark">{{ v.estado }}</span></td>
+      <td>{{ v.subtotal }}</td>
+      <td>{{ v.descuento }}</td>
+      <td>{{ v.igv }}</td>
+      <td><strong>{{ v.total }} {{ v.moneda }}</strong></td>
+      <td>{{ v.total_pagado }}</td>
+      <td><a class="btn btn-sm btn-outline-primary" href="{% url 'sales:ticket' v.id %}">Ticket</a></td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="8" class="text-center text-muted">Sin ventas registradas hoy</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% include 'components/pagination.html' %}
+{% endblock %}

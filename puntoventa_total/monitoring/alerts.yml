@@ -1,0 +1,53 @@
+groups:
+  - name: puntoventa
+    rules:
+      - alert: WebSinRespuesta
+        expr: up{job="django"} == 0
+        for: 2m
+        labels:
+          severidad: critico
+        annotations:
+          summary: "La aplicacion web no responde"
+          description: "El target django lleva 2 minutos caido."
+
+      - alert: LatenciaAltaCobro
+        expr: histogram_quantile(0.95, sum(rate(django_request_duration_seconds_bucket{view="pago"}[5m])) by (le)) > 1.5
+        for: 5m
+        labels:
+          severidad: alto
+        annotations:
+          summary: "El cobro del POS supera 1.5s (p95)"
+          description: "Revisar consultas de inventario y caja."
+
+      - alert: Errores5xx
+        expr: sum(rate(django_requests_total{status=~"5.."}[5m])) > 0.1
+        for: 5m
+        labels:
+          severidad: alto
+        annotations:
+          summary: "Tasa elevada de errores 5xx"
+
+      - alert: ColaCelerySaturada
+        expr: celery_queue_length{queue="celery"} > 1000
+        for: 10m
+        labels:
+          severidad: medio
+        annotations:
+          summary: "La cola de Celery acumula mas de 1000 tareas"
+
+      - alert: MemoriaAlta
+        expr: process_resident_memory_bytes{job="django"} > 1.5e+09
+        for: 10m
+        labels:
+          severidad: medio
+        annotations:
+          summary: "El proceso web supera 1.5GB de RAM"
+
+      - alert: MysqlConexionesAltas
+        expr: mysql_global_status_threads_connected > 150
+        for: 5m
+        labels:
+          severidad: alto
+        annotations:
+          summary: "MySQL cerca del limite de conexiones"
+

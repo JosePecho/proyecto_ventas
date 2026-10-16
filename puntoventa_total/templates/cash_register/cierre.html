@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Cierre de caja{% endblock %}
+{% block content %}
+<h4 class="mb-3"><i class="bi bi-box-arrow-in-right"></i> Cierre de caja</h4>
+<div class="row">
+  <div class="col-md-6">
+    <div class="card mb-3">
+      <div class="card-header">Resumen del turno</div>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item d-flex justify-content-between"><span>Apertura</span><span>S/ {{ arqueo.monto_apertura }}</span></li>
+        <li class="list-group-item d-flex justify-content-between"><span>Ingresos</span><span>S/ {{ arqueo.ingresos }}</span></li>
+        <li class="list-group-item d-flex justify-content-between"><span>Egresos</span><span>S/ {{ arqueo.egresos }}</span></li>
+        <li class="list-group-item d-flex justify-content-between fw-bold"><span>Saldo sistema</span><span>S/ {{ arqueo.saldo_sistema }}</span></li>
+        <li class="list-group-item d-flex justify-content-between"><span>Ventas ({{ arqueo.ventas_cantidad }})</span><span>S/ {{ arqueo.ventas_total }}</span></li>
+      </ul>
+    </div>
+    <form method="post" class="card card-body">
+      {% csrf_token %}
+      <div class="mb-3"><label class="form-label">Conteo fisico (S/)</label>{{ form.monto_fisico }}</div>
+      <div class="mb-3"><label class="form-label">Observaciones</label>{{ form.observaciones }}</div>
+      <button class="btn btn-danger w-100" type="submit"><i class="bi bi-lock"></i> Cerrar turno</button>
+    </form>
+  </div>
+  <div class="col-md-6">
+    <h5>Desglose por metodo de pago</h5>
+    <table class="table table-sm">
+      {% for metodo, monto in arqueo.desglose_metodos.items %}
+        <tr><td>{{ metodo }}</td><td class="text-end">S/ {{ monto }}</td></tr>
+      {% empty %}<tr><td class="text-muted">Sin pagos registrados</td></tr>{% endfor %}
+    </table>
+  </div>
+</div>
+{% endblock %}
+

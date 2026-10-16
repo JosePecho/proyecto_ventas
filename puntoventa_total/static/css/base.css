@@ -1,0 +1,42 @@
+:root {
+  --pv-primary: #1d6fd1;
+  --pv-bg: #f4f6f8;
+}
+
+body {
+  background-color: var(--pv-bg);
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+.card {
+  border: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.navbar-brand {
+  font-weight: 600;
+}
+
+.sidebar .nav-link.active {
+  background-color: var(--pv-primary);
+  color: #fff;
+}
+
+code {
+  background: #eef1f4;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+}
+
+@media print {
+  .no-print,
+  .navbar,
+  .sidebar,
+  footer {
+    display: none !important;
+  }
+  main {
+    margin: 0;
+  }
+}
+

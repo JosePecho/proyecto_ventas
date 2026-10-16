@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Kardex{% endblock %}
+{% block content %}
+<h4 class="mb-3"><i class="bi bi-journal-text"></i> Kardex de movimientos</h4>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-md-4"><input class="form-control" name="producto_id" value="{{ producto_id }}" placeholder="Producto ID"></div>
+  <div class="col-md-2"><input class="form-control" type="date" name="desde" value="{{ request.GET.desde }}"></div>
+  <div class="col-md-2"><input class="form-control" type="date" name="hasta" value="{{ request.GET.hasta }}"></div>
+  <div class="col-md-2"><button class="btn btn-primary w-100" type="submit">Consultar</button></div>
+</form>
+{% if pagina_dto %}
+<table class="table table-sm table-striped">
+  <thead><tr><th>Fecha</th><th>Tipo</th><th>Cantidad</th><th>Resultado</th><th>Referencia</th><th>Observacion</th></tr></thead>
+  <tbody>
+  {% for m in pagina_dto.items %}
+    <tr>
+      <td>{{ m.fecha }}</td>
+      <td><span class="badge bg-{% if 'ENTRADA' in m.tipo or 'DEVOLUCION' in m.tipo %}success{% else %}danger{% endif %}">{{ m.tipo }}</span></td>
+      <td>{{ m.cantidad }}</td>
+      <td>{{ m.stock_resultante }}</td>
+      <td><small>{{ m.referencia }}</small></td>
+      <td><small>{{ m.observacion }}</small></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% include 'components/pagination.html' %}
+{% endif %}
+{% endblock %}
+

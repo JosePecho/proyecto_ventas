@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Catalogo{% endblock %}
+{% block extra_css %}<link href="{% static 'css/catalog.css' %}" rel="stylesheet">{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 no-print">
+  <h4><i class="bi bi-grid"></i> Catalogo de productos</h4>
+  <form class="d-flex" method="get" id="form-busqueda">
+    <input class="form-control me-2" name="q" value="{{ termino }}" placeholder="Buscar producto...">
+    <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i></button>
+  </form>
+</div>
+<div class="mb-3">
+  <a class="btn btn-sm btn-outline-primary" href="{% url 'catalog:catalogo' %}">Todos</a>
+  {% for c in categorias %}
+    <a class="btn btn-sm btn-outline-secondary" href="?categoria={{ c.id }}">{{ c.nombre }}</a>
+  {% endfor %}
+</div>
+{% include 'catalog/partials/productos_grid.html' %}
+{% include 'components/pagination.html' %}
+{% endblock %}
+{% block extra_js %}<script src="{% static 'js/catalog/busqueda.js' %}"></script>{% endblock %}
+

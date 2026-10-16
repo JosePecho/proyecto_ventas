@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Promociones{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+  <h4><i class="bi bi-tags"></i> Promociones</h4>
+  {% if not solo_activas %}<a class="btn btn-primary" href="{% url 'promotions:crear' %}"><i class="bi bi-plus-lg"></i> Nueva</a>{% endif %}
+</div>
+{% if form and not solo_activas %}
+<form method="post" action="{% url 'promotions:crear' %}" class="card card-body mb-4">
+  {% csrf_token %}
+  <input type="hidden" name="accion" value="crear">
+  <div class="row g-2">
+    {% for campo in form %}
+      <div class="col-md-3"><label class="form-label">{{ campo.label }}</label>{{ campo }}</div>
+    {% endfor %}
+  </div>
+  <button class="btn btn-primary mt-2" type="submit">Crear promocion</button>
+</form>
+{% endif %}
+<table class="table table-sm table-hover">
+  <thead><tr><th>Nombre</th><th>Tipo</th><th>Valor</th><th>Vigencia</th><th>Estado</th><th></th></tr></thead>
+  <tbody>
+  {% for p in promociones %}
+    <tr>
+      <td>{{ p.nombre }}</td>
+      <td>{{ p.tipo }}</td>
+      <td>{{ p.descuento.valor }}</td>
+      <td><small>{{ p.vigencia_desde|date:"d/m/Y" }} - {{ p.vigencia_hasta|date:"d/m/Y" }}</small></td>
+      <td><span class="badge bg-secondary">{{ p.estado }}</span></td>
+      <td class="text-end">
+        <form method="post" class="d-inline">{% csrf_token %}
+          <input type="hidden" name="promocion_id" value="{{ p.id }}">
+          <button class="btn btn-sm btn-success" name="accion" value="activar">Activar</button>
+          <button class="btn btn-sm btn-outline-danger" name="accion" value="cancelar">Cancelar</button>
+        </form>
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="6" class="text-center text-muted">Sin promociones</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
+

@@ -1,0 +1,12 @@
+<div class="col">
+  <div class="card h-100 producto-card">
+    {% if producto.imagen %}<img src="{{ producto.imagen.url }}" class="card-img-top" alt="{{ producto.nombre }}">
+    {% else %}<img src="{% static 'images/placeholder.png' %}" class="card-img-top" alt="">{% endif %}
+    <div class="card-body">
+      <h6 class="card-title">{{ producto.nombre }}</h6>
+      <p class="mb-1 fw-bold">S/ {{ producto.precio_venta }}</p>
+      <button class="btn btn-sm btn-primary w-100 agregar-pos" data-producto="{{ producto.id }}">Agregar</button>
+    </div>
+  </div>
+</div>
+

@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Formulario de producto{% endblock %}
+{% block content %}
+<h4 class="mb-3">{% if producto %}Editar producto{% else %}Nuevo producto{% endif %}</h4>
+<form method="post" enctype="multipart/form-data" class="card card-body col-md-8">
+  {% csrf_token %}
+  {% for campo in form %}
+    <div class="mb-3">
+      <label class="form-label">{{ campo.label }}</label>
+      {{ campo }}
+      {% for error in campo.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+    </div>
+  {% endfor %}
+  <div class="d-flex gap-2">
+    <button class="btn btn-primary" type="submit">Guardar</button>
+    <a class="btn btn-outline-secondary" href="{% url 'catalog:productos_admin' %}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}
+

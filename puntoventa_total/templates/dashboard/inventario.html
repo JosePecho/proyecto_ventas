@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Reporte de inventario{% endblock %}
+{% block content %}
+<h4 class="mb-3"><i class="bi bi-boxes"></i> Inventario</h4>
+<div class="row">
+  <div class="col-md-6">
+    <h5>Stock minimo ({{ stock_minimo.cantidad }})</h5>
+    <table class="table table-sm">
+      <thead><tr><th>Producto</th><th>Disponible</th></tr></thead>
+      <tbody>
+      {% for p in stock_minimo.productos_bajo_minimo %}
+        <tr><td>{{ p.producto_nombre }}</td><td>{{ p.disponible }}</td></tr>
+      {% empty %}<tr><td colspan="2" class="text-muted">Sin faltantes</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="col-md-6">
+    <h5>Baja rotacion</h5>
+    <table class="table table-sm">
+      <thead><tr><th>Producto</th><th>Observacion</th></tr></thead>
+      <tbody>
+      {% for p in baja_rotacion %}
+        <tr><td>{{ p.producto_nombre }}</td><td><small>{{ p.ultimo_movimiento }}</small></td></tr>
+      {% empty %}<tr><td colspan="2" class="text-muted">Todos rotan</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+

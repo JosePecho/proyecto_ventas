@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Dashboard{% endblock %}
+{% block extra_css %}<link href="{% static 'css/dashboard.css' %}" rel="stylesheet">{% endblock %}
+{% block content %}
+<h4 class="mb-3"><i class="bi bi-graph-up"></i> Dashboard</h4>
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card text-center kpi"><div class="card-body">
+      <div class="kpi-valor">S/ {{ ventas_hoy.total }}</div><div class="text-muted">Ventas de hoy</div>
+    </div></div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center kpi"><div class="card-body">
+      <div class="kpi-valor">{{ ventas_hoy.tickets }}</div><div class="text-muted">Tickets del dia</div>
+    </div></div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center kpi"><div class="card-body">
+      <div class="kpi-valor">{{ stock_minimo.cantidad }}</div><div class="text-muted">Productos bajo minimo</div>
+    </div></div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center kpi"><div class="card-body">
+      <div class="kpi-valor">{{ mayor_ganancia|length }}</div><div class="text-muted">Productos activos en ganancia</div>
+    </div></div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6">
+    <div class="card"><div class="card-header">Top productos del mes</div>
+      <ul class="list-group list-group-flush">
+        {% for p in top_productos %}<li class="list-group-item d-flex justify-content-between">
+          {{ p.producto_nombre }} <span>S/ {{ p.ingresos }}</span></li>
+        {% empty %}<li class="list-group-item text-muted">Sin datos</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card"><div class="card-header">Mayor ganancia del mes</div>
+      <ul class="list-group list-group-flush">
+        {% for p in mayor_ganancia %}<li class="list-group-item d-flex justify-content-between">
+          {{ p.producto_nombre }} <span class="text-success">S/ {{ p.utilidad }}</span></li>
+        {% empty %}<li class="list-group-item text-muted">Sin datos</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
