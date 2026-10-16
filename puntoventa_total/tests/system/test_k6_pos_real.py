@@ -5,6 +5,10 @@ import os
 from pathlib import Path
 import secrets
 import subprocess
+import socket
+import sys
+import time
+from urllib.request import urlopen
 from uuid import uuid4
 
 import pytest
@@ -20,7 +24,45 @@ pytestmark = [pytest.mark.system, pytest.mark.performance, pytest.mark.django_db
     pytest.mark.skipif(not os.environ.get("QA_K6_BINARY"), reason="Requiere QA_K6_BINARY")]
 
 
-def test_k6_cobra_con_sesiones_aisladas_y_stock_consistente(live_server):
+@pytest.fixture
+def pos_http_server(live_server):
+    if sys.platform == "win32":
+        yield live_server.url.replace("localhost", "127.0.0.1")
+        return
+    # Presupuesto HTTP sobre el servidor desplegado, no sobre wsgiref de desarrollo.
+    root = Path(__file__).resolve().parents[2]
+    with socket.socket() as reserved:
+        reserved.bind(("127.0.0.1", 0))
+        port = reserved.getsockname()[1]
+    base = f"http://127.0.0.1:{port}"
+    with (root / "reports/k6-gunicorn.log").open("w", encoding="utf-8") as log:
+        process = subprocess.Popen([sys.executable, "-m", "gunicorn", "config.wsgi:application",
+            "--config", "deployment/gunicorn/gunicorn.conf.py", "--bind", f"127.0.0.1:{port}",
+            "--workers", "2", "--threads", "2"], cwd=root, env=dict(os.environ), stdout=log, stderr=subprocess.STDOUT)
+        try:
+            deadline = time.monotonic() + 20
+            while True:
+                if process.poll() is not None:
+                    pytest.fail("Gunicorn no inicio; revisar reports/k6-gunicorn.log")
+                try:
+                    with urlopen(base + "/login/", timeout=1) as response:
+                        if response.status == 200:
+                            break
+                except OSError:
+                    if time.monotonic() > deadline:
+                        raise
+                    time.sleep(0.1)
+            yield base
+        finally:
+            process.terminate()
+            try:
+                process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait(timeout=5)
+
+
+def test_k6_cobra_con_sesiones_aisladas_y_stock_consistente(pos_http_server):
     prefix = "k6_" + uuid4().hex[:8] + "_"
     password = secrets.token_urlsafe(24)
     for index in (1, 2):
@@ -34,7 +76,7 @@ def test_k6_cobra_con_sesiones_aisladas_y_stock_consistente(live_server):
     root = Path(__file__).resolve().parents[2]
     summary = root / "reports/k6-pos-summary.json"
     summary.parent.mkdir(exist_ok=True)
-    env = dict(os.environ, BASE_URL=live_server.url.replace("localhost", "127.0.0.1"),
+    env = dict(os.environ, BASE_URL=pos_http_server,
         PMV_USERNAME_PREFIX=prefix, PMV_PASSWORD=password, PMV_CODIGO=producto.codigo_barras,
         VUS="2", ITERATIONS="3", K6_NO_USAGE_REPORT="true")
     result = subprocess.run([os.environ["QA_K6_BINARY"], "run", "--summary-export", str(summary),

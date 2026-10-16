@@ -1,14 +1,18 @@
 """Inspeccion read-only del acceso y workflows del remoto, sin imprimir secretos."""
 import json
+import argparse
 import os
+from pathlib import Path
+import re
 import subprocess
 import sys
+import time
 import requests
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 
-def main():
+def collect(branch=None):
     remote = subprocess.check_output(["git", "remote", "get-url", "origin"], text=True).strip()
     if not remote.startswith("https://github.com/"):
         raise RuntimeError("Se requiere remoto HTTPS github.com")
@@ -25,7 +29,8 @@ def main():
     if token:
         headers["Authorization"] = "Bearer " + token
     evidence = {"repository": repo, "credential_available": bool(token)}
-    for endpoint in ("", "/actions/workflows", "/actions/runs?per_page=3"):
+    runs_endpoint = "/actions/runs?per_page=3" + ("&branch=" + branch if branch else "")
+    for endpoint in ("", "/actions/workflows", runs_endpoint):
         try:
             with urlopen(Request("https://api.github.com/repos/" + repo + endpoint, headers=headers), timeout=20) as response:
                 data = json.load(response)
@@ -46,11 +51,25 @@ def main():
                         for job, job_item in zip(jobs["jobs"], item["jobs"]):
                             if job["conclusion"] == "failure":
                                 response = requests.get(job["url"] + "/logs", headers=headers, timeout=30)
-                                job_item["failure_log_tail"] = response.text.splitlines()[-85:] if response.ok else response.status_code
+                                job_item["failure_log_tail"] = [line for line in response.text.splitlines()
+                                    if re.search(r"FAIL|Error:|E   |assert |THRESHOLD|checks|p\(95\)|passed|skipped|Traceback", line)][-100:] if response.ok else response.status_code
         except HTTPError as exc:
             evidence[endpoint or "repo_status"] = exc.code
-    print(json.dumps(evidence, indent=2))
+    return evidence
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--branch")
+    parser.add_argument("--watch", action="store_true")
+    parser.add_argument("--logs", action="store_true")
+    args = parser.parse_args()
+    for attempt in range(40 if args.watch else 1):
+        result = collect(args.branch)
+        path = Path(__file__).resolve().parents[1] / "reports/remote-ci.json"
+        path.write_text(json.dumps(result, indent=2), encoding="utf-8")
+        print(json.dumps(result, indent=2), flush=True)
+        runs = result.get("runs", [])
+        if not args.watch or (runs and runs[0]["status"] == "completed"):
+            break
+        time.sleep(15)

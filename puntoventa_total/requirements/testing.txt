@@ -10,4 +10,5 @@ pytest-bdd==9.0.0
 playwright==1.64.0
 testcontainers[mysql]==4.15.0
 PyMySQL[rsa]==1.1.1
+gunicorn==22.0.0; platform_system != "Windows"
 

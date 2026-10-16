@@ -17,3 +17,4 @@ coverage[toml]==7.16.2
 hypothesis==6.169.4
 pytest-bdd==9.0.0
 playwright==1.64.0
+gunicorn==22.0.0; platform_system != "Windows"
