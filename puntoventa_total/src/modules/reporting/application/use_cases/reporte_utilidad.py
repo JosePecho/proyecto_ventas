@@ -1,7 +1,7 @@
 from src.modules.reporting.application.dto.utilidad_reporte_dto import UtilidadReporteDTO
 from src.modules.reporting.domain.repositories.reporte_repository import ReporteRepository
 from src.modules.reporting.domain.value_objects.rango_fechas import RangoFechas
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 
 
 class ReporteUtilidad:
@@ -22,6 +22,6 @@ class ReporteUtilidad:
             ingresos_totales=float(ingresos),
             costos_totales=float(costos),
             utilidad_total=float(utilidad),
-            margen_pct=float(round((utilidad / ingresos * 100), 2)) if ingresos else 0.0,
+            margen_pct=float((utilidad / ingresos * 100).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)) if ingresos else 0.0,
         )
 

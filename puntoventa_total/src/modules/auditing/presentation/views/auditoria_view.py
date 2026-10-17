@@ -6,23 +6,28 @@ from django.shortcuts import render
 from src.modules.auditing.application.dto.auditoria_dto import FiltroAuditoriaDTO
 from src.modules.auditing.application.use_cases.consultar_auditoria import ConsultarAuditoria
 from src.modules.auditing.application.use_cases.rastrear_transaccion import RastrearTransaccion
-from src.modules.auditing.domain.repositories.auditoria_repository import AuditoriaRepository
 from src.modules.auditing.infrastructure.factories import construir_auditoria_repository
+from src.modules.auditing.presentation.forms.filtro_auditoria_form import FiltroAuditoriaForm
 from src.modules.identity.presentation.permissions.role_required import role_required
 
 
 @login_required
 @role_required("ADMINISTRADOR")
 def auditoria_view(request):
+    form = FiltroAuditoriaForm(request.GET)
+    if not form.is_valid():
+        return render(request, "auditing/registros.html", {"form": form, "filtros": request.GET}, status=400)
+    datos = form.cleaned_data
     repo = construir_auditoria_repository()
     filtros = FiltroAuditoriaDTO(
-        accion=request.GET.get("accion") or None,
-        entidad=request.GET.get("entidad") or None,
-        entidad_id=request.GET.get("entidad_id") or None,
-        desde=request.GET.get("desde") or None,
-        hasta=request.GET.get("hasta") or None,
+        accion=datos.get("accion") or None,
+        entidad=datos.get("entidad") or None,
+        entidad_id=datos.get("entidad_id") or None,
+        usuario_id=str(datos["usuario_id"]) if datos.get("usuario_id") else None,
+        desde=datos["desde"].isoformat() if datos.get("desde") else None,
+        hasta=datos["hasta"].isoformat() if datos.get("hasta") else None,
     )
-    pagina = int(request.GET.get("pagina", 1) or 1)
+    pagina = datos.get("pagina") or 1
     pagina_dto = ConsultarAuditoria(repo).ejecutar(filtros, pagina=pagina)
 
     traza = None
@@ -35,6 +40,6 @@ def auditoria_view(request):
     return render(
         request,
         "auditing/registros.html",
-        {"pagina_dto": pagina_dto, "filtros": filtros, "traza": traza},
+        {"pagina_dto": pagina_dto, "filtros": filtros, "traza": traza, "form": form},
     )
 

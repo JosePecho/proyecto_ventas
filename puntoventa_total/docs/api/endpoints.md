@@ -91,3 +91,16 @@ de estado y cancelación de pedidos requieren POST; la falta de CSRF devuelve 40
 RF-037 se verifica con correo local/SMTP de QA. No hay proveedor SMS productivo
 validado. El éxito de SMTP local no acredita recepción en un buzón real.
 
+### Precisiones RF-047 y RF-050
+
+`/reportes/utilidad/` presenta margen porcentual por producto y total, calculado
+sobre ingresos netos y redondeado HALF_UP a dos decimales. Una fila con ingresos
+cero o costos históricos incompletos muestra el margen como «No disponible».
+Los históricos incompletos conservan el aviso de utilidad parcial.
+
+`GET /auditoria/` admite `accion`, `entidad`, `entidad_id`, `usuario_id` (UUID),
+`desde`, `hasta` y `pagina` (entero positivo, por defecto 1). UUID, páginas o
+fechas malformados y rangos invertidos devuelven 400 con errores de formulario.
+La consulta exige ADMINISTRADOR; las acciones CREAR, ACTUALIZAR y ELIMINAR del
+middleware son consultables junto a las acciones específicas de negocio.
+

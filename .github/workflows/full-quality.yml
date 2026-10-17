@@ -58,6 +58,8 @@ jobs:
         run: python -m pytest tests/unit -q --cov=src --cov-fail-under=0 --cov-report=json:reports/audit_unit_coverage.json --junitxml=reports/full-unit.xml
       - name: Unit domain and application coverage gate
         run: python scripts/qa_unit_gate.py
+      - name: Reporting and auditing core unit coverage gate
+        run: python scripts/qa_reportes_unit_gate.py --junit reports/full-unit.xml
       - name: '2 - Integration on disposable MySQL'
         run: python scripts/qa_inventory_mysql.py tests/integration --runxfail --junitxml=reports/full-integration.xml
       - name: Install Chromium

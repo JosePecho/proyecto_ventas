@@ -30,6 +30,10 @@ def agrupar_utilidad(detalles):
                 fila["costo"] += Decimal(str(linea["costo_unitario"])) * linea["cantidad"]
     for fila in productos.values():
         fila["utilidad"] = round(fila["ingresos"] - fila["costo"], 2)
+        fila["margen_pct"] = (
+            float((fila["utilidad"] / fila["ingresos"] * 100).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+            if fila["ingresos"] and not fila["estimado"] else None
+        )
         for campo in ("ingresos", "costo", "utilidad"):
             fila[campo] = float(fila[campo])
     return sorted(productos.values(), key=lambda f: (-f["ingresos"], f["producto_id"]))
