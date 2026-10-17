@@ -37,6 +37,7 @@ jobs:
     env:
       DJANGO_SETTINGS_MODULE: config.settings.testing
       QA_REQUIRE_BROWSER: '1'
+      QA_REQUIRE_ALL_TESTS: '1'
       QA_REDIS_URL: redis://127.0.0.1:6379/15
     steps:
       - uses: actions/checkout@v4
@@ -69,7 +70,7 @@ jobs:
       - name: '3 - System and performance budgets'
         run: python scripts/qa_inventory_mysql.py tests/system tests/e2e tests/functional tests/performance --junitxml=reports/full-system.xml
       - name: '4 - Acceptance'
-        run: python -m pytest tests/uat -q --junitxml=reports/full-uat.xml
+        run: python scripts/qa_inventory_mysql.py tests/uat --junitxml=reports/full-uat.xml
       - name: Global coverage gate (all levels)
         env:
           QA_REQUIRE_ALL_TESTS: '1'
@@ -79,3 +80,4 @@ jobs:
         with:
           name: full-quality-evidence-${{ matrix.profile }}
           path: puntoventa_total/reports/
+          retention-days: 7

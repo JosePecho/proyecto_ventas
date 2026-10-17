@@ -3,6 +3,8 @@ from pathlib import Path
 import json
 import xml.etree.ElementTree as ET
 
+from qa_rf030_050_evidence import perfil as validar_perfil
+
 ROOT = Path(__file__).resolve().parents[1]
 PARTES = []
 
@@ -23,7 +25,8 @@ texto("""
 
 Alcance: RF-030..050, módulos 3.4 Pedidos en Línea, 3.5 Clientes Frecuentes/Promociones y 3.6 Reportes/Administración.
 Python, Django, monolito modular con dominio/aplicación/infraestructura/presentación. Se revisó el código antes de seleccionar herramientas.
-Perfil declarado: Python 3.11.16, Django 5.0.6, Celery 5.4.0. Perfil QA: Python 3.14.7, Django 6.1.2, Celery 5.6.3.
+Revisión del 17 de octubre de 2026. Perfil declarado: Python 3.11.16, Django 5.0.6, Celery 5.4.0.
+Perfil QA observado: Python 3.14.7, Django 6.1.2, Celery 5.6.3, pytest 9.1.1, pytest-django 4.14.0.
 Los perfiles tienen dependencias independientes y fijadas; esta auditoría no actualiza silenciosamente producción.
 No se presentan herramientas futuras de 2027 como verificadas hoy.
 El perfil declarado es histórico: Django 5.0 terminó soporte el 2 de abril de 2025 y 5.0.6 precede correcciones de seguridad.
@@ -49,10 +52,22 @@ El perfil y el historial validan al dueño por Cliente.usuario_id. No intercambi
 
 ## 1.3 Deuda Técnica o Problemas de Testabilidad
 
-Se corrigieron carrito sin dueño, seguimiento ajeno, checkout sin hora/datos, cancelación durante preparación,
-reservas que vencían antes del recojo, historial propio inaccesible, descuento de frecuencia desconectado,
-errores de fechas en promociones/reportes, falta de combo y edición web, costo histórico recalculado con catálogo actual,
-pérdida del descuento global al cargar la venta, ausencia de auditoría transversal y sesiones de usuarios desactivados.
+La suite existente protege propiedad del carrito y seguimiento, checkout, cancelación durante preparación,
+reservas hasta el recojo, historial propio, descuento de frecuencia, fechas, combos, edición web,
+costo histórico, persistencia de descuentos, auditoría y revocación de sesiones.
+Esta revisión añade contratos de estados/fronteras, rankings, último administrador, entrega por navegador
+y tres criterios BDD administrativos; no atribuye correcciones históricas a la ejecución actual.
+
+| Hallazgo de análisis estático | Riesgo / testabilidad | Tratamiento |
+|---|---|---|
+| Adaptadores construyen repositorios concretos mediante factories e imports locales | Acoplamiento medio; difícil inducir fallos sin monkeypatch | Mantener puertos en Unit; extraer factories a parámetros si se refactoriza |
+| `descuento_producto` captura `Exception` y devuelve cero | Puede ocultar indisponibilidad del cálculo de descuentos | Falta política de negocio de fallo; registrar observabilidad y acordar si debe bloquear el cobro |
+| Reportes e historial convierten Decimal a float en su salida | Riesgo de precisión en agregaciones futuras | Cálculos monetarios usan Decimal; conservarlo hasta serializar en una refactorización separada |
+| Historial carga todas las compras y utilidad todas las líneas del rango | Memoria/tiempo crecen con los datos | Añadir paginación y probar volúmenes representativos antes de declarar capacidad productiva |
+| RF-037 usa SMTP dentro de una transacción y marca luego el envío | Bloqueo prolongado o duplicado tras una caída | Probar recuperación; valorar outbox e idempotencia del proveedor |
+| DNI/teléfono son datos personales; sesión controla propiedad y roles | Exposición por IDOR o logs | Pruebas de propietario, CSRF, roles y exclusión de secretos de auditoría |
+| Dependencias productivas fijan Django 5.0.6 sin soporte | Riesgo alto de seguridad de dependencias | Migrar a rama soportada en trabajo de actualización; esta suite no certifica seguridad productiva |
+| El ciclo de promociones entregado escribe Vencida → Cancelada; `Promocion.cancelar()` rechaza FINALIZADA | Diferencia de contrato pendiente de decisión de negocio | No afirmar conformidad de ese tramo; el PO debe confirmar si la flecha es una transición obligatoria o una enumeración de estados |
 
 Políticas conservadas o explicitadas:
 
@@ -63,6 +78,8 @@ Políticas conservadas o explicitadas:
   Beneficio global = mejor opción entre combo/fidelización, descontando lo aplicado a líneas para evitar acumulación accidental.
 - Promoción: Borrador → Activa → Vencida / Cancelada. PROGRAMADA se conserva internamente como borrador con calendario;
   FINALIZADA se muestra Vencida. El fin es exclusivo: en ese instante ya no aplica.
+  Este es el comportamiento actual; la secuencia literal entregada incluye Vencida → Cancelada y no coincide
+  con `cancelar()` desde FINALIZADA. Se registra como brecha pendiente, no como criterio aprobado.
 - Pedidos: CONFIRMADO se muestra Pendiente; BORRADOR solo representa el carrito interno. El cliente solo cancela Pendiente.
 - Horarios: franjas futuras de 30 minutos. No se inventaron horario comercial, capacidad por franja ni política de no-show.
 - Utilidad comercial: ingresos netos distribuidos por línea y costo de catálogo congelado al agregar el producto.
@@ -76,9 +93,9 @@ Políticas conservadas o explicitadas:
 | Unit | pytest 8.2.0, pytest-cov 5.0.0, Hypothesis 6.169.4, unittest.mock | Python 3.11 | Reglas y propiedades monetarias | `rtk proxy python -m pip install -r requirements/testing.txt` |
 | Integration | pytest-django 4.8.0, testcontainers[mysql] 4.15.0, mysqlclient 2.2.4 | Docker con motor Linux; MySQL 8.4.3 | ORM, rollback, permisos y carreras | requirements/testing.txt; Docker: instalador oficial indicado debajo |
 | System/E2E | Playwright 1.64.0 | CLI Playwright + Chromium | Formularios, navegación, sesiones y CSRF reales | `rtk proxy python -m playwright install chromium` |
-| Performance | k6 2.3.0 | CLI k6 | Cobro <100 ms p95; reportes/pedidos <500 ms p95 | Windows: `rtk proxy python scripts/qa_download_tools.py k6` |
+| Performance | k6 2.3.0 | CLI k6 | Cobro <100 ms p95; reportes/pedidos <500 ms p95 | Windows: `rtk proxy python scripts/qa_download_tools.py k6 --asset k6-v2.3.0-windows-amd64.zip` |
 | UAT | pytest-bdd 9.0.0 | CLI pytest | Doce escenarios de negocio entre los tres módulos | requirements/testing.txt |
-| Servicios | Celery 5.4.0, redis 5.0.4 | Redis y SMTP | Worker, recuperación de avisos y entrega SMTP | requirements/testing.txt; Redis portable: `rtk proxy python scripts/qa_download_tools.py redis` |
+| Servicios | Celery 5.4.0, redis 5.0.4 | Redis y SMTP | Worker, recuperación de avisos y entrega SMTP | requirements/testing.txt; Redis portable: `rtk proxy python scripts/qa_download_tools.py redis --asset Redis-8.10.2-Windows-x64-cygwin.zip` |
 
 [Instalación oficial de Docker Desktop en Windows](https://docs.docker.com/desktop/setup/install/windows-install/).
 Con el instalador descargado, PowerShell: `Start-Process '.\\Docker Desktop Installer.exe' -Wait -ArgumentList 'install'`.
@@ -113,14 +130,19 @@ proyecto_ventas/
     |-- src/modules/{orders,customers,promotions,reporting,identity,catalog,auditing,sales}/
     |-- tests/
     |   |-- unit/domain/{test_pedidos_online,test_clientes_promociones_reportes}.py
+    |   |-- unit/domain/test_rf030_050_contratos.py
     |   |-- integration/{test_pedidos_online,test_pedidos_online_mysql,test_rf038_050}.py
     |   |-- integration/{test_smtp_real,test_redis_celery_real}.py
+    |   |-- integration/test_rf030_050_contratos.py
     |   |-- system/{test_pedidos_online_playwright,test_rf038_050_playwright}.py
+    |   |-- system/test_rf030_050_contratos.py
     |   |-- system/{test_k6_pos_real,test_pedidos_online_k6,test_rf038_050_k6}.py
     |   |-- performance/{k6_cobro,k6_pedidos,k6_reportes}.js
     |   `-- uat/
     |       |-- features/{pedidos_online,clientes_promociones_admin}.feature
     |       `-- {test_pedidos_online_bdd,test_clientes_promociones_admin_bdd}.py
+    |-- tests/uat/features/reportes_administracion_contratos.feature
+    |-- tests/uat/test_reportes_administracion_contratos_bdd.py
     |-- scripts/{qa_inventory_mysql,qa_inventory_mysql_native,qa_redis_native}.py
     |-- scripts/qa_build_rf030_050_report.py
     |-- docs/testing/plan_maestro_rf030_050.md
@@ -149,7 +171,7 @@ El gate mide dominio y aplicación a partir de pruebas unitarias, mínimo 80%; n
 
 ## 4.4 Código Completo del Test Unitario
 """)
-for ruta in ("tests/unit/domain/test_pedidos_online.py", "tests/unit/application/test_confirmar_pedido.py", "tests/unit/domain/test_clientes_promociones_reportes.py", "tests/unit/application/test_beneficios_venta.py"):
+for ruta in ("tests/unit/domain/test_pedidos_online.py", "tests/unit/application/test_confirmar_pedido.py", "tests/unit/domain/test_clientes_promociones_reportes.py", "tests/unit/application/test_beneficios_venta.py", "tests/unit/domain/test_rf030_050_contratos.py"):
     codigo(ruta)
 
 texto("""
@@ -166,15 +188,22 @@ Dos escritores compiten por confirmar/cancelar el mismo pedido. La suite complet
 MySQL 8.4.3/InnoDB efímero en Testcontainers; Redis para worker real; SMTP de prueba por socket.
 Los tests con locmem demuestran selección de destinatario y flujo, no envío a un proveedor externo.
 SQLite solo sirve para iteración: no demuestra SELECT FOR UPDATE ni carreras de InnoDB.
+El wrapper usa la API real de [MySqlContainer](https://testcontainers-python.readthedocs.io/en/latest/modules/mysql/README.html).
+No se añaden httpx ni pytest-asyncio: las vistas de este proyecto son síncronas y se prueban con Django Client.
 
 ## 5.3 Guía Paso a Paso de Configuración y Ejecución
 
 ```powershell
 rtk proxy docker version
+rtk proxy docker run --detach --rm --name rf030-050-redis --publish 127.0.0.1:16379:6379 redis:7-alpine
+$env:QA_REDIS_URL = 'redis://127.0.0.1:16379/15'
 rtk proxy .venv-rf030-050/Scripts/python.exe scripts/qa_inventory_mysql.py tests/integration --junitxml=reports/rf-integration.xml
 ```
 
-Para incluir Redis en ese comando, definir QA_REDIS_URL con una instancia exclusiva de QA. CI ya la proporciona.
+Mantener esa instancia exclusiva durante los niveles 2 y 3 y detenerla al terminar:
+`rtk proxy docker stop rf030-050-redis`. CI ya proporciona Redis como servicio.
+Si ese puerto/nombre ya está ocupado, escoger otro puerto/nombre de QA y actualizar la variable;
+no detener servicios ajenos.
 Alternativa nativa **aislada**, disponible en este equipo sin Docker; no conecta a la BD del negocio:
 
 ```powershell
@@ -183,7 +212,7 @@ rtk proxy .venv/Scripts/python.exe scripts/qa_inventory_mysql_native.py --basedi
 
 ## 5.4 Código Completo del Test de Integración
 """)
-for ruta in ("tests/integration/test_pedidos_online.py", "tests/integration/test_pedidos_online_mysql.py", "tests/integration/test_rf038_050.py", "tests/integration/test_smtp_real.py", "tests/integration/test_redis_celery_real.py"):
+for ruta in ("scripts/qa_inventory_mysql.py", "tests/integration/test_pedidos_online.py", "tests/integration/test_pedidos_online_mysql.py", "tests/integration/test_rf038_050.py", "tests/integration/test_rf030_050_contratos.py", "tests/integration/test_smtp_real.py", "tests/integration/test_redis_celery_real.py"):
     codigo(ruta)
 
 texto("""
@@ -193,6 +222,8 @@ texto("""
 
 Registro → login → carrito → recojo → confirmación/cancelación con Chromium y CSRF.
 Administración: categoría, promoción de porcentaje, combo mediante selectores, reportes e historial propio.
+También se comprueba Pendiente → En preparación → Listo → Entregado desde botones reales,
+con reserva conservada durante preparación y stock consumido solo al entregar.
 k6 verifica dos sesiones de clientes y dos roles, además de seis cobros reales y coherencia del stock.
 Son smoke tests de concurrencia, no certificación de capacidad máxima de producción.
 
@@ -205,7 +236,7 @@ Se bloquean CDN externos en el navegador; se esperan elementos/navegación, sin 
 
 ```powershell
 rtk proxy .venv-rf030-050/Scripts/python.exe -m playwright install chromium
-rtk proxy .venv-rf030-050/Scripts/python.exe scripts/qa_download_tools.py k6
+rtk proxy .venv-rf030-050/Scripts/python.exe scripts/qa_download_tools.py k6 --asset k6-v2.3.0-windows-amd64.zip
 $env:QA_REQUIRE_BROWSER = '1'
 $env:QA_K6_BINARY = 'C:/Users/mallq/AppData/Local/Temp/puntoventa-qa-tools/k6/v2.3.0/k6-v2.3.0-windows-amd64/k6.exe'
 rtk proxy .venv-rf030-050/Scripts/python.exe scripts/qa_inventory_mysql.py tests/system --junitxml=reports/rf-system.xml
@@ -213,10 +244,15 @@ rtk proxy .venv-rf030-050/Scripts/python.exe scripts/qa_inventory_mysql.py tests
 
 Usar la ruta que devuelve el descargador en otra máquina. No ejecutar dos cargas al mismo tiempo.
 Presupuestos conservados: cobro p95 <100 ms, búsqueda <200 ms, HTTP/reportes/pedidos <500 ms; checks=100%, error inesperado=0.
+Los [thresholds de k6](https://grafana.com/docs/k6/latest/using-k6/thresholds/) determinan el exit code;
+un check aislado no bloquea CI por sí solo. Los scripts incluyen ambos.
+Los [traces de Playwright](https://playwright.dev/python/docs/trace-viewer-intro) facilitan reproducir fallos:
+`rtk proxy python -m playwright show-trace reports/browser/ARCHIVO.zip` abre el trace seleccionado.
+Los traces contienen datos/cookies de cuentas efímeras de QA: tratarlos como artifacts privados y de retención corta.
 
 ## 6.4 Código Completo del Test de Sistema (E2E) + Script rápido de Carga/Performance
 """)
-for ruta in ("tests/system/test_pedidos_online_playwright.py", "tests/system/test_rf038_050_playwright.py", "tests/system/test_rf038_050_k6.py"):
+for ruta in ("tests/system/test_pedidos_online_playwright.py", "tests/system/test_rf038_050_playwright.py", "tests/system/test_rf030_050_contratos.py", "tests/system/test_rf038_050_k6.py"):
     codigo(ruta)
 for ruta in ("tests/performance/k6_cobro.js", "tests/performance/k6_pedidos.js", "tests/performance/k6_reportes.js"):
     codigo(ruta, "javascript")
@@ -226,12 +262,13 @@ texto("""
 
 ## 7.1 Escenarios de Negocio en Formato Gherkin
 
-Los módulos tienen cuatro escenarios de pedidos, cinco comerciales y tres administrativos, doce en total.
+Quince escenarios específicos de estos módulos: cuatro de pedidos y once comerciales/administrativos,
+incluidos ranking por dos criterios, rango invertido y protección del último administrador.
 """)
-for ruta in ("tests/uat/features/pedidos_online.feature", "tests/uat/features/clientes_promociones_admin.feature"):
+for ruta in ("tests/uat/features/pedidos_online.feature", "tests/uat/features/clientes_promociones_admin.feature", "tests/uat/features/reportes_administracion_contratos.feature"):
     codigo(ruta, "gherkin")
 texto("## 7.2 Automatización del UAT (Step Definitions) o Checklist de Validación Manual para el Product Owner / Cliente")
-for ruta in ("tests/uat/test_pedidos_online_bdd.py", "tests/uat/test_clientes_promociones_admin_bdd.py"):
+for ruta in ("tests/uat/test_pedidos_online_bdd.py", "tests/uat/test_clientes_promociones_admin_bdd.py", "tests/uat/test_reportes_administracion_contratos_bdd.py"):
     codigo(ruta)
 texto("""
 ## 7.3 Guía Paso a Paso para ejecutar y aprobar el UAT
@@ -242,6 +279,12 @@ rtk proxy .venv-rf030-050/Scripts/python.exe -m pytest tests/uat -q -p no:cachep
 
 El Product Owner valida reglas/supuestos, nombres de estados, totales y permisos con cuentas de QA y registra versión,
 fecha, resultado y aprobación. Su firma no se sustituye con un pytest verde. No se envían mensajes a clientes reales.
+Para aceptación con el mismo motor de producción:
+`rtk proxy python scripts/qa_inventory_mysql.py tests/uat --junitxml=reports/rf-uat-mysql.xml`.
+Checklist de aprobación: comprobar los quince escenarios, validar los porcentajes/umbrales de frecuencia,
+confirmar política de horarios y permisos de GERENTE, resolver si debe permitirse Vencida → Cancelada,
+verificar el email de Listo en un buzón de staging,
+y registrar nombre del aprobador, commit, fecha, incidencias y decisión. Esa aprobación queda pendiente del PO.
 
 # 8. GUÍA DE AI SKILLS, MCP Y AUTOMATIZACIÓN AGÉNTICA (CONTEXTO 2026-2027)
 
@@ -253,14 +296,32 @@ codigo("../.cursor/rules/rf030-050-testing.mdc", "markdown")
 texto("""
 ## 8.2 Servidores MCP (Model Context Protocol) recomendados
 
-Playwright MCP es opcional para inspeccionar la UI local y reproducir un fallo; los tests versionados mantienen el criterio verificable:
-[documentación oficial](https://playwright.dev/python/docs/getting-started-mcp).
-El stack usa MySQL: no hace falta instalar un MCP de PostgreSQL/SQLite ajeno a su persistencia.
-Para inspección de datos se prefieren consultas limitadas sobre la instancia efímera; un MCP no debe recibir la BD del negocio.
-GitHub MCP solo resulta necesario si se desea inspeccionar checks/artifacts remotos; pytest no depende de él.
-Las anotaciones read-only no sustituyen permisos del servidor:
-[referencia oficial MCP](https://blog.modelcontextprotocol.io/posts/2026-03-16-tool-annotations/).
-No se instalaron ni publicaron conexiones externas durante esta auditoría.
+| Herramienta / Skill | Aplicación concreta | Configuración y límite |
+|---|---|---|
+| [Playwright MCP de Microsoft](https://github.com/microsoft/playwright-mcp) | Inspeccionar accesibilidad de checkout, gestión y estados | Node.js >=18; navegador contra entorno efímero; pytest conserva el oráculo |
+| [GitHub MCP oficial](https://github.com/github/github-mcp-server) | Inspeccionar fallos de checks y artifacts | Acceso de lectura al repositorio y artifacts privados; no es dependencia de pytest |
+| MySQL mediante ORM/CLI | Consultas de estado, reservas y auditoría | Preferido a instalar un MCP PostgreSQL/SQLite ajeno al motor usado |
+| Postman `api-engineer`, `api-testing`, `ci-integration` | Reutilizar contratos HTTP y seleccionar assertions/gates | En esta revisión se usaron sus instrucciones; no se publicó workspace ni se afirmó un run de Postman |
+| Testcontainers local; Cloud opcional | Infraestructura efímera de CI | El camino local no requiere cuenta Cloud; no se presupone licencia o conexión externa |
+
+Configuración opcional para un cliente MCP compatible, usando el arranque documentado por Microsoft:
+
+```json
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest", "--headless", "--isolated"]
+    }
+  }
+}
+```
+
+El alias `latest` sirve para el arranque exploratorio documentado; fijar la versión validada antes de usarlo en CI.
+Una regla de Cursor se activa por contexto de archivos; no equivale a un hook automático de ejecución.
+No se instalaron conexiones externas. Mantener credenciales fuera del prompt y limitar permisos del servidor;
+las anotaciones de herramientas no son controles de acceso.
+[Guía oficial de seguridad MCP](https://modelcontextprotocol.io/specification/draft/basic/security_best_practices).
 
 ## 8.3 Flujo de Auto-Healing (Autoreparación de Tests)
 
@@ -277,7 +338,7 @@ rtk proxy claude -p "Lee .cursor/rules/rf030-050-testing.mdc y puntoventa_total/
 ```
 
 Es un comando para un entorno con ese CLI; no se ejecutó ni se presupone una cuenta/licencia disponible.
-[Sintaxis oficial de Claude Code](https://docs.anthropic.com/en/docs/claude-code/cli-usage).
+[Sintaxis oficial de Claude Code](https://code.claude.com/docs/en/cli-reference).
 
 # 9. PIPELINE CI/CD (QUALITY GATES)
 
@@ -285,8 +346,11 @@ El workflow de la **raíz Git** descubre estos tests nuevos sin listas manuales.
 Unit → gate unitario → MySQL → Sistema/Carga → UAT → cobertura global. Chromium/k6/Redis forman parte del job.
 La ejecución completa rechaza skips/xfails y cobertura inferior a 80%; los presupuestos k6 también bloquean.
 Un YAML verde no bloquea por sí mismo el merge: se requieren checks obligatorios en la protección de main,
-con nombres `quality (production-declared)` y `quality (qa)`; esa protección ya estaba configurada en este repositorio.
-Esta ampliación se entrega localmente, sin afirmar un nuevo check remoto ejecutado.
+con nombres `quality (production-declared)` y `quality (qa)`.
+La protección remota no se verificó ni modificó en esta revisión. Esta ampliación se entrega localmente,
+sin afirmar un nuevo check remoto ejecutado. Configurar ambos como required status checks
+en la [protección de la rama](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches).
+Cada nivel rechaza omisiones/xfails; UAT también usa MySQL efímero. Artifacts se conservan siete días.
 [Semántica oficial del workflow](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax).
 """)
 codigo("../.github/workflows/full-quality.yml", "yaml")
@@ -297,7 +361,7 @@ U = `rtk proxy python -m pytest tests/unit -q`.
 I = `rtk proxy python scripts/qa_inventory_mysql.py tests/integration`.
 S = `rtk proxy python scripts/qa_inventory_mysql.py tests/system` (Chromium/k6 disponibles).
 A = `rtk proxy python -m pytest tests/uat -q`.
-Los nombres de tests en la tabla son nodos verificables en los archivos incluidos arriba.
+La primera tabla relaciona requisitos con componentes; la segunda proporciona nodos pytest exactos.
 
 | ID Caso | Funcionalidad / Método del Módulo | Nivel (Unit / Int / Sys / UAT) | Tipo (Positivo / Negativo / Borde) | Resultado Esperado | Comando de Ejecución |
 |---|---|---|---|---|---|
@@ -323,6 +387,19 @@ Los nombres de tests en la tabla son nodos verificables en los archivos incluido
 | RF-049 | categoria_view | Int/Sys/UAT | Positivo/Negativo | Creación y edición con permisos | I / S / A |
 | RF-050 | RequestAuditMiddleware / auditoría de venta | Int/Sys/UAT | Positivo/Negativo | Actor, agregado y fecha; fallo de auditoría revierte | I / S / A |
 
+Casos añadidos en esta revisión, con selección exacta ejecutable desde `puntoventa_total`:
+
+| ID Caso | Funcionalidad / Método del Módulo | Nivel | Tipo | Resultado Esperado | Comando de Ejecución |
+|---|---|---|---|---|---|
+| QA-U01 | Pedido.transicionar_a, 36 combinaciones | Unit | Positivo/Negativo | Solo seis transiciones válidas; rechazo conserva estado | `rtk proxy python -m pytest tests/unit/domain/test_rf030_050_contratos.py::test_matriz_completa_de_transiciones_del_pedido -q` |
+| QA-U02 | Promocion.esta_vigente, cinco estados y cuatro instantes | Unit | Borde | Inicio inclusivo; fin exclusivo; solo ACTIVA | `rtk proxy python -m pytest tests/unit/domain/test_rf030_050_contratos.py::test_vigencia_inicio_inclusivo_fin_exclusivo -q` |
+| QA-U03 | Promocion.activar | Unit | Negativo | FINALIZADA/CANCELADA no reactivan | `rtk proxy python -m pytest tests/unit/domain/test_rf030_050_contratos.py::test_promocion_terminal_no_se_reactiva -q` |
+| QA-I01 | Rango diario en America/Lima | Int | Borde | Dos tickets y 50 soles; días adyacentes/anuladas excluidos | `rtk proxy python scripts/qa_inventory_mysql.py tests/integration/test_rf030_050_contratos.py::test_reporte_incluye_dia_local_completo_y_excluye_dias_adyacentes` |
+| QA-I02 | Ranking por cantidad/monto | Int | Positivo | Cambia orden; seis unidades y 40 soles | `rtk proxy python scripts/qa_inventory_mysql.py tests/integration/test_rf030_050_contratos.py::test_ranking_cambia_segun_criterio_sin_incluir_anuladas` |
+| QA-I03 | Desactivar/degradar último administrador | Int | Negativo | Cuenta activa y rol ADMINISTRADOR conservados | `rtk proxy python scripts/qa_inventory_mysql.py tests/integration/test_rf030_050_contratos.py::test_ultimo_administrador_conserva_acceso` |
+| QA-S01 | Atención desde navegador hasta Entregado | Sys | Positivo | Reserva 2 hasta Listo; entrega deja stock 8 y reserva 0 | `rtk proxy python scripts/qa_inventory_mysql.py tests/system/test_rf030_050_contratos.py` |
+| QA-A01..03 | Ranking, fechas invertidas y último administrador | UAT | Positivo/Negativo | Criterios Gherkin verificados por HTTP | `rtk proxy python scripts/qa_inventory_mysql.py tests/uat/test_reportes_administracion_contratos_bdd.py` |
+
 # EVALUACIÓN FINAL DEL MÓDULO AUDITADO
 
 Escala cualitativa, no porcentaje medido ni certificación ISO:
@@ -330,8 +407,8 @@ Escala cualitativa, no porcentaje medido ni certificación ISO:
 - Testabilidad del Código Actual: **8/10**. Dominio aislable; algunos adaptadores construyen repositorios concretos.
 - Cobertura Unitaria Alcanzable: **9/10**. Propiedades y reglas puras automatizadas; cobertura real se informa debajo.
 - Aislamiento de Dependencias: **8/10**. Puertos en unitarias; BD/worker/SMTP reales para evidencia integrada.
-- Preparación para CI/CD: **9/10**. Dos perfiles, cuatro niveles, artifacts y gates; falta nuevo CI remoto de esta ampliación.
-- Resiliencia ante Fallos (Edge Cases): **8/10**. Rollback, carreras, permisos y avisos fallidos; límites SMTP e históricos explicitados.
+- Preparación para CI/CD: **8/10**. Dos perfiles, cuatro niveles, artifacts y gates; presupuesto POS incumplido en esta máquina y CI remoto pendiente.
+- Resiliencia ante Fallos (Edge Cases): **8/10**. Rollback, carreras, permisos y avisos fallidos; límites SMTP e históricos explicitados. No equivale a cumplir presupuestos de latencia.
 
 # ESTADO DE CALIDAD (QUALITY READINESS)
 
@@ -349,13 +426,16 @@ for perfil in ("production", "qa"):
         resultados.append((perfil, datos))
     except (FileNotFoundError, ET.ParseError, KeyError):
         pass
-evidencia_path = ROOT / "reports/rf030-050-final-evidence.json"
-validada = json.loads(evidencia_path.read_text()) if evidencia_path.exists() else {}
-if len(resultados) == 2 and all(d["tests"] and not (d["failures"] or d["errors"] or d["skipped"]) and d["coverage"] >= 80
-                              and validada.get(p, {}).get("tests") == d["tests"] for p, d in resultados):
+try:
+    validada = {nombre: validar_perfil(nombre) for nombre in ("production", "qa")}
+except (FileNotFoundError, ValueError, KeyError):
+    validada = {}
+if len(resultados) == 2 and all(d["tests"] and validada.get(p, {}).get("tests") == d["tests"]
+                              and validada[p].get("coverage") == d["coverage"] for p, d in resultados):
     texto("| Perfil | Pruebas | Fallos / errores / omitidas | Cobertura global |\n|---|---|---|---|")
     for perfil, datos in resultados:
-        texto(f"| {perfil} | {datos['tests']}/{datos['tests']} | 0 / 0 / 0 | {datos['coverage']}% |")
+        pasadas = datos['tests'] - datos['failures'] - datos['errors'] - datos['skipped']
+        texto(f"| {perfil} | {pasadas}/{datos['tests']} | {datos['failures']} / {datos['errors']} / {datos['skipped']} | {datos['coverage']}% |")
     texto("| Perfil | Unit | Integration | System/E2E/Functional/Performance | UAT |\n|---|---|---|---|---|")
     for perfil, _ in resultados:
         niveles = validada[perfil]["niveles"]
@@ -363,26 +443,60 @@ if len(resultados) == 2 and all(d["tests"] and not (d["failures"] or d["errors"]
     texto("| Perfil | Cobro p95 (100 ms) | Pedidos HTTP p95 (500 ms) | Reportes HTTP p95 (500 ms) |\n|---|---|---|---|")
     for perfil, _ in resultados:
         cargas = validada[perfil]["k6"]
-        texto(f"| {perfil} | {cargas['pos']['cobro_p95_ms']} ms | {cargas['pedidos']['http_p95_ms']} ms | {cargas['reportes']['http_p95_ms']} ms |")
-    texto("Unit Test Ready → ✅ Listo. Integration Ready → ✅ Listo (MySQL nativo efímero). System/E2E Ready → ✅ Listo. UAT/Business Ready → automatización ✅ lista, aprobación PO pendiente.")
+        texto(f"| {perfil} | {cargas['pos'].get('cobro_p95_ms', 'ver JUnit')} | {cargas['pedidos'].get('http_p95_ms', 'sin evidencia')} | {cargas['reportes'].get('http_p95_ms', 'sin evidencia')} |")
+    for perfil, _ in resultados:
+        evidencia = validada[perfil]
+        texto(f"**{perfil}:** ejecutado {evidencia['provenance']['executed_at']}; Python {evidencia['provenance']['python']}; MySQL {evidencia['provenance']['database']['version']} nativo efímero.")
+        if not evidencia["ready"]:
+            texto("Gate no aprobado: " + "; ".join(evidencia["problems"]) + ".")
+            for caso in evidencia["failed_cases"]:
+                texto(f"- Fallo: `{caso}`.")
+    if all(validada[p]["ready"] for p, _ in resultados):
+        texto("Unit Test Ready → ✅ Listo. Integration Ready → ✅ Listo (MySQL nativo efímero). System/E2E Ready → ✅ Listo. UAT/Business Ready → ⚠ Requiere decisión del PO sobre Vencida → Cancelada y aprobación formal; automatización disponible.")
+    else:
+        texto("Unit Test Ready → ✅ Listo. Integration Ready → ✅ Listo (MySQL nativo efímero). System/E2E Ready → ⚠ Requiere resolver el presupuesto de rendimiento; flujos funcionales aprobados. UAT/Business Ready → ⚠ Requiere decisión del PO sobre Vencida → Cancelada y aprobación formal; automatización disponible. El gate global permanece bloqueado.")
 else:
     texto("**Validación final en curso:** no declarar los cuatro niveles listos mientras falten perfiles o existan fallos.")
+unit_path = ROOT / "reports/audit_unit_coverage.json"
+if unit_path.exists():
+    unit = json.loads(unit_path.read_text(encoding="utf-8"))
+    resumos = [entrada["summary"] for ruta, entrada in unit["files"].items()
+               if {"domain", "application"} & set(ruta.replace("\\", "/").split("/"))]
+    total = sum(resumen["num_statements"] for resumen in resumos)
+    cubiertas = sum(resumen["covered_lines"] for resumen in resumos)
+    if total:
+        texto(f"Cobertura medida solo con Unit en dominio/aplicación: **{100 * cubiertas / total:.2f}%** ({cubiertas}/{total} líneas); umbral 80%. Fuente: `reports/audit_unit_coverage.json`.")
 texto("""
 Reproducir suite completa local con infraestructura aislada instalada en este equipo:
 
 ```powershell
 rtk proxy .venv-production/Scripts/python.exe scripts/qa_redis_native.py --binary C:/Users/mallq/AppData/Local/Temp/puntoventa-qa-tools/redis/8.10.2/Redis-8.10.2-Windows-x64-cygwin/redis-server.exe --mysql-basedir C:/Users/mallq/AppData/Local/Temp/qa-mysql-binaries/mysql-8.4.3-winx64 --k6-binary C:/Users/mallq/AppData/Local/Temp/puntoventa-qa-tools/k6/v2.3.0/k6-v2.3.0-windows-amd64/k6.exe --coverage --report-prefix rf030-050-production
-rtk proxy python scripts/qa_rf030_050_evidence.py --capture production
+rtk proxy .venv-production/Scripts/python.exe scripts/qa_rf030_050_evidence.py --capture production
 rtk proxy .venv/Scripts/python.exe scripts/qa_redis_native.py --binary C:/Users/mallq/AppData/Local/Temp/puntoventa-qa-tools/redis/8.10.2/Redis-8.10.2-Windows-x64-cygwin/redis-server.exe --mysql-basedir C:/Users/mallq/AppData/Local/Temp/qa-mysql-binaries/mysql-8.4.3-winx64 --k6-binary C:/Users/mallq/AppData/Local/Temp/puntoventa-qa-tools/k6/v2.3.0/k6-v2.3.0-windows-amd64/k6.exe --coverage --report-prefix rf030-050-qa
-rtk proxy python scripts/qa_rf030_050_evidence.py --capture qa
-rtk proxy python scripts/qa_rf030_050_evidence.py
-rtk proxy python scripts/qa_build_rf030_050_report.py
+rtk proxy .venv/Scripts/python.exe scripts/qa_rf030_050_evidence.py --capture qa
+rtk proxy .venv/Scripts/python.exe scripts/qa_rf030_050_evidence.py
+rtk proxy .venv/Scripts/python.exe scripts/qa_build_rf030_050_report.py
 ```
 
 Ejecutar los perfiles secuencialmente. El wrapper exige cero skips/xfails en la suite completa.
-Evidencias: reports/rf030-050-*.xml, *-coverage.json, resúmenes k6 y browser/*.zip.
+Capturar cada perfil inmediatamente después de su ejecución, antes de sobrescribir resúmenes k6 con otro run.
+El verificador guarda timestamps, versiones y SHA256; devuelve 1 si hay fallos y aun así conserva la evidencia.
+Un resumen de carga sobrescrito por una ejecución posterior se marca no disponible; se consulta el fallo original en JUnit.
+No reutilizar conteos históricos para declarar una ejecución nueva aprobada.
+Evidencias: reports/rf030-050-*.xml, *-coverage.json, *-provenance.json, resúmenes k6 y browser/*.zip.
 Son servicios nativos efímeros; no se etiquetan como Testcontainers ejecutado en esta máquina.
 El workflow utiliza contenedores y está listo para validar el mismo código cuando se publique una PR.
+
+Investigación complementaria de latencia en esta revisión:
+
+- La suite QA completa registró cobro p95 = 228,64 ms con cobertura instrumentada;
+  el límite existente es 100 ms y el gate falló. Sus 36 checks funcionales de k6 aprobaron.
+- Una ejecución aislada sin cobertura volvió a incumplir: cobro p95 = 137,49 ms y
+  HTTP p95 = 798,10 ms (límite 500 ms). Por tanto, no se atribuye todo el fallo a coverage.
+- Evidencia de esta segunda medición: `reports/master-20261017-pos-uninstrumented.xml`.
+  Es una muestra corta en Windows, con dos VUs y seis cobros, no un benchmark de capacidad productiva.
+- No se modificaron límites ni se repitió hasta obtener verde. Queda pendiente perfilar
+  el cobro y repetir en un runner de recursos controlados. El gate conserva el fallo.
 
 Activación en el entorno del negocio: revisar las nuevas migraciones sales/0003..0004 y promotions/0002, además de
 las migraciones de Pedidos si aún no se aplicaron; ejecutar `rtk proxy python manage.py migrate` en ese entorno,
