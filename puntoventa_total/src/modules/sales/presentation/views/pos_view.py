@@ -1,17 +1,19 @@
 """Interfaz de punto de venta (carrito en sesion + busqueda por scanner)."""
 from __future__ import annotations
 
-from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import render
+from django.views.decorators.http import require_POST
+from src.shared.domain.exceptions.domain_exception import DomainException
+from src.modules.sales.application.dto.venta_output import VentaOutputDTO
+from src.modules.sales.presentation.permissions.venta_permissions import venta_propia
 
 from src.modules.catalog.infrastructure.factories import construir_producto_repository
 from src.modules.sales.application.use_cases.agregar_producto import AgregarProducto
 from src.modules.sales.application.use_cases.crear_venta import CrearVenta
 from src.modules.sales.application.use_cases.eliminar_producto import EliminarProducto
 from src.modules.sales.application.use_cases.modificar_cantidad import ModificarCantidad
-from src.modules.sales.domain.exceptions.venta_exceptions import VentaException
 from src.modules.sales.infrastructure.factories import (
     construir_inventario_port,
     construir_promociones_port,
@@ -28,7 +30,12 @@ from src.modules.sales.presentation.permissions.venta_permissions import (
 @requiere_caja_abierta
 def pos_view(request):
     venta_id = request.session.get("venta_actual")
-    if not venta_id:
+    repo = construir_venta_repository()
+    agregado = repo.buscar_por_id(venta_id) if venta_id else None
+    if agregado and (agregado.venta.estado.value != "BORRADOR" or
+                     agregado.venta.cajero_id != str(request.session.get("usuario_id", ""))):
+        agregado = None
+    if agregado is None:
         from src.modules.sales.application.dto.venta_input import CrearVentaDTO
 
         venta = CrearVenta(construir_venta_repository()).ejecutar(
@@ -39,8 +46,9 @@ def pos_view(request):
         )
         venta_id = venta.id
         request.session["venta_actual"] = venta_id
+        agregado = repo.buscar_por_id(venta_id)
 
-    contexto = {"venta_id": venta_id}
+    contexto = {"venta_id": venta_id, "venta": VentaOutputDTO.desde_agregado(agregado)}
     return render(request, "pos/index.html", contexto)
 
 
@@ -82,31 +90,42 @@ def buscar_producto_pos(request):
 
 @login_required
 @requiere_cajero
+@require_POST
+@venta_propia
 def agregar_producto_pos(request, venta_id, producto_id, cantidad=1):
-    if request.method != "POST":
-        return redirect("sales:pos")
     producto = construir_producto_repository().buscar_por_id(producto_id)
     try:
         venta = AgregarProducto(
             construir_venta_repository(), construir_inventario_port(), construir_promociones_port()
         ).ejecutar(venta_id, producto, int(request.POST.get("cantidad", cantidad)))
-    except VentaException as exc:
-        messages.error(request, str(exc))
-        return redirect("sales:pos")
+    except (DomainException, ValueError, TypeError) as exc:
+        return JsonResponse({"error": str(exc)}, status=400)
     return JsonResponse({"total": venta.total, "lineas": len(venta.lineas)})
 
 
 @login_required
 @requiere_cajero
+@require_POST
+@venta_propia
 def modificar_cantidad_pos(request, venta_id, producto_id):
-    cantidad = int(request.POST.get("cantidad", 1))
-    venta = ModificarCantidad(construir_venta_repository()).ejecutar(venta_id, producto_id, cantidad)
+    try:
+        cantidad = int(request.POST.get("cantidad", 1))
+        venta = ModificarCantidad(
+            construir_venta_repository(), construir_inventario_port(), construir_promociones_port()
+        ).ejecutar(venta_id, str(producto_id), cantidad)
+    except (DomainException, ValueError, TypeError) as exc:
+        return JsonResponse({"error": str(exc)}, status=400)
     return JsonResponse({"total": venta.total})
 
 
 @login_required
 @requiere_cajero
+@require_POST
+@venta_propia
 def eliminar_producto_pos(request, venta_id, producto_id):
-    venta = EliminarProducto(construir_venta_repository()).ejecutar(venta_id, producto_id)
+    try:
+        venta = EliminarProducto(construir_venta_repository()).ejecutar(venta_id, str(producto_id))
+    except DomainException as exc:
+        return JsonResponse({"error": str(exc)}, status=400)
     return JsonResponse({"total": venta.total, "lineas": len(venta.lineas)})
 

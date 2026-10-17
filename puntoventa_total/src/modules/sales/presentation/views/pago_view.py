@@ -20,12 +20,14 @@ from src.modules.sales.presentation.forms.pago_form import PagoForm
 from src.modules.sales.presentation.permissions.venta_permissions import (
     requiere_caja_abierta,
     requiere_cajero,
+    venta_propia,
 )
 
 
 @login_required
 @requiere_cajero
 @requiere_caja_abierta
+@venta_propia
 def pago_view(request, venta_id):
     if request.method == "POST":
         form = PagoForm(request.POST)
@@ -51,8 +53,8 @@ def pago_view(request, venta_id):
             except (VentaException, StockException, ValidationException) as exc:
                 messages.error(request, str(exc))
             else:
-                request.session.pop("venta_actual", None)
                 if resultado["estado"] == "PAGADA":
+                    request.session.pop("venta_actual", None)
                     messages.success(request, f"Venta cobrada. Vuelto: {resultado['vuelto']:.2f}")
                     return redirect("sales:ticket", venta_id=venta_id)
                 messages.warning(request, f"Pago parcial. Saldo pendiente: {resultado['saldo']:.2f}")

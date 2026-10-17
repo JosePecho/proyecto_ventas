@@ -2,11 +2,11 @@
 <nav class="no-print">
   <ul class="pagination pagination-sm">
     <li class="page-item {% if not pagina_dto.tiene_anterior %}disabled{% endif %}">
-      <a class="page-link" href="?pagina={{ pagina_dto.pagina|add:'-1' }}">&laquo;</a>
+      <a class="page-link" href="{% querystring pagina=pagina_dto.pagina|add:'-1' %}">&laquo;</a>
     </li>
     <li class="page-item disabled"><span class="page-link">{{ pagina_dto.pagina }} / {{ pagina_dto.total_paginas }}</span></li>
     <li class="page-item {% if not pagina_dto.tiene_siguiente %}disabled{% endif %}">
-      <a class="page-link" href="?pagina={{ pagina_dto.pagina|add:'1' }}">&raquo;</a>
+      <a class="page-link" href="{% querystring pagina=pagina_dto.pagina|add:'1' %}">&raquo;</a>
     </li>
   </ul>
 </nav>

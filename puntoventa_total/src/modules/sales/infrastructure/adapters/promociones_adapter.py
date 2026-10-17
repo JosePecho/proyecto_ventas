@@ -11,12 +11,9 @@ class PromocionesAdapter(PromocionesPort):
         from src.modules.promotions.application.use_cases.calcular_descuento import CalcularDescuento
         from src.modules.promotions.infrastructure.factories import construir_promocion_repository
 
-        try:
-            return CalcularDescuento(construir_promocion_repository()).por_producto(
-                producto_id, subtotal_linea, cantidad
-            )
-        except Exception:
-            return Monto(0, subtotal_linea.moneda)
+        return CalcularDescuento(construir_promocion_repository()).por_producto(
+            producto_id, subtotal_linea, cantidad
+        )
 
     def descuento_venta(self, venta_id: str, subtotal: Monto, cliente_id: Optional[str] = None) -> Monto:
         from src.modules.promotions.application.use_cases.aplicar_descuento_frecuencia import (

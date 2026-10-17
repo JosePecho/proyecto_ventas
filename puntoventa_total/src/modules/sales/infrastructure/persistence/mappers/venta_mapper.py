@@ -45,6 +45,7 @@ class VentaMapper:
                 producto_id=str(d.producto_id),
                 producto_nombre=d.producto_nombre,
                 cantidad=d.cantidad,
+                requiere_stock=d.requiere_stock,
                 costo_unitario=Monto(d.costo_unitario, m.moneda) if d.costo_unitario is not None else None,
                 precio_unitario=Monto(Decimal(d.precio_unitario), m.moneda),
                 descuento=Monto(Decimal(d.descuento), m.moneda),
@@ -70,9 +71,10 @@ class VentaMapper:
         return VentaAggregate(venta=venta, lineas=lineas, pagos=pagos, descuento_venta_pct=Decimal(m.descuento_venta_pct))
 
     @staticmethod
-    def guardar_agregado(agregado: VentaAggregate) -> VentaModel:
+    def guardar_agregado(agregado: VentaAggregate, modelo: VentaModel | None = None) -> VentaModel:
         v = agregado.venta
-        modelo = VentaModel.objects.filter(pk=v.id).first() or VentaModel(id=v.id)
+        if modelo is None:
+            modelo = VentaModel.objects.filter(pk=v.id).first() or VentaModel(id=v.id)
         modelo.id = v.id if isinstance(v.id, uuid.UUID) else uuid.UUID(str(v.id))
         modelo.numero_ticket = v.numero_ticket
         modelo.cajero_id = uuid.UUID(str(v.cajero_id))
@@ -84,15 +86,18 @@ class VentaMapper:
         modelo.moneda, modelo.observacion, modelo.activo = v.moneda, v.observacion, v.activo
         modelo.save(force_insert=modelo._state.adding)
 
-        detalles_existentes = {str(d.id): d for d in modelo.detalles.all()} if agregado.lineas else {}
+        detalles_existentes = {str(d.id): d for d in modelo.detalles.all()}
+        eliminados = set(detalles_existentes) - {str(linea.id) for linea in agregado.lineas}
+        if eliminados:
+            modelo.detalles.filter(pk__in=eliminados).delete()
         for linea in agregado.lineas:
             d = detalles_existentes.get(str(linea.id))
             costo = linea.costo_unitario.valor if linea.costo_unitario is not None else None
             if d is not None and (
                 str(d.producto_id), d.producto_nombre, d.cantidad, d.precio_unitario, d.costo_unitario,
-                d.pct_descuento, d.descuento, d.subtotal, d.total
+                d.pct_descuento, d.descuento, d.subtotal, d.total, d.requiere_stock
             ) == (str(linea.producto_id), linea.producto_nombre, linea.cantidad, linea.precio_unitario.valor,
-                  costo, linea.pct_descuento, linea.descuento.valor, linea.subtotal.valor, linea.total.valor):
+                  costo, linea.pct_descuento, linea.descuento.valor, linea.subtotal.valor, linea.total.valor, linea.requiere_stock):
                 continue
             d = d or DetalleVentaModel(id=linea.id)
             d.id = linea.id if isinstance(linea.id, uuid.UUID) else uuid.UUID(str(linea.id))
@@ -100,6 +105,7 @@ class VentaMapper:
             d.producto_id = uuid.UUID(str(linea.producto_id))
             d.producto_nombre = linea.producto_nombre
             d.cantidad = linea.cantidad
+            d.requiere_stock = linea.requiere_stock
             d.costo_unitario = linea.costo_unitario.valor if linea.costo_unitario is not None else None
             d.precio_unitario = linea.precio_unitario.valor
             d.pct_descuento = linea.pct_descuento

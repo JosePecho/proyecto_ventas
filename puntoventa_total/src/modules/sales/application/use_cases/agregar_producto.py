@@ -51,8 +51,18 @@ def agregar_linea(agregado, producto, cantidad: int, promociones) -> None:
         str(producto.id), producto.nombre, cantidad, producto.precio.venta
     )
     linea.costo_unitario = producto.precio.costo
-    descuento = promociones.descuento_producto(str(producto.id), linea.subtotal, cantidad)
+    linea.requiere_stock = producto.requiere_stock
+    aplicar_beneficio_linea(linea, promociones)
+
+
+def aplicar_beneficio_linea(linea, promociones):
+    descuento = promociones.descuento_producto(linea.producto_id, linea.subtotal, linea.cantidad)
     if descuento.valor > 0:
         pct = (descuento.valor / linea.subtotal.valor * Decimal("100")).quantize(Decimal("0.01"))
         linea.aplicar_descuento_pct(pct)
+        # NX1 puede equivaler a un porcentaje periodico: conservar el importe
+        # exacto calculado por el motor, sin una segunda perdida por redondeo.
+        linea.descuento = descuento
+    else:
+        linea.aplicar_descuento_pct(Decimal("0"))
 

@@ -33,9 +33,9 @@ class RequestAuditMiddleware:
         if request.user.is_authenticated and usuario_id:
             from src.modules.identity.infrastructure.persistence.django_models.usuario_model import UsuarioModel
             usuario = UsuarioModel.objects.only("activo", "estado", "rol").filter(pk=usuario_id).first()
-            if usuario and (not usuario.activo or usuario.estado != "ACTIVO" or (
+            if (usuario is None and request.session.get("identity_role")) or (usuario and (not usuario.activo or usuario.estado != "ACTIVO" or (
                 request.session.get("identity_role") and request.session["identity_role"] != usuario.rol
-            )):
+            ))):
                 logout(request)
                 return redirect("identity:login")
         if request.method not in ("POST", "PUT", "PATCH", "DELETE"):

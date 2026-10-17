@@ -6,7 +6,8 @@ Todas las rutas son HTML salvo las marcadas como AJAX (JSON). Autenticacion por 
 | Metodo | Ruta | Accion |
 |---|---|---|
 | GET/POST | `/login/` | Iniciar sesion |
-| GET | `/logout/` | Cerrar sesion |
+| POST | `/logout/` | Cerrar sesion (requiere CSRF; GET devuelve 405) |
+| GET/HEAD | `/healthz` | Readiness SQL/cache: 200 disponible, 503 no disponible; sin detalles privados |
 | GET | `/usuarios/` | Listar (ADMIN) |
 | POST | `/usuarios/nuevo/` | Crear (ADMIN) |
 | GET/POST | `/usuarios/<id>/editar/` | Editar nombre, email, rol y contraseña opcional (ADMIN) |

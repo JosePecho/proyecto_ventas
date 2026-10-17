@@ -7,6 +7,11 @@
   <div class="col-md-6">
     <form method="post" id="form-pago" class="card card-body">
       {% csrf_token %}
+      {{ form.non_field_errors }}
+      {% if anulacion %}
+        <label for="motivo">Motivo de anulacion</label>
+        <textarea name="motivo" id="motivo" class="form-control mb-3" maxlength="500" required></textarea>
+      {% endif %}
       {% for campo in form %}
         <div class="mb-3">
           <label class="form-label">{{ campo.label }}</label>
@@ -15,7 +20,7 @@
         </div>
       {% endfor %}
       <div class="d-flex gap-2">
-        <button class="btn btn-success flex-grow-1" type="submit"><i class="bi bi-check2-circle"></i> Confirmar cobro</button>
+        <button class="btn btn-success flex-grow-1" type="submit"><i class="bi bi-check2-circle"></i> {% if anulacion %}Confirmar anulacion{% else %}Confirmar cobro{% endif %}</button>
         <a class="btn btn-outline-secondary" href="{% url 'sales:pos' %}">Volver</a>
       </div>
     </form>

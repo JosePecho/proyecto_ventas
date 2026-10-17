@@ -1,9 +1,11 @@
 <div class="card" id="carrito-pos">
   <div class="card-header d-flex justify-content-between">
     <span><i class="bi bi-cart3"></i> Carrito</span>
-    <span id="conteo-lineas" class="badge bg-primary">0</span>
+    <span id="conteo-lineas" class="badge bg-primary">{{ venta.lineas|length }}</span>
   </div>
-  <ul class="list-group list-group-flush" id="lineas-carrito"></ul>
+  <ul class="list-group list-group-flush" id="lineas-carrito">
+    {% for linea in venta.lineas %}{% include 'pos/partials/carrito_item.html' %}{% endfor %}
+  </ul>
   {% include 'pos/partials/carrito_total.html' %}
 </div>
 

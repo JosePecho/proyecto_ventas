@@ -9,6 +9,7 @@ from src.modules.auditing.application.use_cases.rastrear_transaccion import Rast
 from src.modules.auditing.infrastructure.factories import construir_auditoria_repository
 from src.modules.auditing.presentation.forms.filtro_auditoria_form import FiltroAuditoriaForm
 from src.modules.identity.presentation.permissions.role_required import role_required
+from src.shared.application.exceptions.application_exception import NotFoundException
 
 
 @login_required
@@ -34,7 +35,7 @@ def auditoria_view(request):
     if filtros.entidad and filtros.entidad_id:
         try:
             traza = RastrearTransaccion(repo).ejecutar(filtros.entidad, filtros.entidad_id)
-        except Exception:
+        except NotFoundException:
             traza = None
 
     return render(

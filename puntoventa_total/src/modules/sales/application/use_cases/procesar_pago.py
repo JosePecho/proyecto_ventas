@@ -60,7 +60,7 @@ class ProcesarPago:
             # descuento definitivo de stock (PEPS) por cada linea
             referencia = f"VENTA:{agregado.venta.numero_ticket}"
             for linea in agregado.lineas:
-                if linea.cantidad > 0:
+                if linea.requiere_stock and linea.cantidad > 0:
                     self._inventario.descontar(
                         linea.producto_id, linea.cantidad, referencia, agregado.venta.cajero_id
                     )
