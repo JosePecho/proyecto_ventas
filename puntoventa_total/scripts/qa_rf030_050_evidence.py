@@ -19,9 +19,9 @@ def huella_archivo(path):
 
 def huella_codigo():
     huella = hashlib.sha256()
-    for carpeta in ("src", "config", "tests", "requirements"):
+    for carpeta in ("src", "config", "tests", "requirements", "templates", "static"):
         for path in sorted((ROOT / carpeta).rglob("*")):
-            if path.suffix in (".py", ".txt", ".js", ".feature"):
+            if path.suffix in (".py", ".txt", ".js", ".feature", ".html", ".css", ".json"):
                 huella.update(path.relative_to(ROOT).as_posix().encode())
                 huella.update(path.read_bytes())
     return huella.hexdigest()
@@ -29,6 +29,8 @@ def huella_codigo():
 
 def artefactos(prefix):
     return [REPORTS / f"{prefix}.xml", REPORTS / f"{prefix}-coverage.json",
+            REPORTS / f"{prefix}-unit.xml", REPORTS / f"{prefix}-unit-coverage.json",
+            REPORTS / f"{prefix}-unit-gate.json",
             *[REPORTS / f"{prefix}-k6-{tipo}.json" for tipo in ("pos", "pedidos", "reportes")]]
 
 
@@ -59,6 +61,21 @@ def perfil(nombre):
                 niveles[nivel] += 1
     if not all(niveles.values()) or sum(niveles.values()) != conteos["tests"]:
         raise ValueError(f"{nombre}: faltan niveles o casos sin clasificar: {niveles}")
+    unit_cases = list(ET.parse(REPORTS / f"{prefix}-unit.xml").getroot().iter("testcase"))
+    if len(unit_cases) != niveles["unit"] or any(
+        not c.get("classname", "").startswith("tests.unit.") or
+        any(c.find(tag) is not None for tag in ("failure", "error", "skipped")) for c in unit_cases
+    ):
+        problemas.append("Evidencia unitaria incompleta, fallida o no coincide con la suite completa")
+    unit_json = json.loads((REPORTS / f"{prefix}-unit-coverage.json").read_text(encoding="utf-8"))
+    summaries = [e["summary"] for path, e in unit_json["files"].items()
+                 if {"domain", "application"} & set(path.replace("\\", "/").split("/"))]
+    unit_total = sum(s["num_statements"] for s in summaries)
+    unit_covered = sum(s["covered_lines"] for s in summaries)
+    unit_percent = 100 * unit_covered / unit_total if unit_total else 0
+    core = json.loads((REPORTS / f"{prefix}-unit-gate.json").read_text(encoding="utf-8"))
+    if unit_percent < 80 or not core["passed"] or core["unit_tests"] != len(unit_cases):
+        problemas.append("Gate de cobertura unitaria no aprobado o evidencia no coincidente")
     cargas = {}
     for tipo in ("pos", "pedidos", "reportes"):
         if not procedencia["k6_same_run"][tipo]:
@@ -79,6 +96,8 @@ def perfil(nombre):
     fallos = [f"{caso.get('classname')}.{caso.get('name')}" for caso in root.iter("testcase")
               if caso.find("failure") is not None or caso.find("error") is not None]
     return dict(conteos, coverage=round(cobertura, 2), niveles=niveles, k6=cargas,
+                unit={"tests": len(unit_cases), "instrumented_domain_application_pct": round(unit_percent, 2),
+                      "reporting_core_pct": core["percent"], "reporting_core_statements": core["statements"]},
                 provenance=procedencia, ready=not problemas, problems=problemas, failed_cases=fallos)
 
 
@@ -96,6 +115,10 @@ def main():
         inicio = min(datetime.fromisoformat(s.get("timestamp")).timestamp()
                      for s in suites)
         misma_ejecucion = {}
+        for origen, sufijo in (("rf030-050-unit.xml", "unit.xml"),
+                               ("audit_unit_coverage.json", "unit-coverage.json"),
+                               ("rf044-050-unit-gate.json", "unit-gate.json")):
+            shutil.copyfile(REPORTS / origen, REPORTS / f"{prefix}-{sufijo}")
         for tipo in ("pos", "pedidos", "reportes"):
             fuente = REPORTS / f"k6-{tipo}-summary.json"
             misma_ejecucion[tipo] = inicio <= fuente.stat().st_mtime <= fin

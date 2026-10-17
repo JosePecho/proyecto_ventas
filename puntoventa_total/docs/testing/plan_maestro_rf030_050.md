@@ -3,6 +3,8 @@
 ## 1.1 Lenguaje, Runtime y Framework detectado
 
 Alcance: RF-030..050, módulos 3.4 Pedidos en Línea, 3.5 Clientes Frecuentes/Promociones y 3.6 Reportes/Administración.
+Los conteos finales corresponden a la suite completa del proyecto, incluyendo regresiones de POS,
+inventario y catálogo. Los escenarios específicos y su relación con RF-030..050 se identifican en la matriz.
 Python, Django, monolito modular con dominio/aplicación/infraestructura/presentación. Se revisó el código antes de seleccionar herramientas.
 Revisión del 17 de octubre de 2026. Perfil declarado: Python 3.11.16, Django 5.0.6, Celery 5.4.0.
 Perfil QA observado: Python 3.14.7, Django 6.1.2, Celery 5.6.3, pytest 9.1.1, pytest-django 4.14.0.
@@ -28,14 +30,19 @@ una migración de dependencias y su validación; esta auditoría mantiene la com
 
 Identificadores: Pedido.cliente_id = Identity.Usuario.id; Venta.cliente_id = Customers.Cliente.id.
 El perfil y el historial validan al dueño por Cliente.usuario_id. No intercambiar esos UUID.
+El hasher de pruebas utiliza la configuración de testing (MD5PasswordHasher para velocidad);
+la comprobación de credenciales no acredita el algoritmo/costo configurado en producción.
 
 ## 1.3 Deuda Técnica o Problemas de Testabilidad
 
 La suite existente protege propiedad del carrito y seguimiento, checkout, cancelación durante preparación,
 reservas hasta el recojo, historial propio, descuento de frecuencia, fechas, combos, edición web,
 costo histórico, persistencia de descuentos, auditoría y revocación de sesiones.
-Esta revisión añade contratos de estados/fronteras, rankings, último administrador, entrega por navegador
-y tres criterios BDD administrativos; no atribuye correcciones históricas a la ejecución actual.
+La consolidación incorpora contratos de estados/fronteras, rankings, último administrador,
+entrega por navegador, las pruebas completas del módulo 3.6 y el ciclo de promoción
+Borrador → Activa → Vencida → Cancelada solicitado por el usuario.
+Las correcciones de 3.6 incluyen margen porcentual por producto, redondeo HALF_UP del total,
+acciones CREAR/ACTUALIZAR/ELIMINAR consultables y validación/filtro por actor en auditoría.
 
 | Hallazgo de análisis estático | Riesgo / testabilidad | Tratamiento |
 |---|---|---|
@@ -46,7 +53,8 @@ y tres criterios BDD administrativos; no atribuye correcciones históricas a la 
 | RF-037 usa SMTP dentro de una transacción y marca luego el envío | Bloqueo prolongado o duplicado tras una caída | Probar recuperación; valorar outbox e idempotencia del proveedor |
 | DNI/teléfono son datos personales; sesión controla propiedad y roles | Exposición por IDOR o logs | Pruebas de propietario, CSRF, roles y exclusión de secretos de auditoría |
 | Dependencias productivas fijan Django 5.0.6 sin soporte | Riesgo alto de seguridad de dependencias | Migrar a rama soportada en trabajo de actualización; esta suite no certifica seguridad productiva |
-| El ciclo de promociones entregado escribe Vencida → Cancelada; `Promocion.cancelar()` rechaza FINALIZADA | Diferencia de contrato pendiente de decisión de negocio | No afirmar conformidad de ese tramo; el PO debe confirmar si la flecha es una transición obligatoria o una enumeración de estados |
+| El ciclo suministrado exige Vencida → Cancelada | Brecha reproducida en Unit/HTTP y corregida | Se permite cancelar FINALIZADA; cancelada es terminal y vencida/cancelada no se reactivan; UI y BDD lo verifican |
+| RF-047 mostraba utilidad por producto pero no porcentaje; auditoría rechazaba acciones escritas por el middleware y filtros inválidos producían 500 | Corregido y comprobado en los cuatro niveles | Se consolidan las pruebas de `test_reportes_administracion*` y el gate de doce archivos del núcleo |
 
 Políticas conservadas o explicitadas:
 
@@ -55,10 +63,9 @@ Políticas conservadas o explicitadas:
   No hubo confirmación de otra política. Dos compras del mismo día cuentan como recurrentes; una sola no proporciona frecuencia.
 - Combo: productos/cantidades definidos por el administrador y precio final del paquete. Solo paquetes completos.
   Beneficio global = mejor opción entre combo/fidelización, descontando lo aplicado a líneas para evitar acumulación accidental.
-- Promoción: Borrador → Activa → Vencida / Cancelada. PROGRAMADA se conserva internamente como borrador con calendario;
+- Promoción: Borrador → Activa → Vencida → Cancelada. PROGRAMADA se conserva internamente como borrador con calendario;
   FINALIZADA se muestra Vencida. El fin es exclusivo: en ese instante ya no aplica.
-  Este es el comportamiento actual; la secuencia literal entregada incluye Vencida → Cancelada y no coincide
-  con `cancelar()` desde FINALIZADA. Se registra como brecha pendiente, no como criterio aprobado.
+  La cancelación desde FINALIZADA se permite conforme al contrato suministrado; la reactivación queda prohibida.
 - Pedidos: CONFIRMADO se muestra Pendiente; BORRADOR solo representa el carrito interno. El cliente solo cancela Pendiente.
 - Horarios: franjas futuras de 30 minutos. No se inventaron horario comercial, capacidad por franja ni política de no-show.
 - Utilidad comercial: ingresos netos distribuidos por línea y costo de catálogo congelado al agregar el producto.
@@ -73,7 +80,7 @@ Políticas conservadas o explicitadas:
 | Integration | pytest-django 4.8.0, testcontainers[mysql] 4.15.0, mysqlclient 2.2.4 | Docker con motor Linux; MySQL 8.4.3 | ORM, rollback, permisos y carreras | requirements/testing.txt; Docker: instalador oficial indicado debajo |
 | System/E2E | Playwright 1.64.0 | CLI Playwright + Chromium | Formularios, navegación, sesiones y CSRF reales | `rtk proxy python -m playwright install chromium` |
 | Performance | k6 2.3.0 | CLI k6 | Cobro <100 ms p95; reportes/pedidos <500 ms p95 | Windows: `rtk proxy python scripts/qa_download_tools.py k6 --asset k6-v2.3.0-windows-amd64.zip` |
-| UAT | pytest-bdd 9.0.0 | CLI pytest | Doce escenarios de negocio entre los tres módulos | requirements/testing.txt |
+| UAT | pytest-bdd 9.0.0 | CLI pytest | Diecinueve escenarios de negocio entre los tres módulos | requirements/testing.txt |
 | Servicios | Celery 5.4.0, redis 5.0.4 | Redis y SMTP | Worker, recuperación de avisos y entrega SMTP | requirements/testing.txt; Redis portable: `rtk proxy python scripts/qa_download_tools.py redis --asset Redis-8.10.2-Windows-x64-cygwin.zip` |
 
 [Instalación oficial de Docker Desktop en Windows](https://docs.docker.com/desktop/setup/install/windows-install/).
@@ -110,11 +117,14 @@ proyecto_ventas/
     |-- tests/
     |   |-- unit/domain/{test_pedidos_online,test_clientes_promociones_reportes}.py
     |   |-- unit/domain/test_rf030_050_contratos.py
+    |   |-- unit/application/test_reportes_administracion.py
     |   |-- integration/{test_pedidos_online,test_pedidos_online_mysql,test_rf038_050}.py
     |   |-- integration/{test_smtp_real,test_redis_celery_real}.py
     |   |-- integration/test_rf030_050_contratos.py
+    |   |-- integration/test_reportes_administracion.py
     |   |-- system/{test_pedidos_online_playwright,test_rf038_050_playwright}.py
     |   |-- system/test_rf030_050_contratos.py
+    |   |-- system/test_reportes_administracion_playwright.py
     |   |-- system/{test_k6_pos_real,test_pedidos_online_k6,test_rf038_050_k6}.py
     |   |-- performance/{k6_cobro,k6_pedidos,k6_reportes}.js
     |   `-- uat/
@@ -122,6 +132,8 @@ proyecto_ventas/
     |       `-- {test_pedidos_online_bdd,test_clientes_promociones_admin_bdd}.py
     |-- tests/uat/features/reportes_administracion_contratos.feature
     |-- tests/uat/test_reportes_administracion_contratos_bdd.py
+    |-- tests/uat/features/reportes_administracion.feature
+    |-- tests/uat/test_reportes_administracion_bdd.py
     |-- scripts/{qa_inventory_mysql,qa_inventory_mysql_native,qa_redis_native}.py
     |-- scripts/qa_build_rf030_050_report.py
     |-- docs/testing/plan_maestro_rf030_050.md
@@ -134,6 +146,8 @@ proyecto_ventas/
 
 Estados, cantidades, hora de recojo, frecuencia, combos completos/incompletos, vencimiento exacto,
 reconfirmación sin nueva reserva y propiedad de conservación de centavos al distribuir descuentos.
+También margen positivo/negativo/desconocido, redondeo 3.125 → 3.13, total ponderado,
+acciones de auditoría, trazas y usuarios desactivados en todos los roles.
 
 ## 4.2 Aplicativos y Librerías a usar
 
@@ -142,11 +156,15 @@ pytest, unittest.mock e Hypothesis. Las propiedades monetarias no usan BD, naveg
 ## 4.3 Guía Paso a Paso de Configuración y Ejecución
 
 ```powershell
-rtk proxy .venv-rf030-050/Scripts/python.exe -m pytest tests/unit -q -p no:cacheprovider --cov=src --cov-fail-under=0 --cov-report=json:reports/audit_unit_coverage.json --junitxml=reports/rf-unit.xml
+rtk proxy .venv-rf030-050/Scripts/python.exe -m pytest tests/unit -q -p no:cacheprovider --cov=src --cov-fail-under=0 --cov-report=json:reports/audit_unit_coverage.json --junitxml=reports/rf030-050-unit.xml
 rtk proxy .venv-rf030-050/Scripts/python.exe scripts/qa_unit_gate.py
+rtk proxy .venv-rf030-050/Scripts/python.exe scripts/qa_reportes_unit_gate.py --junit reports/rf030-050-unit.xml
 ```
 
 El gate mide dominio y aplicación a partir de pruebas unitarias, mínimo 80%; no confunde cobertura integrada con unitaria.
+Ese primer indicador comprende los archivos instrumentados incluidos en el JSON de coverage.py.
+El gate del núcleo de reportes/auditoría analiza doce archivos explícitos e incluye los no importados.
+Su alcance y denominador están en `scripts/qa_reportes_unit_gate.py`; no representa todas las vistas de esos módulos.
 
 ## 4.4 Código Completo del Test Unitario
 
@@ -450,6 +468,255 @@ def test_promocion_terminal_no_se_reactiva(estado):
     with pytest.raises(PromocionException):
         promocion.activar()
     assert promocion.estado == estado
+
+
+def test_ciclo_promocion_borrador_activa_vencida_cancelada():
+    promocion = Promocion(nombre="Ciclo RF-042")
+    assert promocion.estado_label == "Borrador"
+    promocion.activar()
+    assert promocion.estado_label == "Activa"
+    promocion.finalizar()
+    assert promocion.estado_label == "Vencida"
+    promocion.cancelar()
+    assert promocion.estado_label == "Cancelada"
+    assert not promocion.esta_vigente()
+    with pytest.raises(PromocionException):
+        promocion.cancelar()
+    assert promocion.estado == EstadoPromocion.CANCELADA
+```
+
+**Archivo: `tests/unit/application/test_reportes_administracion.py`**
+
+```python
+"""Contratos puros RF-044/045/047, sin ORM ni servicios."""
+from datetime import date
+from unittest.mock import Mock
+
+import pytest
+
+from src.modules.reporting.application.use_cases.reporte_utilidad import ReporteUtilidad
+from src.modules.reporting.application.use_cases.reporte_ventas_diarias import ReporteVentasDiarias
+from src.modules.reporting.domain.repositories.reporte_repository import ReporteRepository
+from src.modules.reporting.domain.value_objects.utilidad_historica import agrupar_utilidad
+from src.shared.domain.exceptions.validation_exception import ValidationException
+from src.modules.auditing.domain.entities.registro_auditoria import RegistroAuditoria
+from src.modules.auditing.domain.repositories.auditoria_repository import AuditoriaRepository
+from src.modules.auditing.application.dto.auditoria_dto import FiltroAuditoriaDTO
+from src.modules.auditing.application.use_cases.consultar_auditoria import ConsultarAuditoria
+from src.modules.auditing.application.use_cases.registrar_auditoria import RegistrarAuditoria
+from src.modules.auditing.application.use_cases.rastrear_transaccion import RastrearTransaccion
+from src.modules.reporting.application.use_cases.reporte_ventas_por_fecha import ReporteVentasPorFecha
+from src.modules.reporting.application.use_cases.reporte_productos_mas_vendidos import ReporteProductosMasVendidos
+from src.shared.application.exceptions.application_exception import NotFoundException
+from src.modules.identity.domain.entities.usuario import Usuario
+from src.modules.identity.domain.enums.rol_usuario import RolUsuario
+from src.modules.catalog.domain.entities.categoria import Categoria
+
+pytestmark = pytest.mark.unit
+
+
+def fila(ingresos, costo, producto="pan"):
+    return {"venta_id": producto, "producto_id": producto, "producto_nombre": producto,
+            "cantidad": 1, "importe": ingresos, "total_venta": ingresos, "costo_unitario": costo}
+
+
+@pytest.mark.parametrize("ingresos,costo,esperado", [
+    (10, 6, 40.0), (10, 15, -50.0), (32, 31, 3.13),
+    (0, 2, None), (10, None, None),
+])
+def test_margen_por_producto_es_utilidad_sobre_ingresos(ingresos, costo, esperado):
+    resultado = agrupar_utilidad([fila(ingresos, costo)])[0]
+    assert resultado["margen_pct"] == esperado
+
+
+def test_margen_total_pondera_ingresos_en_lugar_de_promediar_porcentajes():
+    repo = Mock(spec=ReporteRepository)
+    repo.utilidad_por_producto.return_value = agrupar_utilidad([fila(10, 5), fila(90, 89, "torta")])
+    reporte = ReporteUtilidad(repo).ejecutar(date(2026, 10, 1), date(2026, 10, 17))
+    assert (reporte.ingresos_totales, reporte.costos_totales, reporte.utilidad_total) == (100, 94, 6)
+    assert reporte.margen_pct == 6
+    assert not reporte.estimado
+
+
+def test_margen_total_y_producto_redondean_el_mismo_empate_decimal():
+    repo = Mock(spec=ReporteRepository)
+    repo.utilidad_por_producto.return_value = agrupar_utilidad([fila(32, 31)])
+    reporte = ReporteUtilidad(repo).ejecutar(date(2026, 10, 17), date(2026, 10, 17))
+    assert reporte.margen_pct == reporte.por_producto[0]["margen_pct"] == 3.13
+
+
+def test_reporte_sin_ventas_es_cero_y_no_divide_por_cero():
+    repo = Mock(spec=ReporteRepository)
+    repo.utilidad_por_producto.return_value = []
+    reporte = ReporteUtilidad(repo).ejecutar(date(2026, 10, 17), date(2026, 10, 17))
+    assert reporte.ingresos_totales == reporte.costos_totales == reporte.utilidad_total == 0
+    assert reporte.margen_pct == 0
+
+
+@pytest.mark.parametrize("desde,hasta", [
+    (date(2026, 10, 20), date(2026, 10, 19)), (date(2025, 1, 1), date(2026, 10, 17)),
+])
+def test_rango_invalido_no_consulta_repositorio(desde, hasta):
+    repo = Mock(spec=ReporteRepository)
+    with pytest.raises(ValidationException):
+        ReporteUtilidad(repo).ejecutar(desde, hasta)
+    repo.utilidad_por_producto.assert_not_called()
+
+
+def test_reporte_diario_conserva_tickets_y_metodos_de_pago():
+    repo = Mock(spec=ReporteRepository)
+    dia = date(2026, 10, 17)
+    repo.ventas_por_dia.return_value = [{"fecha": dia.isoformat(), "total": 40, "cantidad": 2}]
+    repo.totales_por_metodo_pago.return_value = {"EFECTIVO": 10, "TARJETA": 30}
+    reporte = ReporteVentasDiarias(repo).ejecutar(dia)
+    assert (reporte["total"], reporte["tickets"], reporte["metodos_pago"]) == (
+        40, 2, {"EFECTIVO": 10, "TARJETA": 30},
+    )
+    repo.ventas_por_dia.assert_called_once_with(dia, dia)
+
+
+@pytest.mark.parametrize("accion", ["CREAR", "ACTUALIZAR", "ELIMINAR"])
+def test_acciones_transversales_pueden_consultarse_como_dominio(accion):
+    registro = RegistroAuditoria.crear(accion, "CategoriaModel", "categoria-1", "actor-1")
+    assert (registro.accion, registro.usuario_id, registro.entidad_id) == (accion, "actor-1", "categoria-1")
+
+
+def test_accion_arbitraria_sigue_rechazada():
+    with pytest.raises(ValidationException):
+        RegistroAuditoria.crear("ACCION_INVENTADA", "CategoriaModel", "categoria-1")
+
+
+def test_ventas_por_rango_acumulan_tickets_total_e_igv():
+    repo = Mock(spec=ReporteRepository)
+    repo.ventas_por_dia.return_value = [
+        {"fecha": "2026-10-16", "total": 10, "cantidad": 1, "igv": 1.8},
+        {"fecha": "2026-10-17", "total": 30, "cantidad": 2, "igv": 5.4},
+    ]
+    reporte = ReporteVentasPorFecha(repo).ejecutar(date(2026, 10, 16), date(2026, 10, 17))
+    assert (reporte.cantidad_tickets, reporte.total_ventas, reporte.total_igv) == (3, 40, 7.2)
+
+
+def test_ranking_preserva_orden_y_limite_del_repositorio():
+    repo = Mock(spec=ReporteRepository)
+    repo.productos_mas_vendidos.return_value = [{"producto_id": "torta", "unidades": 5}]
+    desde, hasta = date(2026, 10, 1), date(2026, 10, 17)
+    assert ReporteProductosMasVendidos(repo).ejecutar(desde, hasta, 1) == [{"producto_id": "torta", "unidades": 5}]
+    repo.productos_mas_vendidos.assert_called_once_with(desde, hasta, 1)
+
+
+def test_auditoria_convierte_fechas_y_pagina_sin_alterar_el_actor():
+    repo = Mock(spec=AuditoriaRepository)
+    eventos = [RegistroAuditoria.crear("CREAR", "CategoriaModel", str(i), "actor") for i in range(3)]
+    repo.consultar.return_value = eventos
+    pagina = ConsultarAuditoria(repo).ejecutar(
+        FiltroAuditoriaDTO(usuario_id="actor", desde="2026-10-01", hasta="2026-10-17"), pagina=2, por_pagina=2,
+    )
+    assert pagina.total == 3 and len(pagina.items) == 1
+    assert pagina.items[0].entidad_id == "2" and pagina.items[0].usuario_id == "actor"
+    assert repo.consultar.call_args.kwargs["desde"] == date(2026, 10, 1)
+    assert repo.consultar.call_args.kwargs["hasta"] == date(2026, 10, 17)
+
+
+def test_registrar_auditoria_conserva_actor_y_entidad():
+    repo = Mock(spec=AuditoriaRepository)
+    identificador = RegistrarAuditoria(repo).ejecutar("CREAR", "CategoriaModel", "cat-1", "actor")
+    evento = repo.guardar.call_args.args[0]
+    assert identificador == str(evento.id)
+    assert (evento.usuario_id, evento.entidad_id) == ("actor", "cat-1")
+
+
+def test_traza_conserva_primera_y_ultima_accion():
+    repo = Mock(spec=AuditoriaRepository)
+    repo.trazas_de_entidad.return_value = [
+        RegistroAuditoria.crear("ACTUALIZAR", "CategoriaModel", "cat-1"),
+        RegistroAuditoria.crear("CREAR", "CategoriaModel", "cat-1"),
+    ]
+    traza = RastrearTransaccion(repo).ejecutar("CategoriaModel", "cat-1")
+    assert (traza["cantidad"], traza["primera_accion"], traza["ultima_accion"]) == (2, "CREAR", "ACTUALIZAR")
+
+
+def test_traza_inexistente_se_informa():
+    repo = Mock(spec=AuditoriaRepository)
+    repo.trazas_de_entidad.return_value = []
+    with pytest.raises(NotFoundException):
+        RastrearTransaccion(repo).ejecutar("CategoriaModel", "inexistente")
+
+
+@pytest.mark.parametrize("rol", list(RolUsuario))
+def test_usuario_desactivado_no_puede_autenticarse_con_ningun_rol(rol):
+    usuario = Usuario(username="usuario_qa", nombre_completo="Usuario QA", rol=rol)
+    assert usuario.puede_autenticarse()
+    usuario.desactivar()
+    assert not usuario.puede_autenticarse()
+
+
+def test_categoria_rechaza_nombre_vacio_al_editar_y_conserva_el_anterior():
+    categoria = Categoria(nombre="Panes")
+    with pytest.raises(ValidationException):
+        categoria.renombrar("")
+    assert categoria.nombre == "Panes"
+```
+
+**Archivo: `scripts/qa_reportes_unit_gate.py`**
+
+```python
+"""Cobertura de núcleo RF-044..050, incluyendo archivos no importados por los tests."""
+import argparse
+import json
+from pathlib import Path
+import xml.etree.ElementTree as ET
+
+from coverage import Coverage
+
+ROOT = Path(__file__).resolve().parents[1]
+ARCHIVOS = [
+    "reporting/domain/value_objects/rango_fechas.py",
+    "reporting/domain/value_objects/utilidad_historica.py",
+    "reporting/application/use_cases/reporte_ventas_diarias.py",
+    "reporting/application/use_cases/reporte_ventas_por_fecha.py",
+    "reporting/application/use_cases/reporte_productos_mas_vendidos.py",
+    "reporting/application/use_cases/reporte_utilidad.py",
+    "auditing/domain/entities/registro_auditoria.py",
+    "auditing/application/use_cases/consultar_auditoria.py",
+    "auditing/application/use_cases/registrar_auditoria.py",
+    "auditing/application/use_cases/rastrear_transaccion.py",
+    "identity/domain/entities/usuario.py",
+    "catalog/domain/entities/categoria.py",
+]
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--junit", default="reports/rf044-050-unit.xml")
+    parser.add_argument("--data-file", default=".coverage")
+    args = parser.parse_args()
+    reporte = ET.parse(ROOT / args.junit).getroot()
+    casos = list(reporte.iter("testcase"))
+    if not casos or any(not c.get("classname", "").startswith("tests.unit.") or
+                        any(c.find(tag) is not None for tag in ("failure", "error", "skipped")) for c in casos):
+        raise SystemExit("El gate requiere un JUnit unitario aprobado, sin omisiones")
+    coverage = Coverage(data_file=str(ROOT / args.data_file))
+    coverage.load()
+    if not coverage.get_data().measured_files():
+        raise SystemExit("No hay datos de cobertura")
+    filas = []
+    for ruta in ARCHIVOS:
+        _, lineas, _, faltantes, _ = coverage.analysis2(str(ROOT / "src/modules" / ruta))
+        filas.append({"archivo": ruta, "lineas": len(lineas), "cubiertas": len(lineas) - len(faltantes),
+                      "faltantes": faltantes})
+    total = sum(f["lineas"] for f in filas)
+    cubiertas = sum(f["cubiertas"] for f in filas)
+    porcentaje = 100 * cubiertas / total if total else 0
+    resultado = {"scope": "12 archivos de núcleo de reportes/auditoría y entidades de usuario/categoría",
+                 "unit_tests": len(casos), "covered": cubiertas, "statements": total,
+                 "percent": round(porcentaje, 2), "minimum": 80, "passed": porcentaje >= 80, "files": filas}
+    (ROOT / "reports/rf044-050-unit-gate.json").write_text(json.dumps(resultado, indent=2), encoding="utf-8")
+    print(f"Nucleo RF-044..050: {cubiertas}/{total} lineas = {porcentaje:.2f}% (minimo 80%)")
+    return 0 if porcentaje >= 80 else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
 ```
 
 # 5. NIVEL 2: PRUEBAS DE INTEGRACIÓN (INTEGRATION TESTING)
@@ -1003,6 +1270,22 @@ def test_rf042_programada_ya_vencida_no_se_activa_temporalmente(client):
     assert client.get(reverse("promotions:activas"), HTTP_ACCEPT="application/json").json() == {"promociones": []}
 
 
+def test_rf042_admin_cancela_vencida_sin_reactivarla_y_audita(client):
+    administrador = staff(client)
+    promocion = PromocionModel.objects.create(id=uuid4(), nombre="Vencida cancelable", tipo="PORCENTAJE",
+                                            estado="FINALIZADA", descuento_valor=10)
+    respuesta = client.post(reverse("promotions:promociones"), {"accion": "cancelar", "promocion_id": str(promocion.id)})
+    assert respuesta.status_code == 302
+    promocion.refresh_from_db()
+    assert promocion.estado == "CANCELADA"
+    assert AuditoriaModel.objects.filter(entidad_id=str(promocion.id), usuario_id=administrador.id, accion="ACTUALIZAR").exists()
+    respuesta = client.post(reverse("promotions:promociones"), {"accion": "activar", "promocion_id": str(promocion.id)})
+    assert respuesta.status_code == 200 and respuesta.context["form"].errors
+    promocion.refresh_from_db()
+    assert promocion.estado == "CANCELADA"
+    assert client.get(reverse("promotions:activas"), HTTP_ACCEPT="application/json").json() == {"promociones": []}
+
+
 @pytest.mark.parametrize("vista", ["ventas", "utilidad", "productos"])
 @pytest.mark.parametrize("datos", [{"desde": "mal"}, {"desde": "2026-05-02", "hasta": "2026-05-01"}])
 def test_rf045_filtros_invalidos_retornan_400(client, vista, datos):
@@ -1227,6 +1510,103 @@ def test_ultimo_administrador_conserva_acceso(client, accion):
     assert actual.activo
     assert actual.rol.value == "ADMINISTRADOR"
     assert client.get(reverse("identity:usuarios")).status_code == 200
+```
+
+**Archivo: `tests/integration/test_reportes_administracion.py`**
+
+```python
+"""RF-044/047/050 por HTTP y persistencia real; MySQL en el gate."""
+from uuid import uuid4
+
+import pytest
+from django.urls import reverse
+from django.utils import timezone
+
+from src.modules.auditing.infrastructure.persistence.django_models.auditoria_model import AuditoriaModel
+from src.modules.customers.models import ClienteModel
+from src.modules.sales.infrastructure.persistence.django_models.pago_model import PagoModel
+from tests.integration.test_rf038_050 import compra, staff
+
+pytestmark = [pytest.mark.integration, pytest.mark.django_db]
+
+
+def datos_utilidad(total=10, costo=6):
+    cliente = ClienteModel.objects.create(id=uuid4(), nombre="Cliente reportes RF047")
+    venta = compra(cliente, total=total, costo=costo)
+    venta.detalles.update(producto_nombre="Pan RF047")
+    return venta
+
+
+def test_dashboard_del_dia_excluye_ayer_y_anuladas_y_desglosa_pagos(client):
+    staff(client)
+    cliente = ClienteModel.objects.create(id=uuid4(), nombre="Cliente día")
+    compra(cliente, total=10)
+    tarjeta = compra(cliente, total=30)
+    PagoModel.objects.filter(venta=tarjeta).update(metodo="TARJETA")
+    compra(cliente, total=777, dias=1)
+    compra(cliente, total=999, estado="ANULADA")
+    respuesta = client.get(reverse("reporting:dashboard"))
+    assert respuesta.status_code == 200
+    assert respuesta.context["ventas_hoy"]["total"] == 40
+    assert respuesta.context["ventas_hoy"]["tickets"] == 2
+    assert respuesta.context["ventas_hoy"]["metodos_pago"] == {"EFECTIVO": 10, "TARJETA": 30}
+
+
+@pytest.mark.parametrize("total,costo,margen", [(10, 6, 40), (32, 31, 3.13)])
+def test_utilidad_muestra_margen_por_producto_y_total(client, total, costo, margen):
+    staff(client)
+    datos_utilidad(total, costo)
+    respuesta = client.get(reverse("reporting:utilidad"))
+    assert respuesta.status_code == 200
+    reporte = respuesta.context["reporte"]
+    assert reporte.por_producto[0]["margen_pct"] == margen
+    assert reporte.margen_pct == margen
+    assert reporte.utilidad_total == total - costo
+    porcentaje = f"{margen:.2f}%"
+    assert porcentaje.encode() in respuesta.content or porcentaje.replace(".", ",").encode() in respuesta.content
+
+
+@pytest.mark.parametrize("consulta", [
+    {"pagina": "abc"}, {"pagina": "0"}, {"pagina": "-1"}, {"pagina": "1.5"},
+    {"desde": "mal"}, {"hasta": "2026-02-30"},
+    {"desde": "2026-10-20", "hasta": "2026-10-19"}, {"usuario_id": "no-uuid"},
+])
+def test_auditoria_rechaza_filtros_invalidos_sin_500(client, consulta):
+    staff(client)
+    client.raise_request_exception = False
+    respuesta = client.get(reverse("auditing:registros"), consulta)
+    assert respuesta.status_code == 400
+    assert respuesta.context["form"].errors
+
+
+def test_auditoria_filtra_actor_accion_y_fecha_sin_exponer_secretos(client):
+    admin = staff(client)
+    secreto = "NoRegistrar#DatoPrivado456"
+    assert client.post(reverse("catalog:categorias"), {
+        "nombre": "Categoría auditable RF050", "password": secreto, "dni": "12345678",
+    }).status_code == 302
+    registro = AuditoriaModel.objects.get(entidad="CategoriaModel", accion="CREAR")
+    AuditoriaModel.objects.create(id=uuid4(), accion="CREAR", entidad="CategoriaModel", entidad_id=str(uuid4()),
+                                 usuario_id=uuid4(), detalle={"campos": ["nombre"]})
+    hoy = timezone.localdate().isoformat()
+    respuesta = client.get(reverse("auditing:registros"), {"usuario_id": admin.id, "accion": "CREAR",
+                          "entidad": "CategoriaModel", "desde": hoy, "hasta": hoy})
+    assert respuesta.status_code == 200
+    filas = respuesta.context["pagina_dto"].items
+    assert len(filas) == 1
+    assert filas[0].id == str(registro.id)
+    assert str(filas[0].usuario_id) == admin.id
+    assert filas[0].fecha
+    assert secreto not in respuesta.content.decode()
+    assert "12345678" not in str(filas[0].detalle)
+
+
+@pytest.mark.parametrize("rol", ["CLIENTE", "CAJERO", "ALMACENERO", "GERENTE"])
+def test_auditoria_solo_es_visible_para_administrador(client, rol):
+    staff(client, rol)
+    respuesta = client.get(reverse("auditing:registros"))
+    assert respuesta.status_code == 302
+    assert respuesta.url == reverse("catalog:catalogo")
 ```
 
 **Archivo: `tests/integration/test_smtp_real.py`**
@@ -1563,6 +1943,27 @@ def test_admin_crea_combo_desde_selectores_de_productos(navegador, live_server):
     assert promo.componentes == [{"producto_id": str(primero.id), "cantidad": 1}, {"producto_id": str(segundo.id), "cantidad": 1}]
 
 
+def test_admin_cancela_promocion_vencida_desde_navegador(navegador, live_server):
+    from playwright.sync_api import expect
+
+    CrearUsuario(construir_repositorio(), construir_hasher()).ejecutar(UsuarioInputDTO(
+        username="admin_cancela_vencida", password=PASSWORD, nombre_completo="Admin ciclo", rol="ADMINISTRADOR"))
+    promo = PromocionModel.objects.create(id=uuid4(), nombre="Vencida navegador", tipo="PORCENTAJE",
+                                          estado="FINALIZADA", descuento_valor=10)
+    page = navegador.new_page()
+    login(page, live_server, "admin_cancela_vencida")
+    page.goto(live_server.url + "/promociones/gestion/")
+    fila = page.get_by_role("row").filter(has_text="Vencida navegador")
+    expect(fila.get_by_text("Vencida", exact=True)).to_be_visible()
+    expect(fila.get_by_role("button", name="Activar", exact=True)).to_have_count(0)
+    fila.get_by_role("button", name="Cancelar", exact=True).click()
+    fila = page.get_by_role("row").filter(has_text="Vencida navegador")
+    expect(fila.get_by_text("Cancelada", exact=True)).to_be_visible()
+    expect(fila.get_by_role("button", name="Cancelar", exact=True)).to_have_count(0)
+    promo.refresh_from_db()
+    assert promo.estado == "CANCELADA"
+
+
 def test_cajero_cobra_con_descuento_automatico_por_frecuencia(navegador, live_server):
     from decimal import Decimal
     from tests.integration.test_pedidos_online import producto
@@ -1647,6 +2048,85 @@ def test_tienda_atiende_pedido_hasta_entrega_desde_navegador(client, navegador, 
     page.reload()
     expect(page.get_by_text("Entregado", exact=True)).to_be_visible()
     expect(page.get_by_role("button", name="Entregar pedido", exact=True)).to_have_count(0)
+```
+
+**Archivo: `tests/system/test_reportes_administracion_playwright.py`**
+
+```python
+"""RF-047..050: pantalla real de utilidad, usuarios y auditoría con Chromium."""
+import re
+
+import pytest
+from django.urls import reverse
+from playwright.sync_api import expect
+
+from src.modules.catalog.models import CategoriaModel
+from src.modules.identity.application.dto.usuario_input import UsuarioInputDTO
+from src.modules.identity.application.use_cases.crear_usuario import CrearUsuario
+from src.modules.identity.infrastructure.factories import construir_hasher, construir_repositorio
+from tests.integration.test_reportes_administracion import datos_utilidad
+from tests.integration.test_rf038_050 import PASSWORD
+from tests.system.test_e2e_pos_playwright import navegador  # noqa: F401
+from tests.system.test_rf038_050_playwright import login
+
+pytestmark = [pytest.mark.system, pytest.mark.e2e, pytest.mark.django_db(transaction=True)]
+
+
+@pytest.fixture
+def admin_page(navegador, live_server):
+    admin = CrearUsuario(construir_repositorio(), construir_hasher()).ejecutar(UsuarioInputDTO(
+        username="admin_reportes_ui", password=PASSWORD, nombre_completo="Administrador reportes", rol="ADMINISTRADOR",
+    ))
+    page = navegador.new_page()
+    login(page, live_server, admin.username)
+    return page, admin
+
+
+def test_utilidad_por_producto_visible_con_margen(admin_page, live_server):
+    datos_utilidad()
+    page, _ = admin_page
+    page.goto(live_server.url + reverse("reporting:utilidad"))
+    fila = page.get_by_role("row").filter(has_text="Pan RF047")
+    expect(fila).to_contain_text(re.compile(r"40[.,]00%"))
+    expect(page.get_by_role("columnheader", name="Margen", exact=True)).to_be_visible()
+
+
+def test_categoria_creada_editada_y_auditada_con_actor(admin_page, live_server):
+    page, admin = admin_page
+    page.goto(live_server.url + reverse("catalog:categorias"))
+    page.locator('[name="nombre"]').fill("Categoría RF049 navegador")
+    page.get_by_role("button", name="Guardar categoría", exact=True).click()
+    expect(page.get_by_text("Categoría RF049 navegador", exact=False)).to_be_visible()
+    categoria = CategoriaModel.objects.get(nombre="Categoría RF049 navegador")
+    page.goto(live_server.url + reverse("catalog:categoria_editar", args=[categoria.id]))
+    page.locator('[name="nombre"]').fill("Categoría RF049 editada")
+    page.get_by_role("button", name="Guardar categoría", exact=True).click()
+    page.goto(live_server.url + reverse("auditing:registros") + f"?entidad=CategoriaModel&entidad_id={categoria.id}")
+    expect(page.get_by_role("cell", name="CREAR", exact=True)).to_be_visible()
+    expect(page.get_by_role("cell", name="ACTUALIZAR", exact=True)).to_be_visible()
+    expect(page.get_by_role("cell", name=admin.id, exact=True)).to_have_count(2)
+
+
+def test_admin_crea_edita_y_desactiva_usuario_por_ui(admin_page, live_server):
+    page, _ = admin_page
+    page.goto(live_server.url + reverse("identity:usuario_nuevo"))
+    for campo, valor in {"username": "cajero_rf048_ui", "nombre_completo": "Cajero inicial",
+                         "email": "cajero-rf048@example.test", "password": PASSWORD}.items():
+        page.locator(f'[name="{campo}"]').fill(valor)
+    page.locator('[name="rol"]').select_option("CAJERO")
+    page.get_by_role("button", name="Crear", exact=True).click()
+    fila = page.get_by_role("row").filter(has_text="cajero_rf048_ui")
+    expect(fila).to_contain_text("CAJERO")
+    fila.get_by_role("link", name="Editar", exact=True).click()
+    page.locator('[name="nombre_completo"]').fill("Gerente actualizado")
+    page.locator('[name="rol"]').select_option("GERENTE")
+    page.get_by_role("button", name="Guardar usuario", exact=True).click()
+    fila = page.get_by_role("row").filter(has_text="cajero_rf048_ui")
+    expect(fila).to_contain_text("Gerente actualizado")
+    expect(fila).to_contain_text("GERENTE")
+    fila.get_by_role("button", name="Desactivar", exact=True).click()
+    expect(page.get_by_role("row").filter(has_text="cajero_rf048_ui")).to_contain_text("INACTIVO")
+    assert not construir_repositorio().buscar_por_username("cajero_rf048_ui").activo
 ```
 
 **Archivo: `tests/system/test_rf038_050_k6.py`**
@@ -1842,8 +2322,8 @@ export default function () {
 
 ## 7.1 Escenarios de Negocio en Formato Gherkin
 
-Quince escenarios específicos de estos módulos: cuatro de pedidos y once comerciales/administrativos,
-incluidos ranking por dos criterios, rango invertido y protección del último administrador.
+Diecinueve escenarios específicos de estos módulos: cuatro de pedidos y quince comerciales/administrativos,
+incluidos cancelación de promoción vencida, utilidad/margen, consulta de auditoría y revocación de sesión.
 
 **Archivo: `tests/uat/features/pedidos_online.feature`**
 
@@ -1904,6 +2384,11 @@ Feature: Clientes frecuentes, promociones y administración RF-038 a RF-050
     When se actualiza la vigencia de promociones
     Then queda Vencida y no aparece entre las promociones públicas
 
+  Scenario: Cancelar una promoción vencida conforme al ciclo de vida
+    Given un administrador con una promoción Vencida
+    When cancela la promoción vencida
+    Then queda Cancelada y no ofrece descuentos públicos
+
   Scenario: Reportar solo ventas pagadas
     Given un administrador y ventas pagadas y anuladas
     When consulta el reporte de ventas
@@ -1938,6 +2423,26 @@ Feature: Criterios de aceptación de reportes y usuarios RF-045 RF-046 RF-048
     Given un único administrador activo
     When intenta desactivar su propia cuenta
     Then conserva su rol y el acceso a la gestión de usuarios
+```
+
+**Archivo: `tests/uat/features/reportes_administracion.feature`**
+
+```gherkin
+Feature: Reportes y administración RF-044 a RF-050
+  Scenario: Consultar utilidad y margen histórico por producto
+    Given un administrador con una venta de diez soles y costo histórico de seis
+    When consulta el reporte de utilidad
+    Then ve cuatro soles de utilidad y cuarenta por ciento de margen por producto y total
+
+  Scenario: Rastrear creación y edición de una categoría
+    Given un administrador que crea y edita una categoría
+    When consulta la auditoría de esa categoría
+    Then identifica ambas acciones con su actor y fecha
+
+  Scenario: Revocar el acceso de un usuario desactivado
+    Given un administrador y un cajero con sesión iniciada
+    When el administrador desactiva al cajero
+    Then la cuenta queda inactiva y su sesión pierde el acceso
 ```
 
 ## 7.2 Automatización del UAT (Step Definitions) o Checklist de Validación Manual para el Product Owner / Cliente
@@ -2136,6 +2641,28 @@ def no_publica(client):
     assert client.get(reverse("promotions:activas"), HTTP_ACCEPT="application/json").json()["promociones"] == []
 
 
+@given("un administrador con una promoción Vencida")
+def administrador_con_vencida(client, contexto):
+    administrador(client, contexto)
+    vencida()
+    run()
+    assert PromocionModel.objects.get().estado == "FINALIZADA"
+
+
+@when("cancela la promoción vencida")
+def cancelar_vencida(client):
+    promocion = PromocionModel.objects.get()
+    assert client.post(reverse("promotions:promociones"), {
+        "accion": "cancelar", "promocion_id": str(promocion.id),
+    }).status_code == 302
+
+
+@then("queda Cancelada y no ofrece descuentos públicos")
+def cancelada_sin_beneficio(client):
+    assert PromocionModel.objects.get().estado == "CANCELADA"
+    assert client.get(reverse("promotions:activas"), HTTP_ACCEPT="application/json").json()["promociones"] == []
+
+
 @given("un administrador y ventas pagadas y anuladas")
 def ventas(client, contexto):
     administrador(client, contexto)
@@ -2296,6 +2823,101 @@ def administrador_protegido(client, contexto):
     assert client.get(reverse("identity:usuarios")).status_code == 200
 ```
 
+**Archivo: `tests/uat/test_reportes_administracion_bdd.py`**
+
+```python
+import pytest
+from django.test import Client
+from django.urls import reverse
+from pytest_bdd import given, scenarios, then, when
+
+from src.modules.catalog.models import CategoriaModel
+from src.modules.identity.infrastructure.factories import construir_repositorio
+from tests.integration.test_reportes_administracion import datos_utilidad
+from tests.integration.test_rf038_050 import PASSWORD, staff
+
+pytestmark = [pytest.mark.uat, pytest.mark.django_db]
+scenarios("features/reportes_administracion.feature")
+
+
+@pytest.fixture
+def contexto():
+    return {}
+
+
+@given("un administrador con una venta de diez soles y costo histórico de seis")
+def venta(client):
+    staff(client)
+    datos_utilidad()
+
+
+@when("consulta el reporte de utilidad")
+def utilidad(client, contexto):
+    contexto["respuesta"] = client.get(reverse("reporting:utilidad"))
+
+
+@then("ve cuatro soles de utilidad y cuarenta por ciento de margen por producto y total")
+def margen(contexto):
+    assert contexto["respuesta"].status_code == 200
+    reporte = contexto["respuesta"].context["reporte"]
+    assert reporte.utilidad_total == reporte.por_producto[0]["utilidad"] == 4
+    assert reporte.margen_pct == reporte.por_producto[0]["margen_pct"] == 40
+
+
+@given("un administrador que crea y edita una categoría")
+def categoria(client, contexto):
+    contexto["admin"] = staff(client)
+    assert client.post(reverse("catalog:categorias"), {"nombre": "Categoría UAT RF049"}).status_code == 302
+    categoria = CategoriaModel.objects.get(nombre="Categoría UAT RF049")
+    contexto["categoria"] = categoria
+    assert client.post(reverse("catalog:categoria_editar", args=[categoria.id]), {
+        "nombre": "Categoría UAT editada", "descripcion": "Prueba de trazabilidad",
+    }).status_code == 302
+
+
+@when("consulta la auditoría de esa categoría")
+def consultar_auditoria(client, contexto):
+    contexto["respuesta"] = client.get(reverse("auditing:registros"), {
+        "entidad": "CategoriaModel", "entidad_id": str(contexto["categoria"].id),
+    })
+
+
+@then("identifica ambas acciones con su actor y fecha")
+def trazabilidad(contexto):
+    respuesta = contexto["respuesta"]
+    assert respuesta.status_code == 200
+    eventos = respuesta.context["pagina_dto"].items
+    assert {e.accion for e in eventos} == {"CREAR", "ACTUALIZAR"}
+    assert all(str(e.usuario_id) == contexto["admin"].id and e.fecha for e in eventos)
+
+
+@given("un administrador y un cajero con sesión iniciada")
+def usuario(client, contexto):
+    staff(client)
+    assert client.post(reverse("identity:usuario_nuevo"), {
+        "username": "cajero_uat_rf048", "nombre_completo": "Cajero UAT", "rol": "CAJERO", "password": PASSWORD,
+    }).status_code == 302
+    contexto["usuario"] = construir_repositorio().buscar_por_username("cajero_uat_rf048")
+    contexto["cajero"] = Client()
+    assert contexto["cajero"].post(reverse("identity:login"), {
+        "username": "cajero_uat_rf048", "password": PASSWORD,
+    }).status_code == 302
+
+
+@when("el administrador desactiva al cajero")
+def desactivar(client, contexto):
+    assert client.post(reverse("identity:usuario_desactivar", args=[contexto["usuario"].id])).status_code == 302
+
+
+@then("la cuenta queda inactiva y su sesión pierde el acceso")
+def sin_acceso(contexto):
+    assert not construir_repositorio().buscar_por_id(contexto["usuario"].id).activo
+    respuesta = contexto["cajero"].get(reverse("catalog:catalogo"))
+    assert respuesta.status_code == 302
+    assert respuesta.url == reverse("identity:login")
+    assert "usuario_id" not in contexto["cajero"].session
+```
+
 ## 7.3 Guía Paso a Paso para ejecutar y aprobar el UAT
 
 ```powershell
@@ -2306,8 +2928,8 @@ El Product Owner valida reglas/supuestos, nombres de estados, totales y permisos
 fecha, resultado y aprobación. Su firma no se sustituye con un pytest verde. No se envían mensajes a clientes reales.
 Para aceptación con el mismo motor de producción:
 `rtk proxy python scripts/qa_inventory_mysql.py tests/uat --junitxml=reports/rf-uat-mysql.xml`.
-Checklist de aprobación: comprobar los quince escenarios, validar los porcentajes/umbrales de frecuencia,
-confirmar política de horarios y permisos de GERENTE, resolver si debe permitirse Vencida → Cancelada,
+Checklist de aprobación: comprobar los diecinueve escenarios, validar los porcentajes/umbrales de frecuencia,
+confirmar política de horarios y permisos de GERENTE, validar la transición Vencida → Cancelada implementada,
 verificar el email de Listo en un buzón de staging,
 y registrar nombre del aprobador, commit, fecha, incidencias y decisión. Esa aprobación queda pendiente del PO.
 
@@ -2336,6 +2958,8 @@ Lee puntoventa_total/docs/testing/plan_maestro_rf030_050.md y puntoventa_total/d
 - El código existente clasifica como OCASIONAL también intervalos superiores a 30 días; no inventar un corte sin confirmación.
 - 2x1 es paquete de dos unidades, una gratuita; combo requiere productos distintos y precio final por paquete completo.
 - Las promociones caducan en el instante final; una programada ya vencida nunca se activa transitoriamente.
+- Aplica el ciclo explícito Borrador → Activa → Vencida → Cancelada: permite cancelar FINALIZADA,
+  impide reactivar vencidas/canceladas y no ofrece botones incompatibles con el estado.
 - Aplica el beneficio automáticamente antes del primer pago. No sumes beneficios incompatibles ni alteres pagos iniciados.
 - La utilidad usa el costo congelado al agregar la línea y distribuye el descuento global conservando centavos.
 - No inventes costos históricos; marca como parcial el reporte que contiene costos desconocidos.
@@ -2348,6 +2972,8 @@ Lee puntoventa_total/docs/testing/plan_maestro_rf030_050.md y puntoventa_total/d
 - Mantén los escenarios de tests/uat/features/reportes_administracion_contratos.feature y el flujo de entrega
   de tests/system/test_rf030_050_contratos.py cuando cambien reportes, permisos o estados.
 - Ejecuta Unit, MySQL real (incluidas carreras), navegador/carga y UAT. No llames integración MySQL a SQLite.
+- Consolida tests/unit/application/test_reportes_administracion.py y sus pruebas de integración/UI/BDD
+  en el plan general. Ejecuta también scripts/qa_reportes_unit_gate.py después de cobertura unitaria.
 - Usa rtk para shell. No ejecutes dos suites de carga al mismo tiempo.
 - Guarda JUnit, cobertura, resúmenes k6 y traces sin cookies/credenciales.
 - Una ejecución verde no garantiza ausencia absoluta de flakiness ni sustituye aceptación del Product Owner.
@@ -2402,7 +3028,7 @@ Es un comando para un entorno con ese CLI; no se ejecutó ni se presupone una cu
 # 9. PIPELINE CI/CD (QUALITY GATES)
 
 El workflow de la **raíz Git** descubre estos tests nuevos sin listas manuales. Cada perfil ejecuta los pasos en orden:
-Unit → gate unitario → MySQL → Sistema/Carga → UAT → cobertura global. Chromium/k6/Redis forman parte del job.
+Unit → gates unitarios general y de núcleo → MySQL → Sistema/Carga → UAT → cobertura global. Chromium/k6/Redis forman parte del job.
 La ejecución completa rechaza skips/xfails y cobertura inferior a 80%; los presupuestos k6 también bloquean.
 Un YAML verde no bloquea por sí mismo el merge: se requieren checks obligatorios en la protección de main,
 con nombres `quality (production-declared)` y `quality (qa)`.
@@ -2475,6 +3101,8 @@ jobs:
         run: python -m pytest tests/unit -q --cov=src --cov-fail-under=0 --cov-report=json:reports/audit_unit_coverage.json --junitxml=reports/full-unit.xml
       - name: Unit domain and application coverage gate
         run: python scripts/qa_unit_gate.py
+      - name: Reporting and auditing core unit coverage gate
+        run: python scripts/qa_reportes_unit_gate.py --junit reports/full-unit.xml
       - name: '2 - Integration on disposable MySQL'
         run: python scripts/qa_inventory_mysql.py tests/integration --runxfail --junitxml=reports/full-integration.xml
       - name: Install Chromium
@@ -2522,13 +3150,13 @@ La primera tabla relaciona requisitos con componentes; la segunda proporciona no
 | RF-039 | HistorialComprasAdapter / FrecuenciaCompra | Unit/Int/UAT | Positivo/Borde | Importe y frecuencia solo de ventas pagadas | U / I / A |
 | RF-040 | PrepararBeneficiosVenta | Unit/Int/Sys/UAT | Positivo/Negativo | Fidelización automática antes del primer pago, persistida | U / I / S / A |
 | RF-041 | CrearPromocion / descuento_combo | Unit/Int/Sys/UAT | Positivo/Negativo | Porcentaje, 2x1 y combo completos con precio definido | U / I / S / A |
-| RF-042 | programar / actualizar_estado_promociones | Unit/Int/UAT | Positivo/Borde | Rango válido; vencida no se activa ni se publica | U / I / A |
+| RF-042 | programar / actualizar_estado_promociones / cancelar | Unit/Int/Sys/UAT | Positivo/Borde | Rango válido; vencida no se publica; admite Cancelada sin reactivarse | U / I / S / A |
 | RF-043 | historial_compras_view | Int/Sys/UAT | Positivo/Negativo | Cliente consulta el propio, no el ajeno | I / S / A |
 | RF-044 | ReporteVentasDiarias / ventas_reporte_view | Int/Sys/UAT | Positivo | Total, tickets y métodos de pago | I / S / A |
 | RF-045 | RangoReporteForm / ReporteVentasPorFecha | Int/Sys | Positivo/Negativo | Filtra fechas; inválido da 400 y no 500 | I / S |
 | RF-046 | productos_reporte_view | Int/Sys | Positivo | Ranking por cantidad o monto neto | I / S |
-| RF-047 | agrupar_utilidad / ReporteUtilidad | Unit/Int/Sys | Positivo/Borde | Costo congelado, descuento repartido y centavos conservados | U / I / S |
-| RF-048 | crear/editar/desactivar_usuario | Int | Positivo/Negativo | Roles, edición, baja y revocación de sesión | I |
+| RF-047 | agrupar_utilidad / ReporteUtilidad | Unit/Int/Sys/UAT | Positivo/Borde | Costo congelado, descuento repartido, margen por producto/total y HALF_UP | U / I / S / A |
+| RF-048 | crear/editar/desactivar_usuario | Unit/Int/Sys/UAT | Positivo/Negativo | Roles, edición, baja y revocación de sesión | U / I / S / A |
 | RF-049 | categoria_view | Int/Sys/UAT | Positivo/Negativo | Creación y edición con permisos | I / S / A |
 | RF-050 | RequestAuditMiddleware / auditoría de venta | Int/Sys/UAT | Positivo/Negativo | Actor, agregado y fecha; fallo de auditoría revierte | I / S / A |
 
@@ -2544,6 +3172,11 @@ Casos añadidos en esta revisión, con selección exacta ejecutable desde `punto
 | QA-I03 | Desactivar/degradar último administrador | Int | Negativo | Cuenta activa y rol ADMINISTRADOR conservados | `rtk proxy python scripts/qa_inventory_mysql.py tests/integration/test_rf030_050_contratos.py::test_ultimo_administrador_conserva_acceso` |
 | QA-S01 | Atención desde navegador hasta Entregado | Sys | Positivo | Reserva 2 hasta Listo; entrega deja stock 8 y reserva 0 | `rtk proxy python scripts/qa_inventory_mysql.py tests/system/test_rf030_050_contratos.py` |
 | QA-A01..03 | Ranking, fechas invertidas y último administrador | UAT | Positivo/Negativo | Criterios Gherkin verificados por HTTP | `rtk proxy python scripts/qa_inventory_mysql.py tests/uat/test_reportes_administracion_contratos_bdd.py` |
+| QA-U04 | Ciclo completo de promoción | Unit | Positivo/Negativo | Borrador → Activa → Vencida → Cancelada; cancelada terminal | `rtk proxy python -m pytest tests/unit/domain/test_rf030_050_contratos.py::test_ciclo_promocion_borrador_activa_vencida_cancelada -q` |
+| QA-I04 | Cancelar vencida y auditar | Int | Positivo/Negativo | Persiste CANCELADA; no reactiva ni concede descuentos | `rtk proxy python scripts/qa_inventory_mysql.py tests/integration/test_rf038_050.py::test_rf042_admin_cancela_vencida_sin_reactivarla_y_audita` |
+| QA-S02 | Cancelación de vencida por UI | Sys | Positivo | Etiqueta Cancelada; sin botones de activar/cancelar | `rtk proxy python scripts/qa_inventory_mysql.py tests/system/test_rf038_050_playwright.py::test_admin_cancela_promocion_vencida_desde_navegador` |
+| QA-A04 | Ciclo Vencida → Cancelada | UAT | Positivo | Escenario de cancelación vencida aprobado | `rtk proxy python scripts/qa_inventory_mysql.py tests/uat/test_clientes_promociones_admin_bdd.py` |
+| QA-R01..49 | Márgenes, auditoría, usuarios y categorías | Unit/Int/Sys/UAT | Positivo/Negativo/Borde | Contratos de 3.6 cubiertos por la suite consolidada | `rtk proxy python scripts/qa_inventory_mysql.py tests/integration/test_reportes_administracion.py tests/system/test_reportes_administracion_playwright.py tests/uat/test_reportes_administracion_bdd.py` |
 
 # EVALUACIÓN FINAL DEL MÓDULO AUDITADO
 
@@ -2552,7 +3185,7 @@ Escala cualitativa, no porcentaje medido ni certificación ISO:
 - Testabilidad del Código Actual: **8/10**. Dominio aislable; algunos adaptadores construyen repositorios concretos.
 - Cobertura Unitaria Alcanzable: **9/10**. Propiedades y reglas puras automatizadas; cobertura real se informa debajo.
 - Aislamiento de Dependencias: **8/10**. Puertos en unitarias; BD/worker/SMTP reales para evidencia integrada.
-- Preparación para CI/CD: **8/10**. Dos perfiles, cuatro niveles, artifacts y gates; presupuesto POS incumplido en esta máquina y CI remoto pendiente.
+- Preparación para CI/CD: **8/10**. Dos perfiles, cuatro niveles, artifacts y gates; antecedente de latencia POS y CI remoto pendiente. El resultado actual se detalla debajo.
 - Resiliencia ante Fallos (Edge Cases): **8/10**. Rollback, carreras, permisos y avisos fallidos; límites SMTP e históricos explicitados. No equivale a cumplir presupuestos de latencia.
 
 # ESTADO DE CALIDAD (QUALITY READINESS)
@@ -2563,46 +3196,47 @@ No se promete ausencia absoluta de flakiness ni 100% de cobertura de código.
 
 | Perfil | Pruebas | Fallos / errores / omitidas | Cobertura global |
 |---|---|---|---|
-
-| production | 556/557 | 1 / 0 / 0 | 88.85% |
-
-| qa | 556/557 | 1 / 0 / 0 | 88.62% |
+| production | 609/610 | 1 / 0 / 0 | 89.52% |
+| qa | 610/610 | 0 / 0 / 0 | 89.3% |
 
 | Perfil | Unit | Integration | System/E2E/Functional/Performance | UAT |
 |---|---|---|---|---|
+| production | 338 | 197 | 41 | 34 |
+| qa | 338 | 197 | 41 | 34 |
 
-| production | 310 | 180 | 37 | 30 |
-
-| qa | 310 | 180 | 37 | 30 |
+| Perfil | Unit: dominio/aplicación instrumentados | Unit: núcleo explícito de reportes/auditoría |
+|---|---|---|
+| production | 90.25% | 87.85% (247 líneas) |
+| qa | 89.91% | 87.76% (245 líneas) |
 
 | Perfil | Cobro p95 (100 ms) | Pedidos HTTP p95 (500 ms) | Reportes HTTP p95 (500 ms) |
 |---|---|---|---|
+| production | 166.98 | 74.41 | 59.25 |
+| qa | 81.6 | 26.5 | 48.89 |
 
-| production | 148.94 | 61.6 | 72.25 |
+**production:** ejecutado 2026-10-17T15:07:47.870870+00:00; Python 3.11.16; MySQL 8.4.3 nativo efímero.
 
-| qa | ver JUnit | 72.01 | 26.18 |
-
-**production:** ejecutado 2026-10-17T14:11:51.001532+00:00; Python 3.11.16; MySQL 8.4.3 nativo efímero.
-
-Gate no aprobado: Suite incompleta o fallida: {'tests': 557, 'failures': 1, 'errors': 0, 'skipped': 0}; Presupuesto de cobro/búsqueda incumplido.
+Gate no aprobado: Suite incompleta o fallida: {'tests': 610, 'failures': 1, 'errors': 0, 'skipped': 0}; Presupuesto de cobro/búsqueda incumplido.
 
 - Fallo: `tests.system.test_k6_pos_real.test_k6_cobra_con_sesiones_aisladas_y_stock_consistente`.
 
-**qa:** ejecutado 2026-10-17T14:04:50.625587+00:00; Python 3.14.7; MySQL 8.4.3 nativo efímero.
+**qa:** ejecutado 2026-10-17T15:02:20.122610+00:00; Python 3.14.7; MySQL 8.4.3 nativo efímero.
 
-Gate no aprobado: Suite incompleta o fallida: {'tests': 557, 'failures': 1, 'errors': 0, 'skipped': 0}; Resumen k6 pos no pertenece a esta ejecución; consultar JUnit.
+Unit Test Ready → ✅ Listo. Integration Ready → ✅ Listo (MySQL nativo efímero). System/E2E Ready → ⚠ Requiere resolver el presupuesto de rendimiento; consultar los nodos fallidos antes de concluir sobre otros flujos. UAT/Business Ready → ⚠ Aprobación formal del PO pendiente; el ciclo solicitado está implementado y automatizado. El gate global permanece bloqueado.
 
-- Fallo: `tests.system.test_k6_pos_real.test_k6_cobra_con_sesiones_aisladas_y_stock_consistente`.
-
-Unit Test Ready → ✅ Listo. Integration Ready → ✅ Listo (MySQL nativo efímero). System/E2E Ready → ⚠ Requiere resolver el presupuesto de rendimiento; flujos funcionales aprobados. UAT/Business Ready → ⚠ Requiere decisión del PO sobre Vencida → Cancelada y aprobación formal; automatización disponible. El gate global permanece bloqueado.
-
-Cobertura medida solo con Unit en dominio/aplicación: **89.46%** (2131/2382 líneas); umbral 80%. Fuente: `reports/audit_unit_coverage.json`.
+Último indicador unitario de dominio/aplicación instrumentados: **90.25%** (2416/2677 líneas); umbral 80%. Fuente: `reports/audit_unit_coverage.json`. Las capturas por perfil anteriores conservan sus propias mediciones.
 
 Reproducir suite completa local con infraestructura aislada instalada en este equipo:
 
 ```powershell
+rtk proxy .venv-production/Scripts/python.exe -m pytest tests/unit -q -p no:cacheprovider --cov=src --cov-fail-under=0 --cov-report=json:reports/audit_unit_coverage.json --junitxml=reports/rf030-050-unit.xml
+rtk proxy .venv-production/Scripts/python.exe scripts/qa_unit_gate.py
+rtk proxy .venv-production/Scripts/python.exe scripts/qa_reportes_unit_gate.py --junit reports/rf030-050-unit.xml
 rtk proxy .venv-production/Scripts/python.exe scripts/qa_redis_native.py --binary C:/Users/mallq/AppData/Local/Temp/puntoventa-qa-tools/redis/8.10.2/Redis-8.10.2-Windows-x64-cygwin/redis-server.exe --mysql-basedir C:/Users/mallq/AppData/Local/Temp/qa-mysql-binaries/mysql-8.4.3-winx64 --k6-binary C:/Users/mallq/AppData/Local/Temp/puntoventa-qa-tools/k6/v2.3.0/k6-v2.3.0-windows-amd64/k6.exe --coverage --report-prefix rf030-050-production
 rtk proxy .venv-production/Scripts/python.exe scripts/qa_rf030_050_evidence.py --capture production
+rtk proxy .venv/Scripts/python.exe -m pytest tests/unit -q -p no:cacheprovider --cov=src --cov-fail-under=0 --cov-report=json:reports/audit_unit_coverage.json --junitxml=reports/rf030-050-unit.xml
+rtk proxy .venv/Scripts/python.exe scripts/qa_unit_gate.py
+rtk proxy .venv/Scripts/python.exe scripts/qa_reportes_unit_gate.py --junit reports/rf030-050-unit.xml
 rtk proxy .venv/Scripts/python.exe scripts/qa_redis_native.py --binary C:/Users/mallq/AppData/Local/Temp/puntoventa-qa-tools/redis/8.10.2/Redis-8.10.2-Windows-x64-cygwin/redis-server.exe --mysql-basedir C:/Users/mallq/AppData/Local/Temp/qa-mysql-binaries/mysql-8.4.3-winx64 --k6-binary C:/Users/mallq/AppData/Local/Temp/puntoventa-qa-tools/k6/v2.3.0/k6-v2.3.0-windows-amd64/k6.exe --coverage --report-prefix rf030-050-qa
 rtk proxy .venv/Scripts/python.exe scripts/qa_rf030_050_evidence.py --capture qa
 rtk proxy .venv/Scripts/python.exe scripts/qa_rf030_050_evidence.py
@@ -2611,14 +3245,16 @@ rtk proxy .venv/Scripts/python.exe scripts/qa_build_rf030_050_report.py
 
 Ejecutar los perfiles secuencialmente. El wrapper exige cero skips/xfails en la suite completa.
 Capturar cada perfil inmediatamente después de su ejecución, antes de sobrescribir resúmenes k6 con otro run.
-El verificador guarda timestamps, versiones y SHA256; devuelve 1 si hay fallos y aun así conserva la evidencia.
+El verificador guarda timestamps, versiones y SHA256 de código, pruebas, configuración, requisitos,
+templates y estáticos; vincula JUnit/cobertura unitaria por perfil con la suite completa.
+Devuelve 1 si hay fallos y aun así conserva la evidencia.
 Un resumen de carga sobrescrito por una ejecución posterior se marca no disponible; se consulta el fallo original en JUnit.
 No reutilizar conteos históricos para declarar una ejecución nueva aprobada.
 Evidencias: reports/rf030-050-*.xml, *-coverage.json, *-provenance.json, resúmenes k6 y browser/*.zip.
 Son servicios nativos efímeros; no se etiquetan como Testcontainers ejecutado en esta máquina.
 El workflow utiliza contenedores y está listo para validar el mismo código cuando se publique una PR.
 
-Investigación complementaria de latencia en esta revisión:
+Antecedentes de latencia de la ejecución anterior (no sustituyen los resultados actuales de las tablas):
 
 - La suite QA completa registró cobro p95 = 228,64 ms con cobertura instrumentada;
   el límite existente es 100 ms y el gate falló. Sus 36 checks funcionales de k6 aprobaron.

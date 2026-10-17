@@ -32,6 +32,14 @@ la prueba del instante final pertenece a
 Estos umbrales son decisiones de la implementación actual: los requisitos
 RF-038 a RF-043 no especifican porcentajes ni umbrales de recurrencia.
 
+## Ciclo de vida de promociones
+
+Se aplica la secuencia suministrada por el usuario: Borrador → Activa → Vencida →
+Cancelada. Internamente, Vencida se guarda como FINALIZADA y la programación
+horaria utiliza PROGRAMADA. Una promoción vencida admite cancelación, con
+auditoría de la acción; una cancelada es terminal. Una promoción vencida o
+cancelada no admite reactivación y no vuelve a conceder descuentos.
+
 ## Acceso a las pantallas
 
 Se utilizan las rutas Django con nombre `customers:registro`, `customers:perfil`,

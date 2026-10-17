@@ -30,11 +30,12 @@
       <td><small>{{ p.vigencia_desde|date:"d/m/Y" }} - {{ p.vigencia_hasta|date:"d/m/Y" }}</small></td>
       <td><span class="badge bg-secondary">{{ p.estado_label }}</span></td>
       <td class="text-end">
-        {% if not solo_activas %}<a href="{% url 'promotions:editar' p.id %}">Editar</a>
+        {% if not solo_activas %}
+        {% if p.estado.value != 'FINALIZADA' and p.estado.value != 'CANCELADA' %}<a href="{% url 'promotions:editar' p.id %}">Editar</a>{% endif %}
         <form method="post" class="d-inline">{% csrf_token %}
           <input type="hidden" name="promocion_id" value="{{ p.id }}">
-          <button class="btn btn-sm btn-success" name="accion" value="activar">Activar</button>
-          <button class="btn btn-sm btn-outline-danger" name="accion" value="cancelar">Cancelar</button>
+          {% if p.estado.value == 'BORRADOR' or p.estado.value == 'PROGRAMADA' %}<button class="btn btn-sm btn-success" name="accion" value="activar">Activar</button>{% endif %}
+          {% if p.estado.value != 'CANCELADA' %}<button class="btn btn-sm btn-outline-danger" name="accion" value="cancelar">Cancelar</button>{% endif %}
         </form>
         {% endif %}
       </td>

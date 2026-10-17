@@ -104,3 +104,10 @@ fechas malformados y rangos invertidos devuelven 400 con errores de formulario.
 La consulta exige ADMINISTRADOR; las acciones CREAR, ACTUALIZAR y ELIMINAR del
 middleware son consultables junto a las acciones específicas de negocio.
 
+### Ciclo de promociones RF-041/RF-042
+
+POST `/promociones/gestion/` con `accion=cancelar` y `promocion_id` admite una
+promoción Vencida (FINALIZADA), pasando a CANCELADA con auditoría. Una cancelada
+no vuelve a cancelarse y ninguna vencida/cancelada se reactiva. La pantalla de
+gestión ofrece las acciones compatibles con cada estado.
+

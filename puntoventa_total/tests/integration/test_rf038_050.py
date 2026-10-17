@@ -127,6 +127,22 @@ def test_rf042_programada_ya_vencida_no_se_activa_temporalmente(client):
     assert client.get(reverse("promotions:activas"), HTTP_ACCEPT="application/json").json() == {"promociones": []}
 
 
+def test_rf042_admin_cancela_vencida_sin_reactivarla_y_audita(client):
+    administrador = staff(client)
+    promocion = PromocionModel.objects.create(id=uuid4(), nombre="Vencida cancelable", tipo="PORCENTAJE",
+                                            estado="FINALIZADA", descuento_valor=10)
+    respuesta = client.post(reverse("promotions:promociones"), {"accion": "cancelar", "promocion_id": str(promocion.id)})
+    assert respuesta.status_code == 302
+    promocion.refresh_from_db()
+    assert promocion.estado == "CANCELADA"
+    assert AuditoriaModel.objects.filter(entidad_id=str(promocion.id), usuario_id=administrador.id, accion="ACTUALIZAR").exists()
+    respuesta = client.post(reverse("promotions:promociones"), {"accion": "activar", "promocion_id": str(promocion.id)})
+    assert respuesta.status_code == 200 and respuesta.context["form"].errors
+    promocion.refresh_from_db()
+    assert promocion.estado == "CANCELADA"
+    assert client.get(reverse("promotions:activas"), HTTP_ACCEPT="application/json").json() == {"promociones": []}
+
+
 @pytest.mark.parametrize("vista", ["ventas", "utilidad", "productos"])
 @pytest.mark.parametrize("datos", [{"desde": "mal"}, {"desde": "2026-05-02", "hasta": "2026-05-01"}])
 def test_rf045_filtros_invalidos_retornan_400(client, vista, datos):

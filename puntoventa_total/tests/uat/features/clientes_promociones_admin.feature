@@ -24,6 +24,11 @@ Feature: Clientes frecuentes, promociones y administración RF-038 a RF-050
     When se actualiza la vigencia de promociones
     Then queda Vencida y no aparece entre las promociones públicas
 
+  Scenario: Cancelar una promoción vencida conforme al ciclo de vida
+    Given un administrador con una promoción Vencida
+    When cancela la promoción vencida
+    Then queda Cancelada y no ofrece descuentos públicos
+
   Scenario: Reportar solo ventas pagadas
     Given un administrador y ventas pagadas y anuladas
     When consulta el reporte de ventas

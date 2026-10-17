@@ -56,12 +56,30 @@ No se cambiaron automaticamente las versiones de produccion al perfil QA.
 
 Desde este directorio, con el entorno QA instalado:
 
-    python -m pytest tests/unit --cov=src --cov-fail-under=0 --cov-report=json:reports/audit_unit_coverage.json
-    python scripts/qa_unit_gate.py
-    python scripts/qa_inventory_mysql.py tests/integration --runxfail
-    python -m playwright install chromium
-    python -m pytest tests/system tests/e2e tests/functional tests/performance
-    python -m pytest tests/uat
+    rtk proxy python -m pytest tests/unit --cov=src --cov-fail-under=0 --cov-report=json:reports/audit_unit_coverage.json --junitxml=reports/full-unit.xml
+    rtk proxy python scripts/qa_unit_gate.py
+    rtk proxy python scripts/qa_reportes_unit_gate.py --junit reports/full-unit.xml
+    rtk proxy python scripts/qa_inventory_mysql.py tests/integration --runxfail
+    rtk proxy python -m playwright install chromium
+    rtk proxy python scripts/qa_inventory_mysql.py tests/system tests/e2e tests/functional tests/performance
+    rtk proxy python scripts/qa_inventory_mysql.py tests/uat
+
+Los comandos con Testcontainers requieren Docker iniciado. Para exigir los cuatro
+niveles sin omisiones, definir `QA_REQUIRE_ALL_TESTS=1`, `QA_REQUIRE_BROWSER=1`,
+`QA_REDIS_URL` hacia Redis exclusivo y `QA_K6_BINARY` hacia el ejecutable k6.
+El plan siguiente incluye preparacion y comandos PowerShell completos.
+
+### Planes y contratos RF-030 a RF-050
+
+- [Plan maestro consolidado: diez secciones, codigo completo y evidencia de los cuatro niveles](docs/testing/plan_maestro_rf030_050.md).
+- [Contrato de clientes frecuentes y promociones](docs/requirements/clientes_promociones_rf038_rf043.md).
+- [Contrato de reportes y administracion](docs/requirements/reportes_admin_rf044_rf050.md).
+- [Plan detallado del modulo 3.6](docs/testing/plan_maestro_rf044_050.md).
+
+Regenerar el plan general con `rtk proxy python scripts/qa_build_rf030_050_report.py`
+despues de capturar las evidencias de cada perfil. El verificador comprueba
+SHA256 de fuentes, templates, estaticos, pruebas y artefactos; los resultados
+historicos no acreditan automaticamente una revision posterior.
 
 Para Redis/Celery real, CI levanta un Redis exclusivo y define `QA_REDIS_URL`.
 Localmente, definir esa variable solo hacia una instancia aislada de QA;

@@ -89,6 +89,27 @@ def test_admin_crea_combo_desde_selectores_de_productos(navegador, live_server):
     assert promo.componentes == [{"producto_id": str(primero.id), "cantidad": 1}, {"producto_id": str(segundo.id), "cantidad": 1}]
 
 
+def test_admin_cancela_promocion_vencida_desde_navegador(navegador, live_server):
+    from playwright.sync_api import expect
+
+    CrearUsuario(construir_repositorio(), construir_hasher()).ejecutar(UsuarioInputDTO(
+        username="admin_cancela_vencida", password=PASSWORD, nombre_completo="Admin ciclo", rol="ADMINISTRADOR"))
+    promo = PromocionModel.objects.create(id=uuid4(), nombre="Vencida navegador", tipo="PORCENTAJE",
+                                          estado="FINALIZADA", descuento_valor=10)
+    page = navegador.new_page()
+    login(page, live_server, "admin_cancela_vencida")
+    page.goto(live_server.url + "/promociones/gestion/")
+    fila = page.get_by_role("row").filter(has_text="Vencida navegador")
+    expect(fila.get_by_text("Vencida", exact=True)).to_be_visible()
+    expect(fila.get_by_role("button", name="Activar", exact=True)).to_have_count(0)
+    fila.get_by_role("button", name="Cancelar", exact=True).click()
+    fila = page.get_by_role("row").filter(has_text="Vencida navegador")
+    expect(fila.get_by_text("Cancelada", exact=True)).to_be_visible()
+    expect(fila.get_by_role("button", name="Cancelar", exact=True)).to_have_count(0)
+    promo.refresh_from_db()
+    assert promo.estado == "CANCELADA"
+
+
 def test_cajero_cobra_con_descuento_automatico_por_frecuencia(navegador, live_server):
     from decimal import Decimal
     from tests.integration.test_pedidos_online import producto

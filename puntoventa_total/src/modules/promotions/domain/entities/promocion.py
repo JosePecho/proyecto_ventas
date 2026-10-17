@@ -82,8 +82,8 @@ class Promocion(BaseEntity):
         self.marcar_actualizado()
 
     def cancelar(self, motivo: str = "") -> None:
-        if self.estado in (EstadoPromocion.FINALIZADA, EstadoPromocion.CANCELADA):
-            raise PromocionException("La promocion ya finalizo")
+        if self.estado == EstadoPromocion.CANCELADA:
+            raise PromocionException("La promocion ya fue cancelada")
         self.estado = EstadoPromocion.CANCELADA
         self.marcar_actualizado()
 

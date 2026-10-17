@@ -50,3 +50,18 @@ def test_promocion_terminal_no_se_reactiva(estado):
     with pytest.raises(PromocionException):
         promocion.activar()
     assert promocion.estado == estado
+
+
+def test_ciclo_promocion_borrador_activa_vencida_cancelada():
+    promocion = Promocion(nombre="Ciclo RF-042")
+    assert promocion.estado_label == "Borrador"
+    promocion.activar()
+    assert promocion.estado_label == "Activa"
+    promocion.finalizar()
+    assert promocion.estado_label == "Vencida"
+    promocion.cancelar()
+    assert promocion.estado_label == "Cancelada"
+    assert not promocion.esta_vigente()
+    with pytest.raises(PromocionException):
+        promocion.cancelar()
+    assert promocion.estado == EstadoPromocion.CANCELADA

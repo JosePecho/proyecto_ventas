@@ -14,6 +14,8 @@ Lee puntoventa_total/docs/testing/plan_maestro_rf030_050.md y puntoventa_total/d
 - El código existente clasifica como OCASIONAL también intervalos superiores a 30 días; no inventar un corte sin confirmación.
 - 2x1 es paquete de dos unidades, una gratuita; combo requiere productos distintos y precio final por paquete completo.
 - Las promociones caducan en el instante final; una programada ya vencida nunca se activa transitoriamente.
+- Aplica el ciclo explícito Borrador → Activa → Vencida → Cancelada: permite cancelar FINALIZADA,
+  impide reactivar vencidas/canceladas y no ofrece botones incompatibles con el estado.
 - Aplica el beneficio automáticamente antes del primer pago. No sumes beneficios incompatibles ni alteres pagos iniciados.
 - La utilidad usa el costo congelado al agregar la línea y distribuye el descuento global conservando centavos.
 - No inventes costos históricos; marca como parcial el reporte que contiene costos desconocidos.
@@ -26,6 +28,8 @@ Lee puntoventa_total/docs/testing/plan_maestro_rf030_050.md y puntoventa_total/d
 - Mantén los escenarios de tests/uat/features/reportes_administracion_contratos.feature y el flujo de entrega
   de tests/system/test_rf030_050_contratos.py cuando cambien reportes, permisos o estados.
 - Ejecuta Unit, MySQL real (incluidas carreras), navegador/carga y UAT. No llames integración MySQL a SQLite.
+- Consolida tests/unit/application/test_reportes_administracion.py y sus pruebas de integración/UI/BDD
+  en el plan general. Ejecuta también scripts/qa_reportes_unit_gate.py después de cobertura unitaria.
 - Usa rtk para shell. No ejecutes dos suites de carga al mismo tiempo.
 - Guarda JUnit, cobertura, resúmenes k6 y traces sin cookies/credenciales.
 - Una ejecución verde no garantiza ausencia absoluta de flakiness ni sustituye aceptación del Product Owner.

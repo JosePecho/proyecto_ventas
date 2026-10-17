@@ -105,6 +105,28 @@ def no_publica(client):
     assert client.get(reverse("promotions:activas"), HTTP_ACCEPT="application/json").json()["promociones"] == []
 
 
+@given("un administrador con una promoción Vencida")
+def administrador_con_vencida(client, contexto):
+    administrador(client, contexto)
+    vencida()
+    run()
+    assert PromocionModel.objects.get().estado == "FINALIZADA"
+
+
+@when("cancela la promoción vencida")
+def cancelar_vencida(client):
+    promocion = PromocionModel.objects.get()
+    assert client.post(reverse("promotions:promociones"), {
+        "accion": "cancelar", "promocion_id": str(promocion.id),
+    }).status_code == 302
+
+
+@then("queda Cancelada y no ofrece descuentos públicos")
+def cancelada_sin_beneficio(client):
+    assert PromocionModel.objects.get().estado == "CANCELADA"
+    assert client.get(reverse("promotions:activas"), HTTP_ACCEPT="application/json").json()["promociones"] == []
+
+
 @given("un administrador y ventas pagadas y anuladas")
 def ventas(client, contexto):
     administrador(client, contexto)
