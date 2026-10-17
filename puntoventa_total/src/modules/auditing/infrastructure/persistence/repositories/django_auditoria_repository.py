@@ -1,5 +1,6 @@
-from datetime import date, datetime, time
+from datetime import date
 from typing import Optional, Sequence
+from src.shared.infrastructure.database.date_bounds import date_bound
 
 from src.modules.auditing.domain.entities.registro_auditoria import RegistroAuditoria
 from src.modules.auditing.domain.repositories.auditoria_repository import AuditoriaRepository
@@ -31,9 +32,9 @@ class DjangoAuditoriaRepository(AuditoriaRepository):
         if usuario_id:
             qs = qs.filter(usuario_id=usuario_id)
         if isinstance(desde, date):
-            qs = qs.filter(fecha__gte=datetime.combine(desde, time.min))
+            qs = qs.filter(fecha__gte=date_bound(desde))
         if isinstance(hasta, date):
-            qs = qs.filter(fecha__lte=datetime.combine(hasta, time.max))
+            qs = qs.filter(fecha__lte=date_bound(hasta, end=True))
         return [self._mapper.a_dominio(m) for m in qs.order_by("-fecha")[:limite]]
 
     def trazas_de_entidad(self, entidad: str, entidad_id: str) -> Sequence[RegistroAuditoria]:

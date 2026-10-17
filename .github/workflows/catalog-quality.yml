@@ -1,0 +1,105 @@
+name: Catalog quality
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: catalog-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: puntoventa_total
+
+jobs:
+  unit:
+    name: Catalog / Unit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14.7'
+          cache: pip
+          cache-dependency-path: puntoventa_total/requirements/*.txt
+      - run: python -m pip install -r requirements/qa-inventory.txt
+      - run: >-
+          python -m pytest tests/unit/catalog -q
+          --cov=src.modules.catalog.application.use_cases.listar_productos
+          --cov=src.modules.catalog.application.use_cases.filtrar_por_categoria
+          --cov=src.modules.catalog.application.use_cases.consultar_disponibilidad
+          --cov=src.modules.catalog.application.dto.producto_output
+          --cov-fail-under=80 --cov-report=xml:reports/catalog-unit-coverage.xml
+          --junitxml=reports/catalog-unit.xml
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: catalog-unit
+          path: puntoventa_total/reports/
+
+  integration:
+    name: Catalog / Integration
+    needs: unit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14.7'
+      - run: sudo apt-get update && sudo apt-get install -y pkg-config default-libmysqlclient-dev build-essential
+      - run: python -m pip install -r requirements/qa-inventory-mysql.txt
+      - run: >-
+          python scripts/qa_inventory_mysql.py tests/integration/test_catalogo_web.py
+          tests/integration/test_inventario_mysql.py --junitxml=reports/catalog-integration.xml
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: catalog-integration
+          path: puntoventa_total/reports/
+
+  system:
+    name: Catalog / System
+    needs: integration
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      QA_REQUIRE_BROWSER: '1'
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14.7'
+      - run: python -m pip install -r requirements/qa-inventory.txt
+      - run: python -m playwright install --with-deps chromium
+      - run: python -m pytest tests/system/test_catalogo_web.py -q --junitxml=reports/catalog-system.xml
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: catalog-system
+          path: puntoventa_total/reports/
+
+  uat:
+    name: Catalog / UAT
+    needs: system
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14.7'
+      - run: python -m pip install -r requirements/qa-inventory.txt
+      - run: python -m pytest tests/uat/test_catalogo_web_bdd.py -q --junitxml=reports/catalog-uat.xml
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: catalog-uat
+          path: puntoventa_total/reports/

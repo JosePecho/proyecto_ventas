@@ -7,6 +7,7 @@ from typing import Optional
 
 from src.modules.inventory.domain.enums.tipo_movimiento import TipoMovimiento
 from src.shared.domain.entities.base_entity import BaseEntity
+from src.shared.domain.clock import utc_now
 
 
 @dataclass
@@ -27,7 +28,7 @@ class MovimientoStock(BaseEntity):
             raise ValidationException("La cantidad del movimiento debe ser positiva")
         if not isinstance(self.tipo, TipoMovimiento):
             self.tipo = TipoMovimiento(self.tipo)
-        self.fecha = self.fecha or datetime.now()
+        self.fecha = self.fecha or utc_now()
         self._validar_coherencia()
 
     def _validar_coherencia(self) -> None:

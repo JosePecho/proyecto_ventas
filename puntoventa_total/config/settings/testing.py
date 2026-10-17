@@ -3,6 +3,7 @@ from .base import *  # noqa: F401,F403
 from pathlib import Path
 from tempfile import gettempdir
 from uuid import uuid4
+import django
 
 DEBUG = False
 
@@ -28,7 +29,10 @@ CELERY_TASK_EAGER_PROPAGATES = True
 
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 
-EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+if django.VERSION >= (6, 1):
+    MAILERS = {"default": {"BACKEND": "django.core.mail.backends.locmem.EmailBackend"}}
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},

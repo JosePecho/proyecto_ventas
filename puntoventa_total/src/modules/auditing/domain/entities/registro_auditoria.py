@@ -5,6 +5,7 @@ import json
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
+from src.shared.domain.clock import utc_now
 
 ACCIONES_VALIDAS = {
     "VENTA_PAGADA", "VENTA_ANULADA", "CAJA_ABIERTA", "CAJA_CERRADA",
@@ -23,7 +24,7 @@ class RegistroAuditoria:
     detalle: dict = field(default_factory=dict)
     ip: str = ""
     id: uuid.UUID = field(default_factory=uuid.uuid4)
-    fecha: datetime = field(default_factory=datetime.now)
+    fecha: datetime = field(default_factory=utc_now)
 
     def __post_init__(self) -> None:
         if self.accion not in ACCIONES_VALIDAS:

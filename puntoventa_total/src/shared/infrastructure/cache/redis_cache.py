@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 from functools import wraps
+from hashlib import sha256
+import json
 from typing import Callable
 
 from django.core.cache import cache
@@ -39,7 +41,10 @@ def cache_resultado(segundos: int = 300, prefijo: str = "query") -> Callable:
     def envolver(func: Callable) -> Callable:
         @wraps(func)
         def interno(*args, **kwargs):
-            clave = f"{prefijo}:{func.__name__}:{sorted(kwargs.items())}"
+            # Incluye argumentos posicionales: buscar arroz no puede devolver pan.
+            payload = json.dumps([args, sorted(kwargs.items())], default=str, ensure_ascii=True)
+            digest = sha256(payload.encode("utf-8")).hexdigest()
+            clave = f"{prefijo}:{func.__name__}:{digest}"
             resultado = RedisCache.obtener(clave)
             if resultado is None:
                 resultado = func(*args, **kwargs)

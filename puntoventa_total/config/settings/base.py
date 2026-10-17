@@ -132,6 +132,8 @@ DIAS_ALERTA_VENCIMIENTO = 30
 CELERY_IMPORTS = (
     "src.modules.inventory.infrastructure.tasks.verificar_stock_minimo",
     "src.modules.inventory.infrastructure.tasks.verificar_vencimientos",
+    "src.modules.promotions.infrastructure.tasks.actualizar_estado_promociones",
+    "src.modules.orders.infrastructure.tasks.enviar_notificacion_pedido",
 )
 
 LOGGING = {

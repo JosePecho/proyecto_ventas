@@ -19,7 +19,7 @@ class DisponibilidadAdapter(DisponibilidadPort):
         from src.modules.inventory.infrastructure.factories import construir_stock_repository
 
         repo = construir_stock_repository()
-        return {pid: repo.disponible(pid) for pid in producto_ids}
+        return repo.disponibles(producto_ids)
 
     def tiene_stock_minimo(self, producto_id: str) -> bool:
         from src.modules.inventory.domain.services.politica_stock import PoliticaStock

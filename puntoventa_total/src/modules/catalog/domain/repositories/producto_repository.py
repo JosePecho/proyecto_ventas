@@ -22,11 +22,12 @@ class ProductoRepository(ABC):
         termino: str | None = None,
         categoria_id: str | None = None,
         limit: int | None = None,
+        offset: int = 0,
     ) -> Sequence[Producto]:
         ...
 
     @abstractmethod
-    def contar(self, incluir_inactivos: bool = False, termino: str | None = None) -> int:
+    def contar(self, incluir_inactivos: bool = False, termino: str | None = None, categoria_id: str | None = None) -> int:
         ...
 
     @abstractmethod

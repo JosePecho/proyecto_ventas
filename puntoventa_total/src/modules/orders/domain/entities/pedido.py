@@ -41,7 +41,7 @@ class Pedido(BaseEntity):
         self.marcar_actualizado()
 
     def asignar_hora_recojo(self, hora: datetime) -> None:
-        if hora < datetime.now():
+        if hora < datetime.now(tz=hora.tzinfo):
             raise HoraRecojoInvalida("no puede ser en el pasado")
         if hora.minute not in (0, 30):
             raise HoraRecojoInvalida("solo franjas de 30 minutos")

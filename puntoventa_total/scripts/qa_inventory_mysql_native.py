@@ -34,7 +34,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--basedir", type=Path, required=True)
     parser.add_argument("--full", action="store_true", help="Ejecutar los cuatro niveles, no solo integracion")
+    parser.add_argument("--target", action="append", help="Directorio o archivo pytest; puede repetirse")
+    parser.add_argument("--coverage", action="store_true")
+    parser.add_argument("--report-prefix", default="inventory-mysql-native")
     args = parser.parse_args()
+    if not args.report_prefix.replace("-", "").replace("_", "").isalnum():
+        parser.error("--report-prefix solo admite letras, numeros, guion y guion bajo")
     basedir = args.basedir.resolve()
     binary = basedir / "bin" / ("mysqld.exe" if os.name == "nt" else "mysqld")
     if not binary.is_file():
@@ -86,16 +91,20 @@ def main():
                     INVENTORY_EPHEMERAL_MYSQL="1", QA_MYSQL_DATABASE=database, QA_MYSQL_USER="root",
                     QA_MYSQL_PASSWORD=password, QA_MYSQL_HOST="127.0.0.1", QA_MYSQL_PORT=str(port),
                     QA_REQUIRE_BROWSER="1")
-                targets = [] if args.full else ["tests/integration/test_inventario_requisitos.py",
+                targets = args.target or ([] if args.full else ["tests/integration/test_inventario_requisitos.py",
                                               "tests/integration/test_inventario_mysql.py"]
+                )
+                coverage_args = (["--cov=src", "--cov-fail-under=80",
+                    f"--cov-report=json:reports/{args.report_prefix}-coverage.json",
+                    f"--cov-report=xml:reports/{args.report_prefix}-coverage.xml"] if args.coverage else [])
                 result = subprocess.run([sys.executable, "-m", "pytest", *targets, "--reuse-db",
-                    "-q", "-p", "no:cacheprovider", "--junitxml=reports/inventory-mysql-native.xml"],
+                    "-q", "-p", "no:cacheprovider", f"--junitxml=reports/{args.report_prefix}.xml", *coverage_args],
                     cwd=root, env=env)
                 evidence = dict(engine=engine, version=version, ephemeral=True, container=False,
-                                full=args.full, exit_code=result.returncode,
+                                full=bool(args.full and not args.target), exit_code=result.returncode,
                                 executed_at=datetime.now(timezone.utc).isoformat(),
                                 timezone_fixture="UTC y America/Lima, fechas actuales")
-                (reports / "inventory-mysql-native.json").write_text(json.dumps(evidence, indent=2), encoding="utf-8")
+                (reports / f"{args.report_prefix}.json").write_text(json.dumps(evidence, indent=2), encoding="utf-8")
                 print(json.dumps(evidence))
                 return result.returncode
             finally:

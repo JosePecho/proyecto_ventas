@@ -4,6 +4,7 @@ from __future__ import annotations
 from django.contrib import messages
 from django.contrib.auth import login
 from django.shortcuts import redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from src.modules.identity.application.use_cases.autenticar_usuario import AutenticarUsuario
 from src.modules.identity.domain.exceptions.usuario_exceptions import UsuarioException
@@ -36,7 +37,12 @@ def login_view(request):
                 request.session["rol"] = usuario.rol
                 request.session["usuario_id"] = usuario.id
                 messages.success(request, f"Bienvenido {usuario.nombre_completo}")
-                return redirect(request.GET.get("next") or "catalog:catalogo")
+                destino = request.GET.get("next", "")
+                if not url_has_allowed_host_and_scheme(
+                    destino, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+                ):
+                    destino = "catalog:catalogo"
+                return redirect(destino)
     else:
         form = LoginForm()
 

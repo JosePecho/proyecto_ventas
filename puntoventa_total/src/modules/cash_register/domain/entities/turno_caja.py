@@ -8,6 +8,7 @@ from typing import Optional
 from src.modules.cash_register.domain.enums.estado_turno import EstadoTurno
 from src.modules.cash_register.domain.exceptions.caja_exceptions import TurnoYaCerrado
 from src.shared.domain.entities.base_entity import BaseEntity
+from src.shared.domain.clock import utc_now
 from src.shared.domain.value_objects.monto import Monto
 
 
@@ -29,7 +30,7 @@ class TurnoCaja(BaseEntity):
             raise TypeError("TurnoCaja requiere monto de apertura")
         if not isinstance(self.estado, EstadoTurno):
             self.estado = EstadoTurno(self.estado)
-        self.fecha_apertura = self.fecha_apertura or datetime.now()
+        self.fecha_apertura = self.fecha_apertura or utc_now()
 
     @property
     def esta_abierto(self) -> bool:
@@ -42,7 +43,7 @@ class TurnoCaja(BaseEntity):
         self.monto_sistema = monto_sistema
         self.diferencia = monto_fisico - monto_sistema
         self.estado = EstadoTurno.CERRADO
-        self.fecha_cierre = datetime.now()
+        self.fecha_cierre = utc_now()
         self.marcar_actualizado()
         return self.diferencia
 

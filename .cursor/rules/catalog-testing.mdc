@@ -1,0 +1,20 @@
+---
+description: Reglas de implementacion y pruebas del catalogo publico RF-025 a RF-029
+globs: puntoventa_total/src/modules/catalog/**,puntoventa_total/templates/catalog/**
+alwaysApply: false
+---
+
+Leer docs/requirements/catalogo_web_rf025_rf029.md y docs/testing/catalog_master_plan.md.
+Preservar acceso anonimo a /catalogo/ y /catalogo/productos/<uuid>/.
+El stock disponible se consulta en vivo, descuenta reservas y se obtiene en lote.
+Mantener agotados visibles y excluir productos inactivos o descontinuados.
+Combinar categoria y texto; conservar filtros al paginar y consultar solo la pagina.
+No introducir cache de cantidades o precios sin invalidacion demostrada.
+Generar regresiones en los cuatro niveles segun el comportamiento afectado.
+No eliminar aserciones ni agregar skips, xfail o retries para ocultar defectos.
+Ejecutar tests/unit/catalog, tests/integration/test_catalogo_web.py,
+tests/system/test_catalogo_web.py y tests/uat/test_catalogo_web_bdd.py.
+La cobertura se mide sobre los cuatro archivos declarados en catalog-quality.yml;
+no presentarla como cobertura de todo el modulo catalog.
+Reutilizar el runner MySQL efimero con --full para comprobar todos los modulos.
+No publicar cambios ni modificar protecciones de GitHub por aplicar esta regla.

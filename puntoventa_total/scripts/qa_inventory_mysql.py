@@ -32,7 +32,9 @@ def main():
             QA_MYSQL_DATABASE=url.path.lstrip("/"),
             QA_MYSQL_USER=unquote(url.username),
             QA_MYSQL_PASSWORD=unquote(url.password),
-            QA_MYSQL_HOST=url.hostname,
+            # En Linux mysqlclient interpreta localhost como socket Unix y
+            # omite el puerto publicado por Docker. Forzar TCP para loopback.
+            QA_MYSQL_HOST="127.0.0.1" if url.hostname == "localhost" else url.hostname,
             QA_MYSQL_PORT=str(url.port),
         )
         targets = sys.argv[1:] or [

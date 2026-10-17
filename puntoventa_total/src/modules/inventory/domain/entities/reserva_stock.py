@@ -7,6 +7,7 @@ from typing import Optional
 
 from src.modules.inventory.domain.exceptions.stock_exceptions import ReservaYaConfirmada
 from src.shared.domain.entities.base_entity import BaseEntity
+from src.shared.domain.clock import utc_now
 from src.shared.domain.exceptions.validation_exception import ValidationException
 
 
@@ -26,7 +27,7 @@ class ReservaStock(BaseEntity):
         if self.cantidad <= 0:
             raise ValidationException("La reserva debe ser por una cantidad positiva")
         if self.expira_en is None:
-            self.expira_en = datetime.now() + timedelta(minutes=self.MINUTOS_VALIDEZ)
+            self.expira_en = utc_now() + timedelta(minutes=self.MINUTOS_VALIDEZ)
 
     @property
     def activa(self) -> bool:
