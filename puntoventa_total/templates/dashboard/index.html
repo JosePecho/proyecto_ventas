@@ -4,6 +4,7 @@
 {% block extra_css %}<link href="{% static 'css/dashboard.css' %}" rel="stylesheet">{% endblock %}
 {% block content %}
 <h4 class="mb-3"><i class="bi bi-graph-up"></i> Dashboard</h4>
+{% for metodo, monto in ventas_hoy.metodos_pago.items %}<p>{{ metodo }}: S/ {{ monto }}</p>{% endfor %}
 <div class="row g-3 mb-4">
   <div class="col-md-3">
     <div class="card text-center kpi"><div class="card-body">

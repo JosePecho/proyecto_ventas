@@ -14,6 +14,7 @@ from src.modules.sales.infrastructure.factories import (
     construir_auditoria_port,
     construir_inventario_port,
     construir_venta_repository,
+    construir_promociones_port,
 )
 from src.modules.sales.presentation.forms.pago_form import PagoForm
 from src.modules.sales.presentation.permissions.venta_permissions import (
@@ -37,6 +38,7 @@ def pago_view(request, venta_id):
                     construir_inventario_port(),
                     construir_auditoria_port(),
                     uow=transaction.atomic(),
+                    promociones=construir_promociones_port(),
                 ).ejecutar(
                     ProcesarPagoDTO(
                         venta_id=venta_id,
@@ -56,7 +58,10 @@ def pago_view(request, venta_id):
                 messages.warning(request, f"Pago parcial. Saldo pendiente: {resultado['saldo']:.2f}")
                 return redirect("sales:pago", venta_id=venta_id)
     else:
-        form = PagoForm()
+        from src.modules.sales.application.use_cases.preparar_beneficios import PrepararBeneficiosVenta
+        with transaction.atomic():
+            agregado = PrepararBeneficiosVenta(construir_venta_repository(), construir_promociones_port()).ejecutar(venta_id)
+        form = PagoForm(initial={"monto": max(0, agregado.saldo_pendiente())})
 
     return render(request, "pos/pago.html", {"form": form, "venta_id": venta_id})
 

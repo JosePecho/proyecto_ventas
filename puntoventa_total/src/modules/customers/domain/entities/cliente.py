@@ -9,7 +9,7 @@ from src.shared.domain.entities.base_entity import BaseEntity
 from src.shared.domain.exceptions.validation_exception import ValidationException
 from src.shared.domain.value_objects.dni import DNI
 
-PATRON_TEL = re.compile(r"^\+?9?\d{7,12}$")
+PATRON_TEL = re.compile(r"^\+?[0-9]{7,15}$")
 PATRON_EMAIL = re.compile(r"^[\w.+-]+@[\w-]+\.[\w.]+$")
 
 

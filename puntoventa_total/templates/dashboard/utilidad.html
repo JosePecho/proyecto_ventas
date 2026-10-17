@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 {% block title %}Utilidad{% endblock %}
 {% block content %}
+{{ form.errors }}
+{% if reporte.estimado %}<p>Costos históricos incompletos: utilidad parcial. No se reemplazan con costos actuales.</p>{% endif %}
 <h4 class="mb-3"><i class="bi bi-cash-stack"></i> Utilidad {{ desde }} - {{ hasta }}</h4>
 <div class="alert alert-light border d-flex gap-4">
   <span><strong>Ingresos:</strong> S/ {{ reporte.ingresos_totales }}</span>

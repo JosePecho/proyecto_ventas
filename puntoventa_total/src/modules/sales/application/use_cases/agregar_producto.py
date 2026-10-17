@@ -50,6 +50,7 @@ def agregar_linea(agregado, producto, cantidad: int, promociones) -> None:
     linea = agregado.agregar_producto(
         str(producto.id), producto.nombre, cantidad, producto.precio.venta
     )
+    linea.costo_unitario = producto.precio.costo
     descuento = promociones.descuento_producto(str(producto.id), linea.subtotal, cantidad)
     if descuento.valor > 0:
         pct = (descuento.valor / linea.subtotal.valor * Decimal("100")).quantize(Decimal("0.01"))

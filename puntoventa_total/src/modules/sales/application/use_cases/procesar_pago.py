@@ -18,11 +18,13 @@ class ProcesarPago:
         inventario: InventarioPort,
         auditoria: AuditoriaPort,
         uow: UnitOfWork | None = None,
+        promociones=None,
     ):
         self._repo = repo
         self._inventario = inventario
         self._auditoria = auditoria
         self._uow = uow or NullUnitOfWork()
+        self._promociones = promociones
 
     def ejecutar(self, datos: ProcesarPagoDTO) -> dict:
         with self._uow:
@@ -33,6 +35,9 @@ class ProcesarPago:
                 raise VentaNoEncontrada(datos.venta_id)
 
             agregado.venta.verificar_modificable()
+            if self._promociones is not None:
+                from src.modules.sales.application.use_cases.preparar_beneficios import PrepararBeneficiosVenta
+                PrepararBeneficiosVenta(self._repo, self._promociones).aplicar(agregado)
             total_anterior = agregado.venta.total
             pago = Pago(
                 venta_id=datos.venta_id,

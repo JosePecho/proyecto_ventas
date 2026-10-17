@@ -11,8 +11,8 @@ class FrecuenciaCompra:
         ordenadas = sorted(f for f in fechas if f)
         if len(ordenadas) < 2:
             return 0.0
-        diferencias = [(b - a).days for a, b in zip(ordenadas, ordenadas[1:])]
-        return round(sum(diferencias) / len(diferencias), 2)
+        diferencias = [(b - a).total_seconds() / 86400 for a, b in zip(ordenadas, ordenadas[1:])]
+        return max(0.01, round(sum(diferencias) / len(diferencias), 2))
 
     @classmethod
     def clasificar(cls, dias_promedio: float) -> str:

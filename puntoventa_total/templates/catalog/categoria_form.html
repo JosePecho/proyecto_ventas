@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block content %}<h4>Categorías</h4>
+<form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit">Guardar categoría</button></form>
+{% for c in categorias %}<p>{{ c.nombre }} <a href="{% url 'catalog:categoria_editar' c.id %}">Editar</a></p>{% endfor %}
+{% endblock %}

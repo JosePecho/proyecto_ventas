@@ -16,7 +16,7 @@ class CrearUsuario:
         self._hasher = hasher
 
     def ejecutar(self, datos: UsuarioInputDTO) -> UsuarioOutputDTO:
-        if self._repo.buscar_por_username(datos.username.strip()):
+        if self._repo.buscar_por_username(datos.username.strip().lower()):
             raise UsernameDuplicado(datos.username)
 
         usuario = Usuario(

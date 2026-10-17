@@ -33,66 +33,24 @@ class DjangoReporteRepository(ReporteRepository):
             for f in filas
         ]
 
-    def productos_mas_vendidos(self, desde: date, hasta: date, limite: int = 10) -> Sequence[dict]:
-        from src.modules.sales.domain.enums.estado_venta import EstadoVenta
-        from src.modules.sales.infrastructure.persistence.django_models.detalle_venta_model import DetalleVentaModel
-
-        inicio, fin = self._rango(desde, hasta)
-        filas = (
-            DetalleVentaModel.objects.filter(
-                venta__estado=EstadoVenta.PAGADA.value, venta__fecha_creacion__range=(inicio, fin)
-            )
-            .values("producto_id", "producto_nombre")
-            .annotate(unidades=Sum("cantidad"), ingresos=Sum("total"))
-            .order_by("-ingresos")[:limite]
-        )
-        return [
-            {
-                "producto_id": str(f["producto_id"]),
-                "producto_nombre": f["producto_nombre"],
-                "unidades": f["unidades"],
-                "ingresos": float(f["ingresos"] or 0),
-            }
-            for f in filas
-        ]
+    def productos_mas_vendidos(self, desde: date, hasta: date, limite: int | None = 10, orden="monto") -> Sequence[dict]:
+        filas = self._utilidad_historica(desde, hasta)
+        if orden == "cantidad":
+            filas.sort(key=lambda f: (-f["unidades"], -f["ingresos"], f["producto_id"]))
+        return filas[:limite]
 
     def utilidad_por_producto(self, desde: date, hasta: date) -> Sequence[dict]:
-        from src.modules.sales.domain.enums.estado_venta import EstadoVenta
+        return self._utilidad_historica(desde, hasta)
+
+    def _utilidad_historica(self, desde, hasta):
         from src.modules.sales.infrastructure.persistence.django_models.detalle_venta_model import DetalleVentaModel
-
+        from src.modules.reporting.domain.value_objects.utilidad_historica import agrupar_utilidad
         inicio, fin = self._rango(desde, hasta)
-        filas = (
-            DetalleVentaModel.objects.filter(
-                venta__estado=EstadoVenta.PAGADA.value, venta__fecha_creacion__range=(inicio, fin)
-            )
-            .values("producto_id", "producto_nombre")
-            .annotate(
-                unidades=Sum("cantidad"),
-                ingresos=Sum("total"),
-            )
-            .order_by("-ingresos")
-        )
-        from src.modules.catalog.infrastructure.persistence.django_models.producto_model import ProductoModel
+        qs = DetalleVentaModel.objects.filter(venta__estado="PAGADA", venta__fecha_creacion__range=(inicio, fin)).select_related("venta").order_by("venta_id", "id")
+        return agrupar_utilidad([{"venta_id": str(l.venta_id), "producto_id": str(l.producto_id),
+            "producto_nombre": l.producto_nombre, "cantidad": l.cantidad, "importe": l.total,
+            "total_venta": l.venta.total, "costo_unitario": l.costo_unitario} for l in qs])
 
-        costos = {
-            str(p.id): float(p.costo)
-            for p in ProductoModel.objects.all().only("id", "costo")
-        }
-        resultado = []
-        for f in filas:
-            ingresos = float(f["ingresos"] or 0)
-            costo = costos.get(str(f["producto_id"]), 0.0) * (f["unidades"] or 0)
-            resultado.append(
-                {
-                    "producto_id": str(f["producto_id"]),
-                    "producto_nombre": f["producto_nombre"],
-                    "unidades": f["unidades"],
-                    "ingresos": ingresos,
-                    "costo": round(costo, 2),
-                    "utilidad": round(ingresos - costo, 2),
-                }
-            )
-        return resultado
 
     def rotacion_inventario(self, desde: date, hasta: date, dias_umbral: int = 60) -> Sequence[dict]:
         from src.modules.sales.infrastructure.persistence.django_models.detalle_venta_model import DetalleVentaModel

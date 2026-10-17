@@ -11,4 +11,5 @@ class UtilidadReporteDTO:
     costos_totales: float
     utilidad_total: float
     margen_pct: float
+    estimado: bool = False
 

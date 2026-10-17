@@ -43,6 +43,7 @@ def login_view(request):
                 user.save()
                 login(request, user)
                 request.session["rol"] = usuario.rol
+                request.session["identity_role"] = usuario.rol
                 request.session["usuario_id"] = usuario.id
                 messages.success(request, f"Bienvenido {usuario.nombre_completo}")
                 destino = request.GET.get("next", "")

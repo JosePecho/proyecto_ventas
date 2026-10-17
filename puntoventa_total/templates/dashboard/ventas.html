@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 {% block title %}Reporte de ventas{% endblock %}
 {% block content %}
+{{ form.errors }}
+<h5>Métodos de pago</h5>
+{% for metodo, monto in metodos.items %}<p>{{ metodo }}: S/ {{ monto }}</p>{% endfor %}
 <div class="d-flex justify-content-between mb-3">
   <h4><i class="bi bi-bar-chart"></i> Ventas {{ desde }} - {{ hasta }}</h4>
   <div class="d-flex gap-2">

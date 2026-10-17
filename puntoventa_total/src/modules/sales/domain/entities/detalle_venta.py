@@ -17,6 +17,7 @@ class DetalleVenta(BaseEntity):
     precio_unitario: Monto = None
     descuento: Monto = None
     pct_descuento: Decimal = Decimal("0")
+    costo_unitario: Monto | None = None
 
     def __post_init__(self) -> None:
         self._requerir(self.producto_id, "producto_id")

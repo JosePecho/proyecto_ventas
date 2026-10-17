@@ -6,6 +6,9 @@
 <h4 class="mb-3 no-print"><i class="bi bi-upc-scan"></i> Punto de venta
   <small class="text-muted">Ticket en curso: {{ venta_id }}</small>
 </h4>
+<form method="post" action="{% url 'sales:asignar_cliente' venta_id %}">{% csrf_token %}
+<label>DNI cliente frecuente <input name="dni" maxlength="8" required></label>
+<button type="submit">Asociar cliente y calcular beneficio</button></form>
 <div class="row">
   <div class="col-md-7">
     <div class="input-group mb-3">
