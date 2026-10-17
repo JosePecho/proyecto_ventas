@@ -21,7 +21,7 @@
 <div class="card mb-4">
   <div class="card-body">
     <h5 class="card-title">Pedido {{ pedido.numero }}
-      <span class="badge bg-info">{{ pedido.estado }}</span>
+      <span class="badge bg-info">{{ pedido.estado_label }}</span>
     </h5>
     <p class="card-text">
       Cliente: {{ pedido.cliente_nombre }}<br>
@@ -51,8 +51,8 @@
     <tr>
       <td>{{ linea.nombre }}</td>
       <td>{{ linea.cantidad }}</td>
-      <td>{{ linea.precio_unitario }}</td>
-      <td>{{ linea.total }}</td>
+      <td>{{ linea.precio }}</td>
+      <td>{{ linea.subtotal }}</td>
     </tr>
   {% endfor %}
   </tbody>

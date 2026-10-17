@@ -13,6 +13,12 @@ class PedidoOutputDTO:
     hora_recojo: Optional[str]
     lineas: list[dict]
 
+    @property
+    def estado_label(self):
+        return {"BORRADOR": "Carrito", "CONFIRMADO": "Pendiente",
+                "EN_PREPARACION": "En preparación", "LISTO": "Listo",
+                "ENTREGADO": "Entregado", "CANCELADO": "Cancelado"}[self.estado]
+
     @classmethod
     def desde_agregado(cls, agregado) -> "PedidoOutputDTO":
         p = agregado.pedido

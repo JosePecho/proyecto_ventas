@@ -1,3 +1,5 @@
+import django
+
 from .base import *  # noqa: F401,F403
 from .base import DEBUG, INSTALLED_APPS, MIDDLEWARE
 
@@ -11,7 +13,10 @@ MIDDLEWARE = ["debug_toolbar.middleware.DebugToolbarMiddleware"] + MIDDLEWARE  #
 
 INTERNAL_IPS = ["127.0.0.1"]
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+if django.VERSION >= (6, 1):
+    MAILERS = {"default": {"BACKEND": "django.core.mail.backends.console.EmailBackend"}}
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Permite desarrollar sin Redis instalado
 CACHES = {

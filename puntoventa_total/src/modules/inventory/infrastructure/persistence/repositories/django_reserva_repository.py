@@ -17,6 +17,7 @@ class DjangoReservaRepository(ReservaRepository):
             expira_en=m.expira_en,
             confirmada=m.confirmada,
             liberada=m.liberada,
+            permanente=m.permanente,
             activo=m.activo,
             fecha_creacion=m.fecha_creacion,
             fecha_actualizacion=m.fecha_actualizacion,
@@ -33,7 +34,7 @@ class DjangoReservaRepository(ReservaRepository):
         return [self._a_dominio(m) for m in ReservaModel.objects.filter(referencia=referencia)]
 
     def listar_activas_expiradas(self) -> Sequence[ReservaStock]:
-        qs = ReservaModel.objects.filter(confirmada=False, liberada=False, expira_en__lte=timezone.now())
+        qs = ReservaModel.objects.filter(confirmada=False, liberada=False, permanente=False, expira_en__lte=timezone.now())
         return [self._a_dominio(m) for m in qs]
 
     def guardar(self, reserva: ReservaStock) -> ReservaStock:
@@ -47,6 +48,7 @@ class DjangoReservaRepository(ReservaRepository):
             m.expira_en = timezone.make_aware(m.expira_en)
         m.confirmada = reserva.confirmada
         m.liberada = reserva.liberada
+        m.permanente = reserva.permanente
         m.activo = reserva.activo
         m.save()
         return reserva

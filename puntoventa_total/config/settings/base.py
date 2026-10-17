@@ -2,6 +2,7 @@
 from pathlib import Path
 
 import environ
+import django
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -122,6 +123,41 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_TRACK_STARTED = True
+
+# RF-037: SMTP configurable; nunca guardar credenciales en el repositorio.
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="pedidos@puntoventa.local")
+_smtp_options = {
+    "host": env("EMAIL_HOST", default="localhost"), "port": env.int("EMAIL_PORT", default=25),
+    "username": env("EMAIL_HOST_USER", default=""), "password": env("EMAIL_HOST_PASSWORD", default=""),
+    "use_tls": env.bool("EMAIL_USE_TLS", default=False), "use_ssl": env.bool("EMAIL_USE_SSL", default=False),
+    "timeout": env.int("EMAIL_TIMEOUT", default=10),
+}
+if django.VERSION >= (6, 1):
+    MAILERS = {"default": {"BACKEND": "django.core.mail.backends.smtp.EmailBackend", "OPTIONS": _smtp_options}}
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = _smtp_options["host"]
+    EMAIL_PORT = _smtp_options["port"]
+    EMAIL_HOST_USER = _smtp_options["username"]
+    EMAIL_HOST_PASSWORD = _smtp_options["password"]
+    EMAIL_USE_TLS = _smtp_options["use_tls"]
+    EMAIL_USE_SSL = _smtp_options["use_ssl"]
+    EMAIL_TIMEOUT = _smtp_options["timeout"]
+
+CELERY_BEAT_SCHEDULE = {
+    "verificar-stock-minimo-diario": {
+        "task": "src.modules.inventory.tasks.verificar_stock_minimo.run", "schedule": 3600.0,
+    },
+    "verificar-vencimientos-diario": {
+        "task": "src.modules.inventory.tasks.verificar_vencimientos.run", "schedule": 21600.0,
+    },
+    "actualizar-estado-promociones": {
+        "task": "src.modules.promotions.tasks.actualizar_estado_promociones.run", "schedule": 1800.0,
+    },
+    "pedidos-listos-pendientes": {
+        "task": "src.modules.orders.tasks.reintentar_notificaciones", "schedule": 60.0,
+    },
+}
 
 # Negocio
 DEFAULT_CURRENCY = env("DEFAULT_CURRENCY", default="PEN")

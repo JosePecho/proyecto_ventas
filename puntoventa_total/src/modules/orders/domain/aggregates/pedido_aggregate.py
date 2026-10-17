@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional
 
 from src.modules.orders.domain.entities.detalle_pedido import DetallePedido
 from src.modules.orders.domain.entities.pedido import Pedido
@@ -19,8 +18,10 @@ class PedidoAggregate:
     pedido: Pedido
     lineas: list[DetallePedido] = field(default_factory=list)
 
-    def agregar_producto(self, producto_id: str, nombre: str, cantidad: int, precio: Monto) -> DetallePedido:
+    def agregar_producto(self, producto_id: str, nombre: str, cantidad: int, precio: Monto, requiere_stock: bool = True) -> DetallePedido:
         self._verificar_modificable()
+        if isinstance(cantidad, bool) or not isinstance(cantidad, int) or cantidad <= 0:
+            raise PedidoException("La cantidad debe ser un entero mayor a cero")
         existente = next((l for l in self.lineas if l.producto_id == producto_id), None)
         if existente:
             existente.cambiar_cantidad(existente.cantidad + cantidad)
@@ -32,13 +33,14 @@ class PedidoAggregate:
             producto_nombre=nombre,
             cantidad=cantidad,
             precio_unitario=precio,
+            requiere_stock=requiere_stock,
         )
         self.lineas.append(linea)
         self.recalcular_total()
         return linea
 
     def _verificar_modificable(self) -> None:
-        if self.pedido.estado not in (EstadoPedido.BORRADOR, EstadoPedido.CONFIRMADO):
+        if self.pedido.estado != EstadoPedido.BORRADOR:
             raise PedidoException(f"El pedido en estado {self.pedido.estado.value} no admite cambios")
 
     def recalcular_total(self) -> float:

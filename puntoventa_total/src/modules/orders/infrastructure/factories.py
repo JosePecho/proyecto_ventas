@@ -2,7 +2,7 @@ from src.modules.orders.application.ports.inventario_port import InventarioPort
 from src.modules.orders.application.ports.notificacion_port import NotificacionPort
 from src.modules.orders.domain.repositories.pedido_repository import PedidoRepository
 from src.modules.orders.infrastructure.adapters.inventario_adapter import InventarioAdapter
-from src.modules.orders.infrastructure.notifications.sms_notifier import SmsNotifier
+from src.modules.orders.infrastructure.notifications.email_notifier import EmailNotifier
 from src.modules.orders.infrastructure.persistence.repositories.django_pedido_repository import (
     DjangoPedidoRepository,
 )
@@ -17,7 +17,7 @@ def construir_inventario_port() -> InventarioPort:
 
 
 def construir_notificador() -> NotificacionPort:
-    return SmsNotifier()
+    return EmailNotifier()
 
 
 def construir_reserva_repository():

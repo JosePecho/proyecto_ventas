@@ -12,6 +12,7 @@ class DetallePedido(BaseEntity):
     cantidad: int = 1
     precio_unitario: Monto = None
     subtotal: Monto = None
+    requiere_stock: bool = True
 
     def __post_init__(self) -> None:
         self._requerir(self.producto_id, "producto_id")

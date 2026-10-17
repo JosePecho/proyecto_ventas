@@ -18,7 +18,7 @@ class ReservarStock:
         self._reservas = reserva_repo
         self._uow = uow or NullUnitOfWork()
 
-    def ejecutar(self, producto_id: str, cantidad: int, referencia: str) -> str:
+    def ejecutar(self, producto_id: str, cantidad: int, referencia: str, *, permanente: bool = False) -> str:
         with self._uow:
             existencia = self._stock.obtener(producto_id)
             if existencia is None:
@@ -27,7 +27,7 @@ class ReservarStock:
                 raise StockInsuficiente(producto_id, 0, cantidad)
 
             existencia.reservar(cantidad)
-            reserva = ReservaStock(producto_id=producto_id, cantidad=cantidad, referencia=referencia)
+            reserva = ReservaStock(producto_id=producto_id, cantidad=cantidad, referencia=referencia, permanente=permanente)
             self._stock.guardar(existencia)
             self._reservas.guardar(reserva)
             return str(reserva.id)

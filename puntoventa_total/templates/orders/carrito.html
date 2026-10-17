@@ -17,7 +17,7 @@
   </tbody>
   <tfoot><tr class="fw-bold"><td colspan="3" class="text-end">Total</td><td>S/ {{ total }}</td></tr></tfoot>
 </table>
-<a class="btn btn-success" href="{% url 'orders:checkout' %}"><i class="bi bi-credit-card"></i> Continuar al pago</a>
+<a class="btn btn-success" href="{% url 'orders:checkout' %}">Elegir hora y confirmar recojo</a>
 {% else %}
 <div class="alert alert-info">Su carrito esta vacio. <a href="{% url 'catalog:catalogo' %}">Volver al catalogo</a></div>
 {% endif %}

@@ -21,13 +21,13 @@ class CancelarPedido:
 
                 raise PedidoNoEncontrado(pedido_id)
 
+            agregado.cancelar(motivo, usuario_id)
             from src.modules.orders.infrastructure.factories import construir_reserva_repository
 
             for reserva in construir_reserva_repository().listar_por_referencia(agregado.reservar_referencia()):
                 if reserva.activa:
                     self._inventario.liberar(str(reserva.id))
 
-            agregado.cancelar(motivo, usuario_id)
             self._repo.guardar(agregado)
             return PedidoOutputDTO.desde_agregado(agregado)
 

@@ -16,6 +16,7 @@ class CrearPedido:
             cliente_nombre=datos.cliente_nombre,
             cliente_dni=datos.cliente_dni,
             cliente_telefono=datos.cliente_telefono,
+            cliente_email=datos.cliente_email,
             observaciones=datos.observaciones,
             moneda=datos.moneda,
         )

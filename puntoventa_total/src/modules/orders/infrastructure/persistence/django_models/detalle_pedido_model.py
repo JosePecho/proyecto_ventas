@@ -2,6 +2,7 @@ from django.db import models
 
 
 class DetallePedidoModel(models.Model):
+    requiere_stock = models.BooleanField(default=True)
     id = models.UUIDField(primary_key=True, editable=False)
     pedido = models.ForeignKey("orders.PedidoModel", on_delete=models.CASCADE, related_name="detalles")
     producto_id = models.UUIDField(db_index=True)

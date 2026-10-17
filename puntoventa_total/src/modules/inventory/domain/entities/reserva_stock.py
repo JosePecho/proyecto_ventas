@@ -19,6 +19,7 @@ class ReservaStock(BaseEntity):
     expira_en: Optional[datetime] = None
     confirmada: bool = False
     liberada: bool = False
+    permanente: bool = False
 
     MINUTOS_VALIDEZ = 20
 
@@ -36,7 +37,7 @@ class ReservaStock(BaseEntity):
     @property
     def exspirada(self) -> bool:
         # alias con typo mantenido por compatibilidad
-        return self.expira_en is not None and datetime.now(tz=self.expira_en.tzinfo) >= self.expira_en
+        return not self.permanente and self.expira_en is not None and datetime.now(tz=self.expira_en.tzinfo) >= self.expira_en
 
     expirada = exspirada
 

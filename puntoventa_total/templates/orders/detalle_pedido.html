@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}Pedido {{ pedido.numero }}{% endblock %}
 {% block content %}
-<h4 class="mb-3">Pedido {{ pedido.numero }} <span class="badge bg-info">{{ pedido.estado }}</span></h4>
+<h4 class="mb-3">Pedido {{ pedido.numero }} <span class="badge bg-info">{{ pedido.estado_label }}</span></h4>
 <table class="table table-sm col-md-7">
   <thead><tr><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Subtotal</th></tr></thead>
   <tbody>
@@ -12,6 +12,19 @@
   <tfoot><tr class="fw-bold"><td colspan="3" class="text-end">Total</td><td>S/ {{ pedido.total }}</td></tr></tfoot>
 </table>
 <p class="text-muted">Recojo estimado: {{ pedido.hora_recojo|default:"A coordinar" }}</p>
+<p>Modalidad: Recojo en tienda</p>
+{% if pedido.estado == 'CONFIRMADO' %}
+<form method="post" action="{% url 'orders:cancelar' pedido.id %}">{% csrf_token %}
+  <button type="submit" class="btn btn-danger">Cancelar pedido</button>
+</form>
+{% endif %}
+{% if request.session.rol == 'ADMINISTRADOR' or request.session.rol == 'GERENTE' or request.session.rol == 'CAJERO' %}
+<form method="post" action="{% url 'orders:cambiar_estado' pedido.id %}">{% csrf_token %}
+  {% if pedido.estado == 'CONFIRMADO' %}<button name="estado" value="EN_PREPARACION">Iniciar preparación</button>{% endif %}
+  {% if pedido.estado == 'EN_PREPARACION' %}<button name="estado" value="LISTO">Marcar listo</button>{% endif %}
+  {% if pedido.estado == 'LISTO' %}<button name="estado" value="ENTREGADO">Entregar pedido</button>{% endif %}
+</form>
+{% endif %}
 <a class="btn btn-outline-secondary" href="{% url 'orders:mis_pedidos' %}">Volver</a>
 {% endblock %}
 

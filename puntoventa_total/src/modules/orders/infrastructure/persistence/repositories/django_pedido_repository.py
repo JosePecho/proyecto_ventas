@@ -8,7 +8,11 @@ from src.modules.orders.infrastructure.persistence.mappers.pedido_mapper import 
 
 class DjangoPedidoRepository(PedidoRepository):
     def buscar_por_id(self, pedido_id) -> Optional[PedidoAggregate]:
-        m = PedidoModel.objects.filter(pk=pedido_id).prefetch_related("detalles").first()
+        from django.db import connection
+        qs = PedidoModel.objects.filter(pk=pedido_id)
+        if connection.in_atomic_block:
+            qs = qs.select_for_update()
+        m = qs.prefetch_related("detalles").first()
         return PedidoMapper.agregado_a_dominio(m) if m else None
 
     def buscar_por_numero(self, numero: str) -> Optional[PedidoAggregate]:
@@ -28,8 +32,7 @@ class DjangoPedidoRepository(PedidoRepository):
         return [PedidoMapper.agregado_a_dominio(m) for m in qs]
 
     def siguiente_numero(self) -> str:
-        from datetime import date
-
-        total = PedidoModel.objects.filter(fecha_creacion__date=date.today()).count()
-        return f"P{date.today():%Y%m%d}{total + 1:04d}"
+        from uuid import uuid4
+        # No COUNT+1: concurrent carts must not receive the same number.
+        return f"P{uuid4().hex[:19].upper()}"
 

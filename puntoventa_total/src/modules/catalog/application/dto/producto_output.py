@@ -18,6 +18,7 @@ class ProductoOutputDTO:
     stock_disponible: Optional[int] = None
     stock_minimo: int = 5
     fecha_vencimiento: Optional[date] = None
+    requiere_stock: bool = True
 
     @classmethod
     def desde_entidad(cls, producto, categoria_nombre: str | None = None, stock: int | None = None):
@@ -35,5 +36,6 @@ class ProductoOutputDTO:
             stock_disponible=stock,
             stock_minimo=producto.stock_minimo,
             fecha_vencimiento=producto.fecha_vencimiento,
+            requiere_stock=producto.requiere_stock,
         )
 

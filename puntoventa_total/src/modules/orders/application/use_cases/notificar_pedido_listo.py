@@ -12,6 +12,9 @@ class NotificarPedidoListo:
         if agregado is None:
             return False
         p = agregado.pedido
-        destino = p.cliente_telefono or ""
+        from src.modules.orders.domain.enums.estado_pedido import EstadoPedido
+        if p.estado != EstadoPedido.LISTO:
+            return False
+        destino = p.cliente_email
         return self._notificador.notificar_pedido_listo(p.cliente_nombre, destino, p.numero)
 

@@ -5,6 +5,8 @@ from src.modules.orders.presentation.views.pedido_view import (
     detalle_pedido_view,
     mis_pedidos_view,
     pedidos_cocina_view,
+    cancelar_pedido_view,
+    cambiar_estado_view,
 )
 from src.modules.orders.presentation.views.seguimiento_view import seguimiento_view
 
@@ -17,6 +19,8 @@ urlpatterns = [
     path("confirmacion/<uuid:pedido_id>/", detalle_pedido_view, name="confirmacion"),
     path("mis-pedidos/", mis_pedidos_view, name="mis_pedidos"),
     path("pedido/<uuid:pedido_id>/", detalle_pedido_view, name="detalle"),
+    path("pedido/<uuid:pedido_id>/cancelar/", cancelar_pedido_view, name="cancelar"),
+    path("pedido/<uuid:pedido_id>/estado/", cambiar_estado_view, name="cambiar_estado"),
     path("cocina/", pedidos_cocina_view, name="cocina"),
     path("seguimiento/", seguimiento_view, name="seguimiento"),
 ]

@@ -11,9 +11,11 @@
         {% if user.is_authenticated %}
           <li class="nav-item"><a class="nav-link" href="{% url 'sales:pos' %}"><i class="bi bi-cart-check"></i> POS</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'orders:carrito' %}"><i class="bi bi-bag"></i> Mi carrito</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'orders:mis_pedidos' %}">Mis pedidos</a></li>
           <li class="nav-item"><span class="nav-link disabled">{{ user.username }}</span></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'identity:logout' %}"><i class="bi bi-box-arrow-right"></i> Salir</a></li>
         {% else %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'customers:registro' %}">Crear cuenta</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'identity:login' %}"><i class="bi bi-box-arrow-in-right"></i> Ingresar</a></li>
         {% endif %}
       </ul>

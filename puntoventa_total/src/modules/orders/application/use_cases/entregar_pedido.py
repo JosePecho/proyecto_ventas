@@ -22,13 +22,19 @@ class EntregarPedido:
                 raise PedidoNoEncontrado(pedido_id)
 
             referencia = agregado.reservar_referencia()
+            agregado.entregar()
             from src.modules.orders.infrastructure.factories import construir_reserva_repository
 
-            for reserva in construir_reserva_repository().listar_por_referencia(referencia):
+            reservas = construir_reserva_repository().listar_por_referencia(referencia)
+            from src.modules.orders.domain.exceptions.pedido_exceptions import PedidoException
+            for linea in agregado.lineas:
+                cantidad = sum(r.cantidad for r in reservas if r.producto_id == linea.producto_id and r.activa)
+                if linea.requiere_stock and cantidad != linea.cantidad:
+                    raise PedidoException("La reserva de stock no está completa; revise el inventario antes de entregar")
+            for reserva in reservas:
                 if reserva.activa:
                     self._inventario.confirmar_reserva(str(reserva.id), referencia, usuario_id)
 
-            agregado.entregar()
             self._repo.guardar(agregado)
             return PedidoOutputDTO.desde_agregado(agregado)
 

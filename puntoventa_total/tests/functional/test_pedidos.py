@@ -3,9 +3,9 @@ import pytest
 pytestmark = [pytest.mark.functional, pytest.mark.django_db]
 
 
-def test_seguimiento_publico_responde(client):
+def test_seguimiento_requiere_login(client):
     respuesta = client.get("/pedidos/seguimiento/", {"numero": "PX"})
-    assert respuesta.status_code == 200
+    assert respuesta.status_code == 302
 
 
 def test_carrito_requiere_login(client):

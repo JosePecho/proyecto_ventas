@@ -12,12 +12,13 @@
             <div class="mb-3">
               <label class="form-label">{{ campo.label }}</label>
               <input type="{{ campo.field.widget.input_type|default:'text' }}" name="{{ campo.name }}"
-                     value="{{ campo.value|default:'' }}" class="form-control" {% if campo.errors %}is-invalid{% endif %}>
+                     {% if campo.name != 'password' %}value="{{ campo.value|default:'' }}"{% endif %} class="form-control" {% if campo.errors %}is-invalid{% endif %}>
               {% for error in campo.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
             </div>
           {% endfor %}
           <button class="btn btn-primary w-100" type="submit">Ingresar</button>
         </form>
+        <a href="{% url 'customers:registro' %}">Crear cuenta de cliente</a>
       </div>
     </div>
   </div>

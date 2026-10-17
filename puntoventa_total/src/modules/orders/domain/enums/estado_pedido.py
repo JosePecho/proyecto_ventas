@@ -17,8 +17,8 @@ class EstadoPedido(str, Enum):
         flujo = {
             EstadoPedido.BORRADOR: {EstadoPedido.CONFIRMADO, EstadoPedido.CANCELADO},
             EstadoPedido.CONFIRMADO: {EstadoPedido.EN_PREPARACION, EstadoPedido.CANCELADO},
-            EstadoPedido.EN_PREPARACION: {EstadoPedido.LISTO, EstadoPedido.CANCELADO},
-            EstadoPedido.LISTO: {EstadoPedido.ENTREGADO, EstadoPedido.CANCELADO},
+            EstadoPedido.EN_PREPARACION: {EstadoPedido.LISTO},
+            EstadoPedido.LISTO: {EstadoPedido.ENTREGADO},
             EstadoPedido.ENTREGADO: set(),
             EstadoPedido.CANCELADO: set(),
         }

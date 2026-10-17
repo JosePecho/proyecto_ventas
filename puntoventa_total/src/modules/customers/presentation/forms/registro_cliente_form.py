@@ -19,6 +19,10 @@ class RegistroClienteForm(forms.Form):
         if dni:
             from src.shared.domain.value_objects.dni import DNI
 
-            return str(DNI(dni))
+            from src.shared.domain.exceptions.validation_exception import ValidationException
+            try:
+                return str(DNI(dni))
+            except ValidationException as exc:
+                raise forms.ValidationError(str(exc)) from exc
         return ""
 

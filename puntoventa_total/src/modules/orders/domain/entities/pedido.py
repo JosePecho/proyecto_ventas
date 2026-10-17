@@ -17,6 +17,7 @@ class Pedido(BaseEntity):
     cliente_nombre: str = ""
     cliente_dni: Optional[DNI] = None
     cliente_telefono: str = ""
+    cliente_email: str = ""
     estado: EstadoPedido = EstadoPedido.BORRADOR
     total: float = 0.0
     moneda: str = "PEN"
@@ -32,7 +33,7 @@ class Pedido(BaseEntity):
 
     @property
     def es_cancelable(self) -> bool:
-        return self.estado in (EstadoPedido.BORRADOR, EstadoPedido.CONFIRMADO, EstadoPedido.EN_PREPARACION)
+        return self.estado in (EstadoPedido.BORRADOR, EstadoPedido.CONFIRMADO)
 
     def transicionar_a(self, nuevo_estado: EstadoPedido) -> None:
         if not self.estado.puede_transicion_a(nuevo_estado):
@@ -43,7 +44,7 @@ class Pedido(BaseEntity):
     def asignar_hora_recojo(self, hora: datetime) -> None:
         if hora < datetime.now(tz=hora.tzinfo):
             raise HoraRecojoInvalida("no puede ser en el pasado")
-        if hora.minute not in (0, 30):
+        if hora.minute not in (0, 30) or hora.second or hora.microsecond:
             raise HoraRecojoInvalida("solo franjas de 30 minutos")
         self.hora_recojo = hora
         self.marcar_actualizado()

@@ -21,6 +21,7 @@ class PedidoMapper:
             cliente_nombre=m.cliente_nombre,
             cliente_dni=DNI(m.cliente_dni) if m.cliente_dni else None,
             cliente_telefono=m.cliente_telefono,
+            cliente_email=m.cliente_email,
             estado=EstadoPedido(m.estado),
             total=float(m.total),
             moneda=m.moneda,
@@ -37,6 +38,7 @@ class PedidoMapper:
                 producto_id=str(d.producto_id),
                 producto_nombre=d.producto_nombre,
                 cantidad=d.cantidad,
+                requiere_stock=d.requiere_stock,
                 precio_unitario=Monto(Decimal(d.precio_unitario), m.moneda),
                 subtotal=Monto(Decimal(d.subtotal), m.moneda),
                 fecha_creacion=d.fecha_creacion,
@@ -55,6 +57,7 @@ class PedidoMapper:
         modelo.cliente_nombre = p.cliente_nombre
         modelo.cliente_dni = str(p.cliente_dni) if p.cliente_dni else ""
         modelo.cliente_telefono = p.cliente_telefono
+        modelo.cliente_email = p.cliente_email
         modelo.estado = p.estado.value
         modelo.total = p.total
         modelo.moneda = p.moneda
@@ -70,6 +73,7 @@ class PedidoMapper:
             d.producto_id = uuid.UUID(str(linea.producto_id))
             d.producto_nombre = linea.producto_nombre
             d.cantidad = linea.cantidad
+            d.requiere_stock = linea.requiere_stock
             d.precio_unitario = linea.precio_unitario.valor
             d.subtotal = linea.subtotal.valor
             d.save()

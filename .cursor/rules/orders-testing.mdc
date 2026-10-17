@@ -1,0 +1,25 @@
+---
+description: Reglas de pedidos web RF-030 a RF-037 y sus pruebas
+globs: puntoventa_total/src/modules/orders/**/*.py,puntoventa_total/src/modules/customers/**/*.py,puntoventa_total/templates/orders/**/*.html,puntoventa_total/tests/**/*pedidos_online*
+alwaysApply: false
+---
+
+Lee docs/testing/pedidos_online.md desde puntoventa_total antes de cambiar el flujo.
+
+- Registro público: DNI, nombre, email y teléfono; contraseña validada, hash y rol CLIENTE impuesto por servidor.
+- Login por email sin eliminar el acceso por username del personal. No seleccionar arbitrariamente un email ambiguo.
+- Cada pedido pertenece a usuario_id de identidad; cliente_id del pedido conserva ese identificador.
+- CONFIRMADO se muestra como Pendiente. El cliente solo cancela Pendiente.
+- El carrito solo se modifica en BORRADOR. Confirmar/cancelar/entregar bloquean la cabecera antes de tocar stock.
+- La hora es futura, alineada a 00/30 minutos sin segundos. No inventar horarios comerciales ni capacidad no especificados.
+- Solo recojo en tienda; cantidades enteras positivas y acumuladas dentro del stock disponible.
+- Reserva permanente para pedido confirmado; cancelar libera y entregar descuenta una única vez.
+- LISTO encola email después del commit. Nunca marcar enviado si SMTP falla. Mantener el barrido de pendientes.
+- SMTP puede duplicar si el proceso cae después de entregar al servidor y antes del commit; no prometer exactly-once.
+- SMS simulado no demuestra RF-037. Email real sí es el canal implementado.
+- Ejecutar cuatro niveles: unit/domain/test_pedidos_online.py, integration/test_pedidos_online*.py,
+  system/test_pedidos_online*.py, uat/test_pedidos_online_bdd.py.
+- Probar carreras solo con MySQL real. SQLite no demuestra SELECT FOR UPDATE.
+- Antes de reparar un test, reproducir y contrastar RF; no modificar expected, permisos o umbrales para ocultar regresiones.
+- Guardar JUnit, cobertura, resumen k6 y traces. No guardar cookies, claves SMTP ni datos reales de clientes.
+- Usar rtk en comandos de shell conforme a las instrucciones del proyecto.

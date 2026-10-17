@@ -10,6 +10,7 @@ class CrearPedidoDTO:
     cliente_id: Optional[str] = None
     observaciones: str = ""
     moneda: str = "PEN"
+    cliente_email: str = ""
 
 
 @dataclass(frozen=True)

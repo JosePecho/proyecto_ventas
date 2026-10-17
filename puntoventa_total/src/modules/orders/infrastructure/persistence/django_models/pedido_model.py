@@ -8,6 +8,8 @@ class PedidoModel(models.Model):
     cliente_nombre = models.CharField(max_length=120)
     cliente_dni = models.CharField(max_length=8, blank=True, default="")
     cliente_telefono = models.CharField(max_length=20, blank=True, default="")
+    cliente_email = models.EmailField(blank=True, default="")
+    notificado_listo = models.BooleanField(default=False)
     estado = models.CharField(max_length=20, db_index=True)
     total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     moneda = models.CharField(max_length=3, default="PEN")

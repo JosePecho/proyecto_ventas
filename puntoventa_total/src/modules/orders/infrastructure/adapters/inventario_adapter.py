@@ -18,7 +18,7 @@ class InventarioAdapter(InventarioPort):
         return ReservarStock(
             construir_stock_repository(), construir_reserva_repository(), uow=transaction.atomic()
         ).ejecutar(
-            producto_id, cantidad, referencia
+            producto_id, cantidad, referencia, permanente=True
         )
 
     def confirmar_reserva(self, reserva_id: str, referencia: str, usuario_id: str = "") -> int:

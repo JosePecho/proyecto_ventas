@@ -7,10 +7,17 @@
       <div class="card-body">
         <h6 class="card-title text-dark">{{ producto.nombre }}</h6>
         <span class="fw-bold text-primary">S/ {{ producto.precio_venta|floatformat:2 }}</span>
-        {% if producto.stock_disponible <= 0 %}<span class="badge bg-danger ms-1">Agotado</span>
+        {% if not producto.requiere_stock %}<span class="badge bg-success ms-1">Disponible</span>
+        {% elif producto.stock_disponible <= 0 %}<span class="badge bg-danger ms-1">Agotado</span>
         {% else %}<span class="badge bg-success ms-1">Disponible: {{ producto.stock_disponible }} u.</span>{% endif %}
       </div>
     </div>
   </a>
+  {% if producto.stock_disponible > 0 or not producto.requiere_stock %}
+  <form method="post" action="{% url 'orders:agregar' producto.id %}">{% csrf_token %}
+    <input type="number" name="cantidad" value="1" min="1" {% if producto.requiere_stock %}max="{{ producto.stock_disponible }}"{% endif %} aria-label="Cantidad de {{ producto.nombre }}">
+    <button type="submit" class="btn btn-primary btn-sm">Agregar al carrito</button>
+  </form>
+  {% endif %}
 </div>
 

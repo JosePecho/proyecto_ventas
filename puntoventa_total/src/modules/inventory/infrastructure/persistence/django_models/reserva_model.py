@@ -9,6 +9,7 @@ class ReservaModel(models.Model):
     expira_en = models.DateTimeField()
     confirmada = models.BooleanField(default=False)
     liberada = models.BooleanField(default=False)
+    permanente = models.BooleanField(default=False)
     activo = models.BooleanField(default=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)

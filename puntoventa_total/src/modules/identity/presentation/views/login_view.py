@@ -21,7 +21,15 @@ def login_view(request):
         if form.is_valid():
             caso = AutenticarUsuario(construir_repositorio(), construir_hasher())
             try:
-                usuario = caso.ejecutar(form.cleaned_data["username"], form.cleaned_data["password"])
+                identificador = form.cleaned_data["username"].strip()
+                if "@" in identificador:
+                    from src.modules.identity.infrastructure.persistence.django_models.usuario_model import UsuarioModel
+                    from src.modules.identity.domain.exceptions.usuario_exceptions import CredencialesInvalidas
+                    coincidencias = list(UsuarioModel.objects.filter(email__iexact=identificador)[:2])
+                    if len(coincidencias) != 1:
+                        raise CredencialesInvalidas()
+                    identificador = coincidencias[0].username
+                usuario = caso.ejecutar(identificador, form.cleaned_data["password"])
             except UsuarioException as exc:
                 messages.error(request, str(exc))
             else:

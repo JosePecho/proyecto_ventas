@@ -31,7 +31,9 @@ class SMTPHandler(StreamRequestHandler):
             self.wfile.write(b"250 OK\r\n")
 
 
-def test_email_pedido_se_entrega_por_smtp_al_cliente(settings):
+@pytest.mark.django_db
+@pytest.mark.parametrize("via", ["notificador", "tarea"])
+def test_email_pedido_se_entrega_por_smtp_al_cliente(settings, via):
     with ThreadingTCPServer(("127.0.0.1", 0), SMTPHandler) as server:
         server.messages = []
         thread = Thread(target=server.serve_forever, daemon=True)
@@ -50,7 +52,18 @@ def test_email_pedido_se_entrega_por_smtp_al_cliente(settings):
                 settings.EMAIL_USE_TLS = False
                 settings.EMAIL_USE_SSL = False
                 settings.EMAIL_TIMEOUT = 5
-            assert EmailNotifier().notificar_pedido_listo("Ana", "ana@example.test", "P-SMTP-QA")
+            if via == "notificador":
+                assert EmailNotifier().notificar_pedido_listo("Ana", "ana@example.test", "P-SMTP-QA")
+            else:
+                from uuid import uuid4
+                from src.modules.orders.infrastructure.persistence.django_models.pedido_model import PedidoModel
+                from src.modules.orders.infrastructure.tasks.enviar_notificacion_pedido import run
+                pedido = PedidoModel.objects.create(id=uuid4(), numero="P-SMTP-QA", cliente_nombre="Ana",
+                                                     cliente_email="ana@example.test", estado="LISTO")
+                assert run(str(pedido.id)) is True
+                pedido.refresh_from_db()
+                assert pedido.notificado_listo
+                assert run(str(pedido.id)) is True
             assert len(server.messages) == 1
             recipients, raw = server.messages[0]
             assert [r.lower() for r in recipients] == ["rcpt to:<ana@example.test>"]
