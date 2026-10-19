@@ -64,6 +64,10 @@ jobs:
           python -m ruff check src config scripts tests --select F821,F822,F823,E9
       - name: Migration consistency
         run: python manage.py makemigrations --check --dry-run --settings=config.settings.testing
+      - name: Semana 9 - Prioridad Core Fast
+        run: python scripts/qa_semana9.py core-fast
+      - name: Semana 9 - Auditoria de asercion RN-08
+        run: python scripts/qa_semana9_auditoria.py
       - name: '1 - Unit'
         run: python -m pytest tests/unit -q --cov=src --cov-fail-under=0 --cov-report=json:reports/audit_unit_coverage.json --junitxml=reports/full-unit.xml
       - name: Unit domain and application coverage gate

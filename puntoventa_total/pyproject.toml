@@ -28,6 +28,13 @@ DJANGO_SETTINGS_MODULE = "config.settings.testing"
 python_files = ["test_*.py"]
 addopts = "-ra --strict-markers --tb=short"
 markers = [
+    "core: reglas criticas de negocio auditadas en Semana 9",
+    "minor: validaciones de menor riesgo relativo",
+    "fast: dominio puro sin infraestructura",
+    "slow: requiere infraestructura o base de datos",
+    "ventas: componente de calculo y detalle de venta",
+    "inventario: componente de existencias y reservas",
+    "catalogo: componente de productos y persistencia",
     "unit: pruebas de dominio/aplicacion sin infraestructura",
     "integration: pruebas con base de datos",
     "functional: pruebas de vistas/flujo HTTP",
