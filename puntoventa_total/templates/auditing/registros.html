@@ -2,11 +2,14 @@
 {% block title %}Auditoria{% endblock %}
 {% block content %}
 <h4 class="mb-3"><i class="bi bi-shield-lock"></i> Auditoria</h4>
+{{ form.errors }}
 <form class="row g-2 mb-3" method="get">
   <div class="col-md-2"><input class="form-control" name="accion" value="{{ filtros.accion|default:'' }}" placeholder="Accion"></div>
   <div class="col-md-2"><input class="form-control" name="entidad" value="{{ filtros.entidad|default:'' }}" placeholder="Entidad"></div>
   <div class="col-md-3"><input class="form-control" name="entidad_id" value="{{ filtros.entidad_id|default:'' }}" placeholder="Entidad ID"></div>
   <div class="col-md-2"><input class="form-control" type="date" name="desde" value="{{ filtros.desde|default:'' }}"></div>
+  <div class="col-md-2"><input class="form-control" type="date" name="hasta" value="{{ filtros.hasta|default:'' }}" aria-label="Hasta"></div>
+  <div class="col-md-3"><input class="form-control" name="usuario_id" value="{{ filtros.usuario_id|default:'' }}" placeholder="Usuario ID" aria-label="Usuario ID"></div>
   <div class="col-md-2"><button class="btn btn-primary w-100" type="submit">Filtrar</button></div>
 </form>
 {% if traza %}

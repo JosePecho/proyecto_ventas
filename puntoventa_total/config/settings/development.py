@@ -1,4 +1,5 @@
 import django
+from importlib.util import find_spec
 
 from .base import *  # noqa: F401,F403
 from .base import DEBUG, INSTALLED_APPS, MIDDLEWARE
@@ -7,9 +8,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-INSTALLED_APPS = INSTALLED_APPS + ["debug_toolbar"]  # noqa: F405
-
-MIDDLEWARE = ["debug_toolbar.middleware.DebugToolbarMiddleware"] + MIDDLEWARE  # noqa: F405
+if find_spec("debug_toolbar") is not None:
+    INSTALLED_APPS = INSTALLED_APPS + ["debug_toolbar"]  # noqa: F405
+    MIDDLEWARE = ["debug_toolbar.middleware.DebugToolbarMiddleware"] + MIDDLEWARE  # noqa: F405
 
 INTERNAL_IPS = ["127.0.0.1"]
 

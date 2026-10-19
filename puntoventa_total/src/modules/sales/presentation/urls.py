@@ -10,11 +10,13 @@ from src.modules.sales.presentation.views.pos_view import (
 )
 from src.modules.sales.presentation.views.ticket_view import ticket_view
 from src.modules.sales.presentation.views.venta_view import ventas_dia_view
+from src.modules.sales.presentation.views.cliente_venta_view import asignar_cliente_view
 
 app_name = "sales"
 
 urlpatterns = [
     path("", pos_view, name="pos"),
+    path("venta/<uuid:venta_id>/cliente/", asignar_cliente_view, name="asignar_cliente"),
     path("buscar/", buscar_producto_pos, name="buscar"),
     path("ventas/", ventas_dia_view, name="ventas"),
     path("venta/<uuid:venta_id>/agregar/<uuid:producto_id>/", agregar_producto_pos, name="agregar"),

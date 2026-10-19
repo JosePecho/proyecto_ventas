@@ -10,7 +10,7 @@ from src.shared.domain.value_objects.monto import Monto
 
 
 class MotorPromociones:
-    ORDEN_PRECEDENCIA = (TipoPromocion.NX1, TipoPromocion.PORCENTAJE, TipoPromocion.MONTO_FIJO, TipoPromocion.PRECIO_ESPECIAL)
+    ORDEN_PRECEDENCIA = (TipoPromocion.NX1, TipoPromocion.PORCENTAJE, TipoPromocion.MONTO_FIJO, TipoPromocion.PRECIO_ESPECIAL, TipoPromocion.COMBO)
 
     @classmethod
     def vigentes(cls, promociones: Sequence[Promocion], momento: datetime | None = None) -> list[Promocion]:

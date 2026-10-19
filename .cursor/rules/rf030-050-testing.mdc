@@ -1,0 +1,35 @@
+---
+description: Pruebas y contratos RF-030 a RF-050 en los cuatro niveles
+globs: puntoventa_total/src/modules/{orders,customers,promotions,reporting,identity,catalog,auditing,sales}/**/*.py,puntoventa_total/tests/**/*rf038_050*,puntoventa_total/tests/**/*clientes_promociones*,puntoventa_total/tests/**/*rf030_050_contratos*,puntoventa_total/tests/**/*reportes_administracion_contratos*
+alwaysApply: false
+---
+
+Lee puntoventa_total/docs/testing/plan_maestro_rf030_050.md y puntoventa_total/docs/testing/pedidos_online.md.
+
+- Mantén RF-030..RF-050 y documenta los supuestos de negocio no confirmados.
+- Pedidos: propietario = Usuario.id; solo Pendiente admite cancelación del cliente; franjas futuras de 30 minutos.
+- Historial/frecuencia: cliente = Customers.Cliente.id en las ventas. Excluir anuladas y borradores.
+- Registro por cajero no asigna la cuenta del cajero al cliente registrado.
+- Conserva la política existente de fidelización hasta que el negocio indique otra; no inventes tasas.
+- El código existente clasifica como OCASIONAL también intervalos superiores a 30 días; no inventar un corte sin confirmación.
+- 2x1 es paquete de dos unidades, una gratuita; combo requiere productos distintos y precio final por paquete completo.
+- Las promociones caducan en el instante final; una programada ya vencida nunca se activa transitoriamente.
+- Aplica el ciclo explícito Borrador → Activa → Vencida → Cancelada: permite cancelar FINALIZADA,
+  impide reactivar vencidas/canceladas y no ofrece botones incompatibles con el estado.
+- Aplica el beneficio automáticamente antes del primer pago. No sumes beneficios incompatibles ni alteres pagos iniciados.
+- La utilidad usa el costo congelado al agregar la línea y distribuye el descuento global conservando centavos.
+- No inventes costos históricos; marca como parcial el reporte que contiene costos desconocidos.
+- Auditoría: agregado, actor y fecha dentro de la transacción; movimientos de inventario conservan su propio libro.
+- No incluyas passwords, tokens, teléfonos, DNI ni cuerpos de request en la auditoría técnica.
+- Revoca la sesión de una cuenta inactiva y los permisos anteriores cuando cambia de rol.
+- Reproduce fallos antes de editar expectativas; conserva los umbrales de cobertura y rendimiento existentes.
+- Verifica tests/unit/domain/test_rf030_050_contratos.py y tests/integration/test_rf030_050_contratos.py:
+  matriz completa de estados, vigencia [inicio, fin), día local America/Lima, rankings y último administrador.
+- Mantén los escenarios de tests/uat/features/reportes_administracion_contratos.feature y el flujo de entrega
+  de tests/system/test_rf030_050_contratos.py cuando cambien reportes, permisos o estados.
+- Ejecuta Unit, MySQL real (incluidas carreras), navegador/carga y UAT. No llames integración MySQL a SQLite.
+- Consolida tests/unit/application/test_reportes_administracion.py y sus pruebas de integración/UI/BDD
+  en el plan general. Ejecuta también scripts/qa_reportes_unit_gate.py después de cobertura unitaria.
+- Usa rtk para shell. No ejecutes dos suites de carga al mismo tiempo.
+- Guarda JUnit, cobertura, resúmenes k6 y traces sin cookies/credenciales.
+- Una ejecución verde no garantiza ausencia absoluta de flakiness ni sustituye aceptación del Product Owner.

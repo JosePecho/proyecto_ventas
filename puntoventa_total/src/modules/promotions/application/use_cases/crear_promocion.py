@@ -7,7 +7,6 @@ from src.modules.promotions.domain.entities.promocion import Promocion
 from src.modules.promotions.domain.enums.tipo_promocion import TipoPromocion
 from src.modules.promotions.domain.repositories.promocion_repository import PromocionRepository
 from src.modules.promotions.domain.value_objects.descuento import Descuento
-from src.shared.domain.value_objects.monto import Monto
 
 
 class CrearPromocion:
@@ -16,11 +15,16 @@ class CrearPromocion:
         self._moneda = moneda
 
     def ejecutar(self, datos: PromocionInputDTO) -> PromocionOutputDTO:
+        promocion = self.crear_entidad(datos)
+        self._repo.guardar(promocion)
+        return PromocionOutputDTO.desde_entidad(promocion)
+
+    def crear_entidad(self, datos: PromocionInputDTO) -> Promocion:
         tipo = TipoPromocion(datos.tipo)
         descuento = (
             Descuento.porcentaje(Decimal(str(datos.descuento_valor)))
             if tipo == TipoPromocion.PORCENTAJE
-            else Descuento.monto_fijo(Monto(datos.descuento_valor, self._moneda))
+            else Descuento(valor=Decimal(str(datos.descuento_valor)), tipo=tipo.value)
         )
         promocion = Promocion(
             nombre=datos.nombre,
@@ -31,11 +35,12 @@ class CrearPromocion:
             cantidad_requerida=datos.cantidad_requerida,
             cantidad_gratuita=datos.cantidad_gratuita,
             aplica_clientes_frecuentes=datos.aplica_clientes_frecuentes,
+            componentes=datos.componentes,
         )
         if datos.vigencia_desde and datos.vigencia_hasta:
             promocion.programar(
-                datetime.fromisoformat(datos.vigencia_desde), datetime.fromisoformat(datos.vigencia_hasta)
+                datos.vigencia_desde if isinstance(datos.vigencia_desde, datetime) else datetime.fromisoformat(datos.vigencia_desde),
+                datos.vigencia_hasta if isinstance(datos.vigencia_hasta, datetime) else datetime.fromisoformat(datos.vigencia_hasta)
             )
-        self._repo.guardar(promocion)
-        return PromocionOutputDTO.desde_entidad(promocion)
+        return promocion
 

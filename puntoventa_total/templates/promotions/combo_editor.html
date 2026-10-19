@@ -1,0 +1,8 @@
+{% load static %}
+<div id="combo-editor" hidden>
+  <p>Selecciona los productos y cantidades del combo. En «Valor» indica el precio final del paquete.</p>
+  <div id="combo-filas"></div>
+  <button type="button" id="combo-agregar">Agregar producto al combo</button>
+</div>
+{{ form.productos_combo|json_script:"combo-catalogo" }}
+<script src="{% static 'js/promotions/combo.js' %}" defer></script>

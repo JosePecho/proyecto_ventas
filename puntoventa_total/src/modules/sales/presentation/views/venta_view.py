@@ -19,6 +19,7 @@ def ventas_dia_view(request):
         return HttpResponseBadRequest("Pagina invalida")
     if pagina < 1:
         return HttpResponseBadRequest("Pagina invalida")
-    pagina_dto = ConsultarVenta(construir_venta_repository()).del_dia(pagina=pagina)
+    cajero_id = request.session.get("usuario_id", "") if request.session.get("rol") == "CAJERO" else None
+    pagina_dto = ConsultarVenta(construir_venta_repository()).del_dia(pagina=pagina, cajero_id=cajero_id)
     return render(request, "pos/carrito.html", {"pagina_dto": pagina_dto})
 

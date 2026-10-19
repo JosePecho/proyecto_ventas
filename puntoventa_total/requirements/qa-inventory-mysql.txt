@@ -3,3 +3,4 @@
 mysqlclient==2.3.0
 testcontainers[mysql]==4.15.0
 PyMySQL[rsa]==1.2.3
+waitress==3.0.2; platform_system == "Windows"

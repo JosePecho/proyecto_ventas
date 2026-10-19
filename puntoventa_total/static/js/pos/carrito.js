@@ -29,7 +29,12 @@ const POS = {
       const item = document.createElement("button");
       item.type = "button";
       item.className = "list-group-item list-group-item-action d-flex justify-content-between";
-      item.innerHTML = `<span>${producto.nombre}</span><span class="fw-bold">${PV.money(producto.precio)}</span>`;
+      const nombre = document.createElement("span");
+      nombre.textContent = producto.nombre;
+      const precio = document.createElement("span");
+      precio.className = "fw-bold";
+      precio.textContent = PV.money(producto.precio);
+      item.append(nombre, precio);
       item.addEventListener("click", () => this.agregar(producto.id));
       contenedor.appendChild(item);
     });
@@ -48,14 +53,17 @@ const POS = {
   },
 
   async cambiarCantidad(productoId, cantidad) {
-    await PV.post(`/pos/venta/${this.ventaId}/cantidad/${productoId}/`, { cantidad });
-    this.actualizarTotales();
+    try {
+      await PV.post(`/pos/venta/${this.ventaId}/cantidad/${productoId}/`, { cantidad });
+      this.actualizarTotales();
+    } catch (error) { PV.alerta("danger", "No se pudo cambiar la cantidad"); }
   },
 
   async eliminar(productoId) {
-    await PV.post(`/pos/venta/${this.ventaId}/eliminar/${productoId}/`);
-    document.querySelector(`[data-producto="${productoId}"]`)?.remove();
-    this.actualizarTotales();
+    try {
+      await PV.post(`/pos/venta/${this.ventaId}/eliminar/${productoId}/`);
+      this.actualizarTotales();
+    } catch (error) { PV.alerta("danger", "No se pudo eliminar el producto"); }
   },
 
   async actualizarTotales() {

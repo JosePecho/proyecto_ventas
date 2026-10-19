@@ -9,11 +9,13 @@
     <div class="collapse navbar-collapse" id="navPrin">
       <ul class="navbar-nav ms-auto">
         {% if user.is_authenticated %}
+          {% if request.session.rol == 'ADMINISTRADOR' or request.session.rol == 'GERENTE' or request.session.rol == 'CAJERO' %}
           <li class="nav-item"><a class="nav-link" href="{% url 'sales:pos' %}"><i class="bi bi-cart-check"></i> POS</a></li>
+          {% endif %}
           <li class="nav-item"><a class="nav-link" href="{% url 'orders:carrito' %}"><i class="bi bi-bag"></i> Mi carrito</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'orders:mis_pedidos' %}">Mis pedidos</a></li>
           <li class="nav-item"><span class="nav-link disabled">{{ user.username }}</span></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'identity:logout' %}"><i class="bi bi-box-arrow-right"></i> Salir</a></li>
+          <li class="nav-item"><form method="post" action="{% url 'identity:logout' %}">{% csrf_token %}<button type="submit" class="nav-link border-0 bg-transparent"><i class="bi bi-box-arrow-right"></i> Salir</button></form></li>
         {% else %}
           <li class="nav-item"><a class="nav-link" href="{% url 'customers:registro' %}">Crear cuenta</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'identity:login' %}"><i class="bi bi-box-arrow-in-right"></i> Ingresar</a></li>

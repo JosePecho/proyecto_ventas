@@ -18,7 +18,7 @@ class DjangoUsuarioRepository(UsuarioRepository):
 
     def buscar_por_id(self, usuario_id) -> Optional[Usuario]:
         try:
-            modelo = UsuarioModel.objects.select_related().get(pk=usuario_id)
+            modelo = UsuarioModel.objects.get(pk=usuario_id)
         except UsuarioModel.DoesNotExist:
             return None
         return self._mapper.a_dominio(modelo)

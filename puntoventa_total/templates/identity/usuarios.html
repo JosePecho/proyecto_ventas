@@ -8,6 +8,7 @@
   <div class="card-body">
     <form method="post" class="row g-2">
       {% csrf_token %}
+      {{ form.errors }}
       {% for campo in form %}
         <div class="col-md-3">
           <label class="form-label">{{ campo.label }}</label>
@@ -32,6 +33,7 @@
       <td><span class="badge bg-{% if u.activo %}success{% else %}danger{% endif %}">{{ u.estado }}</span></td>
       <td>{{ u.ultimo_acceso|date:"d/m/Y H:i"|default:"-" }}</td>
       <td class="text-end">
+        <a href="{% url 'identity:usuario_editar' u.id %}">Editar</a>
         <form method="post" action="{% url 'identity:usuario_desactivar' u.id %}" class="d-inline">
           {% csrf_token %}
           <button class="btn btn-sm btn-outline-danger" type="submit">Desactivar</button>

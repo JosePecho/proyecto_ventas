@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from datetime import date, timedelta
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
@@ -9,17 +8,20 @@ from django.shortcuts import render
 from src.modules.reporting.application.use_cases.reporte_ventas_por_fecha import ReporteVentasPorFecha
 from src.modules.reporting.infrastructure.factories import construir_exportador, construir_reporte_repository
 from src.modules.identity.presentation.permissions.role_required import role_required
+from src.modules.reporting.presentation.forms.rango_reporte_form import RangoReporteForm
 
 
 @login_required
 @role_required("ADMINISTRADOR", "GERENTE")
 def ventas_reporte_view(request):
-    desde = request.GET.get("desde") or (date.today() - timedelta(days=30)).isoformat()
-    hasta = request.GET.get("hasta") or date.today().isoformat()
+    form = RangoReporteForm.de_request(request)
+    if not form.is_valid():
+        return render(request, "dashboard/ventas.html", {"form": form}, status=400)
+    desde, hasta = form.cleaned_data["desde"], form.cleaned_data["hasta"]
     formato = request.GET.get("formato")
 
     reporte = ReporteVentasPorFecha(construir_reporte_repository()).ejecutar(
-        date.fromisoformat(desde), date.fromisoformat(hasta)
+        desde, hasta
     )
 
     if formato in ("csv", "pdf"):
@@ -35,6 +37,7 @@ def ventas_reporte_view(request):
     return render(
         request,
         "dashboard/ventas.html",
-        {"reporte": reporte, "desde": desde, "hasta": hasta},
+        {"reporte": reporte, "desde": desde.isoformat(), "hasta": hasta.isoformat(),
+         "metodos": construir_reporte_repository().totales_por_metodo_pago(desde, hasta)},
     )
 

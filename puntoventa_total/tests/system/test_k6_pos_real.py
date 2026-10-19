@@ -26,24 +26,36 @@ pytestmark = [pytest.mark.system, pytest.mark.performance, pytest.mark.django_db
 
 @pytest.fixture
 def pos_http_server(live_server):
-    if sys.platform == "win32":
-        yield live_server.url.replace("localhost", "127.0.0.1")
-        return
-    # Presupuesto HTTP sobre el servidor desplegado, no sobre wsgiref de desarrollo.
+    # Medir HTTP en WSGI independiente, sin instrumentacion de cobertura.
     root = Path(__file__).resolve().parents[2]
     with socket.socket() as reserved:
         reserved.bind(("127.0.0.1", 0))
         port = reserved.getsockname()[1]
     base = f"http://127.0.0.1:{port}"
-    with (root / "reports/k6-gunicorn.log").open("w", encoding="utf-8") as log:
-        process = subprocess.Popen([sys.executable, "-m", "gunicorn", "config.wsgi:application",
-            "--config", "deployment/gunicorn/gunicorn.conf.py", "--bind", f"127.0.0.1:{port}",
-            "--workers", "2", "--threads", "2"], cwd=root, env=dict(os.environ), stdout=log, stderr=subprocess.STDOUT)
+    entorno = dict(os.environ, DJANGO_ALLOWED_HOSTS="127.0.0.1,localhost")
+    for nombre in ("COV_CORE_SOURCE", "COV_CORE_CONFIG", "COV_CORE_DATAFILE", "COVERAGE_PROCESS_START"):
+        entorno.pop(nombre, None)
+    if sys.platform == "win32":
+        comando = [sys.executable, "-m", "waitress", f"--listen=127.0.0.1:{port}",
+                   "--threads=4", "config.wsgi:application"]
+        servidor = "Waitress 3.0.2 (Windows)"
+    else:
+        comando = [sys.executable, "-m", "gunicorn", "config.wsgi:application",
+                   "--config", "deployment/gunicorn/gunicorn.conf.py", "--bind", f"127.0.0.1:{port}",
+                   "--workers", "2", "--threads", "2"]
+        servidor = "Gunicorn (Linux)"
+    (root / "reports").mkdir(exist_ok=True)
+    (root / "reports/k6-server.json").write_text(json.dumps({
+        "server": servidor, "coverage_in_server": False, "database": "ephemeral",
+    }), encoding="utf-8")
+    with (root / "reports/k6-wsgi.log").open("w", encoding="utf-8") as log:
+        process = subprocess.Popen(comando, cwd=root, env=entorno, stdout=log, stderr=subprocess.STDOUT,
+                                   creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
         try:
             deadline = time.monotonic() + 20
             while True:
                 if process.poll() is not None:
-                    pytest.fail("Gunicorn no inicio; revisar reports/k6-gunicorn.log")
+                    pytest.fail("WSGI no inicio; revisar reports/k6-wsgi.log")
                 try:
                     with urlopen(base + "/login/", timeout=1) as response:
                         if response.status == 200:

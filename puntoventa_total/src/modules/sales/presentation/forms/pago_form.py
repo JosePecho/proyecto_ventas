@@ -25,7 +25,7 @@ class PagoForm(forms.Form):
         if datos.get("metodo") == "EFECTIVO":
             entregado = datos.get("monto_entregado")
             monto = datos.get("monto")
-            if entregado is not None and entregado < monto:
+            if entregado is not None and monto is not None and entregado < monto:
                 self.add_error("monto_entregado", "El efectivo entregado no puede ser menor al monto")
         elif not datos.get("referencia"):
             self.add_error("referencia", "Indique la referencia del pago electronico")
