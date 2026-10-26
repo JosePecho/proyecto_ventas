@@ -16,7 +16,7 @@
   <div class="col-md-3"><input type="date" class="form-control" name="hasta" value="{{ hasta }}"></div>
   <div class="col-md-2"><button class="btn btn-primary w-100" type="submit">Filtrar</button></div>
 </form>
-<table class="table table-sm table-striped">
+<div class="table-responsive" role="region" aria-label="Tabla de datos" tabindex="0"><table class="table table-sm table-striped">
   <thead><tr><th>Fecha</th><th>Tickets</th><th>Total</th><th>IGV</th></tr></thead>
   <tbody>
   {% for fila in reporte.por_dia %}
@@ -27,6 +27,6 @@
     <tr class="fw-bold"><td>Totales</td><td>{{ reporte.cantidad_tickets }}</td>
       <td>S/ {{ reporte.total_ventas }}</td><td>S/ {{ reporte.total_igv }}</td></tr>
   </tfoot>
-</table>
+</table></div>
 {% endblock %}
 

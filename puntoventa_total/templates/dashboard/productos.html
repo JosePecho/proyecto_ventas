@@ -3,6 +3,6 @@
 <form method="get"><input type="date" name="desde" required><input type="date" name="hasta" required>
 <select name="orden"><option value="monto">Monto</option><option value="cantidad">Cantidad</option></select>
 <button type="submit">Filtrar ranking</button></form>
-<table><thead><tr><th>Producto</th><th>Cantidad</th><th>Monto</th></tr></thead><tbody>
+<div class="table-responsive" role="region" aria-label="Tabla de datos" tabindex="0"><table class="table"><thead><tr><th>Producto</th><th>Cantidad</th><th>Monto</th></tr></thead><tbody>
 {% for p in productos %}<tr><td>{{ p.producto_nombre }}</td><td>{{ p.unidades }}</td><td>{{ p.ingresos }}</td></tr>{% empty %}<tr><td>Sin ventas</td></tr>{% endfor %}
-</tbody></table>{% endblock %}
+</tbody></table></div>{% endblock %}

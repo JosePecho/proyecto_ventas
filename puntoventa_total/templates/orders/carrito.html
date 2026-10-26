@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% block title %}Mi carrito{% endblock %}
 {% block content %}
-<h4 class="mb-3"><i class="bi bi-bag"></i> Mi carrito</h4>
+<div class="page-heading"><span class="section-kicker">TU PRÓXIMA COMPRA</span><h4 class="mb-2"><i class="bi bi-bag"></i> Mi carrito</h4><p class="text-muted">Revisa tus productos y elige lo que te llevas.</p></div>
 {% if lineas %}
-<table class="table table-sm align-middle col-md-8">
-  <thead><tr><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Subtotal</th></tr></thead>
+<div class="table-responsive"><table class="table table-sm align-middle col-md-8">
+  <thead><tr><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Subtotal</th><th>Acciones</th></tr></thead>
   <tbody>
   {% for linea in lineas %}
     <tr>
@@ -12,11 +12,17 @@
       <td>{{ linea.cantidad }}</td>
       <td>S/ {{ linea.precio }}</td>
       <td>S/ {{ linea.subtotal }}</td>
+      <td>
+        <form method="post" action="{% url 'orders:quitar' linea.producto_id %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-outline-danger btn-sm" aria-label="Quitar {{ linea.nombre }} del carrito"><i class="bi bi-trash" aria-hidden="true"></i> Quitar</button>
+        </form>
+      </td>
     </tr>
   {% endfor %}
   </tbody>
-  <tfoot><tr class="fw-bold"><td colspan="3" class="text-end">Total</td><td>S/ {{ total }}</td></tr></tfoot>
-</table>
+  <tfoot><tr class="fw-bold"><td colspan="3" class="text-end">Total</td><td>S/ {{ total }}</td><td></td></tr></tfoot>
+</table></div>
 <a class="btn btn-success" href="{% url 'orders:checkout' %}">Elegir hora y confirmar recojo</a>
 {% else %}
 <div class="alert alert-info">Su carrito esta vacio. <a href="{% url 'catalog:catalogo' %}">Volver al catalogo</a></div>

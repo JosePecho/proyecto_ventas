@@ -39,6 +39,11 @@ class PedidoAggregate:
         self.recalcular_total()
         return linea
 
+    def quitar_producto(self, producto_id: str) -> None:
+        self._verificar_modificable()
+        self.lineas = [linea for linea in self.lineas if linea.producto_id != str(producto_id)]
+        self.recalcular_total()
+
     def _verificar_modificable(self) -> None:
         if self.pedido.estado != EstadoPedido.BORRADOR:
             raise PedidoException(f"El pedido en estado {self.pedido.estado.value} no admite cambios")

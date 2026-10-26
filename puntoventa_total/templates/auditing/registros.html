@@ -16,7 +16,7 @@
 <div class="alert alert-info">Traza de {{ traza.entidad }}:{{ traza.entidad_id }} ({{ traza.cantidad }} eventos)
   - ultima accion: {{ traza.ultima_accion }}</div>
 {% endif %}
-<table class="table table-sm table-striped">
+<div class="table-responsive" role="region" aria-label="Tabla de datos" tabindex="0"><table class="table table-sm table-striped">
   <thead><tr><th>Fecha</th><th>Accion</th><th>Entidad</th><th>ID</th><th>Usuario</th><th>Detalle</th></tr></thead>
   <tbody>
   {% for r in pagina_dto.items %}
@@ -32,6 +32,6 @@
     <tr><td colspan="6" class="text-center text-muted">Sin registros</td></tr>
   {% endfor %}
   </tbody>
-</table>
+</table></div>
 {% include 'components/pagination.html' %}
 {% endblock %}

@@ -22,7 +22,7 @@
   </div>
 </div>
 {% endif %}
-<table class="table table-sm table-hover align-middle">
+<div class="table-responsive" role="region" aria-label="Tabla de datos" tabindex="0"><table class="table table-sm table-hover align-middle">
   <thead><tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th>Estado</th><th>Ultimo acceso</th><th></th></tr></thead>
   <tbody>
   {% for u in usuarios %}
@@ -44,7 +44,7 @@
     <tr><td colspan="6" class="text-center text-muted">Sin usuarios</td></tr>
   {% endfor %}
   </tbody>
-</table>
+</table></div>
 <a class="btn btn-outline-primary btn-sm" href="?">Refrescar</a>
 {% endblock %}
 

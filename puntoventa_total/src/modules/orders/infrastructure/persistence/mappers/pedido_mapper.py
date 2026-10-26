@@ -66,6 +66,7 @@ class PedidoMapper:
         modelo.activo = p.activo
         modelo.save()
 
+        modelo.detalles.exclude(pk__in=[linea.id for linea in agregado.lineas]).delete()
         for linea in agregado.lineas:
             d = DetallePedidoModel.objects.filter(pk=linea.id).first() or DetallePedidoModel(id=linea.id)
             d.id = linea.id if isinstance(linea.id, uuid.UUID) else uuid.UUID(str(linea.id))

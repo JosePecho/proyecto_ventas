@@ -1,9 +1,27 @@
 from django import forms
+from datetime import timedelta
+from django.utils import timezone
+
+
+def proximo_horario_recojo():
+    ahora = timezone.localtime()
+    return ahora.replace(minute=0, second=0, microsecond=0) + timedelta(
+        minutes=30 if ahora.minute < 30 else 60
+    )
 
 
 class PedidoForm(forms.Form):
     modalidad = forms.ChoiceField(choices=[("RECOJO", "Recojo en tienda")])
-    hora_recojo = forms.DateTimeField(widget=forms.DateTimeInput(attrs={"type": "datetime-local", "step": "1800"}))
+    hora_recojo = forms.DateTimeField(
+        required=False,
+        initial=proximo_horario_recojo,
+        label="Fecha y hora estimada de recojo",
+        help_text="Se asigna automáticamente el próximo horario de 30 minutos al confirmar tu pedido.",
+        widget=forms.DateTimeInput(
+            format="%Y-%m-%dT%H:%M",
+            attrs={"class": "form-control", "type": "datetime-local", "disabled": True},
+        ),
+    )
     cliente_nombre = forms.CharField(max_length=120, widget=forms.TextInput(attrs={"class": "form-control"}))
     cliente_telefono = forms.CharField(
         max_length=20, required=False, widget=forms.TextInput(attrs={"class": "form-control"})
@@ -28,8 +46,7 @@ class PedidoForm(forms.Form):
         return ""
 
     def clean_hora_recojo(self):
-        from django.utils import timezone
-        hora = self.cleaned_data["hora_recojo"]
+        hora = self.cleaned_data["hora_recojo"] or proximo_horario_recojo()
         if hora <= timezone.now() or hora.minute not in (0, 30) or hora.second or hora.microsecond:
             raise forms.ValidationError("Elige una franja futura de 30 minutos")
         return hora

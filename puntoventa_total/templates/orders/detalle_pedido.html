@@ -2,7 +2,7 @@
 {% block title %}Pedido {{ pedido.numero }}{% endblock %}
 {% block content %}
 <h4 class="mb-3">Pedido {{ pedido.numero }} <span class="badge bg-info">{{ pedido.estado_label }}</span></h4>
-<table class="table table-sm col-md-7">
+<div class="table-responsive" role="region" aria-label="Tabla de datos" tabindex="0"><table class="table table-sm col-md-7">
   <thead><tr><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Subtotal</th></tr></thead>
   <tbody>
   {% for linea in pedido.lineas %}
@@ -10,7 +10,7 @@
   {% endfor %}
   </tbody>
   <tfoot><tr class="fw-bold"><td colspan="3" class="text-end">Total</td><td>S/ {{ pedido.total }}</td></tr></tfoot>
-</table>
+</table></div>
 <p class="text-muted">Recojo estimado: {{ pedido.hora_recojo|default:"A coordinar" }}</p>
 <p>Modalidad: Recojo en tienda</p>
 {% if pedido.estado == 'CONFIRMADO' %}

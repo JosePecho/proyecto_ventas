@@ -175,7 +175,24 @@ def test_preparar_listo_notifica_una_vez_y_entrega_descuenta_stock(client, djang
     assert LoteModel.objects.get(producto_id=p.id).cantidad_restante == 8
 
 
-@pytest.mark.parametrize("hora", ["", "2000-01-01T10:00", "2099-01-01T10:15", "2099-01-01T10:30:01"])
+@pytest.mark.parametrize("datos_hora", [{}, {"hora_recojo": ""}])
+def test_checkout_confirma_con_horario_automatico(client, datos_hora):
+    pedido, p = carrito(client)
+    respuesta = client.get(reverse("orders:checkout"))
+    assert respuesta.context["form"]["hora_recojo"].value() is not None
+    antes = timezone.now()
+    respuesta = client.post(reverse("orders:checkout"), {
+        "cliente_nombre": "Ana", "modalidad": "RECOJO", **datos_hora,
+    })
+    assert respuesta.status_code == 302
+    pedido.refresh_from_db()
+    assert pedido.estado == "CONFIRMADO"
+    assert antes < pedido.hora_recojo <= antes + timedelta(minutes=30)
+    assert timezone.localtime(pedido.hora_recojo).minute in (0, 30)
+    assert ExistenciaModel.objects.get(producto_id=p.id).reservada == 2
+
+
+@pytest.mark.parametrize("hora", ["2000-01-01T10:00", "2099-01-01T10:15", "2099-01-01T10:30:01"])
 def test_checkout_rechaza_hora_invalida_sin_reservar(client, hora):
     pedido, p = carrito(client)
     respuesta = client.post(reverse("orders:checkout"), {"cliente_nombre": "Ana", "modalidad": "RECOJO", "hora_recojo": hora})
@@ -192,6 +209,83 @@ def test_cantidad_acumulada_no_supera_disponible(client):
     assert pedido.detalles.get().cantidad == 2
     client.post(reverse("orders:agregar", args=[p.id]), {"cantidad": -1})
     assert pedido.detalles.get().cantidad == 2
+
+
+def test_quitar_producto_recalcula_total_persiste_y_permite_vaciar(client):
+    pedido, p = carrito(client)
+    otro = ProductoModel.objects.create(id=uuid.uuid4(), nombre="Servicio", codigo_barras="7751234567898",
+                                        costo=1, precio_venta=3, estado="ACTIVO", requiere_stock=False)
+    client.post(reverse("orders:agregar", args=[otro.id]), {"cantidad": 1})
+    assert b"Quitar" in client.get(reverse("orders:carrito")).content
+    ruta = reverse("orders:quitar", args=[p.id])
+    assert client.post(ruta).status_code == 302
+    pedido.refresh_from_db()
+    assert pedido.total == 3
+    assert list(pedido.detalles.values_list("producto_id", flat=True)) == [otro.id]
+    assert ExistenciaModel.objects.get(producto_id=p.id).reservada == 0
+    assert client.post(ruta).status_code == 302  # Un doble clic no cambia otras lineas.
+    client.post(reverse("orders:quitar", args=[otro.id]))
+    respuesta = client.get(reverse("orders:carrito"))
+    assert respuesta.context["lineas"] == []
+    assert respuesta.context["total"] == 0
+    assert not pedido.detalles.exists()
+    assert b"Elegir hora" not in respuesta.content
+
+
+@pytest.mark.parametrize("cantidad,restante", [(39, 1), (40, 0), (2, 38)])
+def test_catalogo_descuenta_carrito_y_marca_stock_bajo(client, cantidad, restante):
+    pedido, p = carrito(client)
+    ExistenciaModel.objects.filter(producto_id=p.id).update(cantidad=40)
+    client.post(reverse("orders:quitar", args=[p.id]))
+    client.post(reverse("orders:agregar", args=[p.id]), {"cantidad": cantidad})
+    respuesta = client.get(reverse("catalog:catalogo"))
+    assert respuesta.context["items"][0].stock_disponible == restante
+    if restante == 1:
+        assert b'bg-danger ms-1">Stock bajo: 1 u.' in respuesta.content
+    if restante == 0:
+        assert b'bg-danger ms-1">Agotado' in respuesta.content
+        assert b'Agregar al carrito' not in respuesta.content
+    detalle = client.get(reverse("catalog:producto_detalle", args=[p.id]))
+    assert detalle.context["disponibilidad"]["stock_disponible"] == restante
+    if restante == 1:
+        assert b'text-danger' in detalle.content
+        assert b'max="1"' in detalle.content
+    # El carrito de un cliente no reduce la disponibilidad visible de otro.
+    assert Client().get(reverse("catalog:catalogo")).context["items"][0].stock_disponible == 40
+    client.post(reverse("orders:quitar", args=[p.id]))
+    assert client.get(reverse("catalog:catalogo")).context["items"][0].stock_disponible == 40
+
+
+def test_catalogo_no_descuenta_dos_veces_un_pedido_confirmado(client):
+    pedido, p = carrito(client)
+    confirmar(client)
+    session = client.session
+    session["pedido_web"] = str(pedido.id)
+    session.save()
+    assert client.get(reverse("catalog:catalogo")).context["items"][0].stock_disponible == 8
+
+
+def test_quitar_exige_post_csrf_propietario_y_borrador(client):
+    pedido, p = carrito(client)
+    ruta = reverse("orders:quitar", args=[p.id])
+    assert client.get(ruta).status_code == 405
+    seguro = Client(enforce_csrf_checks=True)
+    seguro.cookies = client.cookies
+    assert seguro.post(ruta).status_code == 403
+    otro = Client()
+    registrar(otro, "otro@example.com", "87654321")
+    iniciar(otro, "otro@example.com")
+    session = otro.session
+    session["pedido_web"] = str(pedido.id)
+    session.save()
+    assert otro.post(ruta).status_code == 404
+    confirmar(client)
+    session = client.session
+    session["pedido_web"] = str(pedido.id)
+    session.save()
+    assert client.post(ruta).status_code == 302
+    assert pedido.detalles.get().cantidad == 2
+    assert ExistenciaModel.objects.get(producto_id=p.id).reservada == 2
 
 
 def test_confirmacion_revierte_todas_las_reservas_si_una_linea_se_agota(client):

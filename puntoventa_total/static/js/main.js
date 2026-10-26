@@ -46,6 +46,14 @@ const PV = {
   },
 };
 
+// Resaltar la seccion actual sin modificar rutas ni permisos.
+document.querySelectorAll('#sidebar .nav-link, .navbar .nav-link[href]').forEach((enlace) => {
+  if (new URL(enlace.href, location.origin).pathname === location.pathname) {
+    enlace.classList.add('active');
+    enlace.setAttribute('aria-current', 'page');
+  }
+});
+
 // Registro del service worker (PWA / modo offline)
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
