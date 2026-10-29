@@ -1,7 +1,9 @@
 from django import forms
 
+from src.shared.infrastructure.form_validation import ValidatedForm
 
-class PerfilClienteForm(forms.Form):
+
+class PerfilClienteForm(ValidatedForm):
     nombre = forms.CharField(max_length=120, widget=forms.TextInput(attrs={"class": "form-control"}))
     email = forms.EmailField(required=False, widget=forms.EmailInput(attrs={"class": "form-control"}))
     telefono = forms.CharField(

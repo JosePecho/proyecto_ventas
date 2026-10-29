@@ -1,13 +1,15 @@
 from datetime import timedelta
 
 from django import forms
+
+from src.shared.infrastructure.form_validation import ValidatedForm
 from django.utils import timezone
 
 from src.modules.reporting.domain.value_objects.rango_fechas import RangoFechas
 from src.shared.domain.exceptions.validation_exception import ValidationException
 
 
-class RangoReporteForm(forms.Form):
+class RangoReporteForm(ValidatedForm):
     desde = forms.DateField()
     hasta = forms.DateField()
 

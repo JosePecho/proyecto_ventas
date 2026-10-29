@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 from src.shared.domain.exceptions.validation_exception import ValidationException
 
-PATRON_DNI = re.compile(r"^\d{8}$")
+PATRON_DNI = re.compile(r"[0-9]{8}")
 
 
 @dataclass(frozen=True)
@@ -15,7 +15,7 @@ class DNI:
 
     def __post_init__(self) -> None:
         valor = str(self.valor).strip()
-        if not PATRON_DNI.match(valor):
+        if not PATRON_DNI.fullmatch(valor):
             raise ValidationException("El DNI debe contener exactamente 8 digitos")
         object.__setattr__(self, "valor", valor)
 

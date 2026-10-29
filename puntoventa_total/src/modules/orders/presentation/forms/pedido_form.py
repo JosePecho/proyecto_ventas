@@ -1,4 +1,6 @@
 from django import forms
+
+from src.shared.infrastructure.form_validation import ValidatedForm
 from datetime import timedelta
 from django.utils import timezone
 
@@ -10,7 +12,7 @@ def proximo_horario_recojo():
     )
 
 
-class PedidoForm(forms.Form):
+class PedidoForm(ValidatedForm):
     modalidad = forms.ChoiceField(choices=[("RECOJO", "Recojo en tienda")])
     hora_recojo = forms.DateTimeField(
         required=False,

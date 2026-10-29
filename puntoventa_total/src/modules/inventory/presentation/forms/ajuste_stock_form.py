@@ -1,9 +1,11 @@
 from django import forms
 
+from src.shared.infrastructure.form_validation import ValidatedForm
+
 from src.modules.inventory.domain.enums.tipo_movimiento import TipoMovimiento
 
 
-class AjusteStockForm(forms.Form):
+class AjusteStockForm(ValidatedForm):
     producto_id = forms.UUIDField(widget=forms.HiddenInput())
     tipo = forms.ChoiceField(
         choices=[

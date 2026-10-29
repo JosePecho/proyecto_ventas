@@ -1,9 +1,11 @@
 from django import forms
 
+from src.shared.infrastructure.form_validation import ValidatedForm
+
 from src.modules.inventory.domain.enums.motivo_merma import MotivoMerma
 
 
-class MermaForm(forms.Form):
+class MermaForm(ValidatedForm):
     producto_id = forms.ModelChoiceField(queryset=None, label="Producto", widget=forms.Select(attrs={"class": "form-select"}))
     lote_id = forms.ModelChoiceField(queryset=None, required=False, label="Lote (opcional)", widget=forms.Select(attrs={"class": "form-select"}))
     cantidad = forms.IntegerField(min_value=1, widget=forms.NumberInput(attrs={"class": "form-control"}))

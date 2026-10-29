@@ -1,7 +1,9 @@
 from django import forms
 
+from src.shared.infrastructure.form_validation import ValidatedForm
 
-class RegistroClienteForm(forms.Form):
+
+class RegistroClienteForm(ValidatedForm):
     nombre = forms.CharField(max_length=120, widget=forms.TextInput(attrs={"class": "form-control"}))
     dni = forms.CharField(
         max_length=8, required=False, widget=forms.TextInput(attrs={"class": "form-control"})

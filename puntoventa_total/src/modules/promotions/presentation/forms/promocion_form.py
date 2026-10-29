@@ -1,9 +1,11 @@
 from django import forms
 
+from src.shared.infrastructure.form_validation import ValidatedForm
+
 from src.modules.promotions.domain.enums.tipo_promocion import TipoPromocion
 
 
-class PromocionForm(forms.Form):
+class PromocionForm(ValidatedForm):
     aplica_clientes_frecuentes = forms.BooleanField(required=False, label="Habilitar fidelización automática")
     componentes = forms.JSONField(required=False, widget=forms.HiddenInput())
     nombre = forms.CharField(max_length=120, widget=forms.TextInput(attrs={"class": "form-control"}))

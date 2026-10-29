@@ -1,7 +1,9 @@
 from django import forms
 
+from src.shared.infrastructure.form_validation import ValidatedForm
 
-class FiltroAuditoriaForm(forms.Form):
+
+class FiltroAuditoriaForm(ValidatedForm):
     accion = forms.CharField(required=False, max_length=40)
     entidad = forms.CharField(required=False, max_length=60)
     entidad_id = forms.CharField(required=False, max_length=64)

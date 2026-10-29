@@ -1,9 +1,11 @@
 from django import forms
 
+from src.shared.infrastructure.form_validation import ValidatedForm
+
 from src.modules.identity.domain.enums.rol_usuario import RolUsuario
 
 
-class UsuarioForm(forms.Form):
+class UsuarioForm(ValidatedForm):
     username = forms.RegexField(r"^[\w.]{4,30}$", max_length=30, widget=forms.TextInput(attrs={"class": "form-control"}))
     nombre_completo = forms.CharField(max_length=120, widget=forms.TextInput(attrs={"class": "form-control"}))
     email = forms.EmailField(required=False, widget=forms.EmailInput(attrs={"class": "form-control"}))

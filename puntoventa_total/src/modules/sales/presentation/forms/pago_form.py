@@ -1,9 +1,11 @@
 from django import forms
 
+from src.shared.infrastructure.form_validation import ValidatedForm
+
 from src.modules.sales.domain.value_objects.metodo_pago import MetodoPago
 
 
-class PagoForm(forms.Form):
+class PagoForm(ValidatedForm):
     metodo = forms.ChoiceField(
         choices=[(t, t) for t in MetodoPago.TIPOS],
         widget=forms.Select(attrs={"class": "form-select"}),
