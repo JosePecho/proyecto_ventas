@@ -1,7 +1,9 @@
 from django import forms
 
+from src.shared.infrastructure.form_validation import ValidatedForm
 
-class ProductoForm(forms.Form):
+
+class ProductoForm(ValidatedForm):
     nombre = forms.CharField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control"}))
     descripcion = forms.CharField(
         required=False, widget=forms.Textarea(attrs={"class": "form-control", "rows": 3})

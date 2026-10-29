@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.db import transaction
+from django.views.decorators.http import require_POST
 from src.modules.orders.presentation.ownership import pedido_propio
 from src.modules.orders.application.dto.pedido_output import PedidoOutputDTO
 from src.shared.domain.exceptions.domain_exception import DomainException
@@ -30,6 +31,24 @@ def carrito_view(request):
         except PedidoException:
             request.session.pop("pedido_web", None)
     return render(request, "orders/carrito.html", contexto)
+
+
+@login_required
+@require_POST
+@transaction.atomic
+def quitar_del_carrito(request, producto_id):
+    pedido_id = request.session.get("pedido_web")
+    if pedido_id:
+        modelo = pedido_propio(request, pedido_id, lock=True)
+        if modelo.estado != "BORRADOR":
+            messages.error(request, "Solo puede quitar productos de un carrito sin confirmar.")
+            return redirect("orders:carrito")
+        repo = construir_pedido_repository()
+        pedido = repo.buscar_por_id(pedido_id)
+        pedido.quitar_producto(str(producto_id))
+        repo.guardar(pedido)
+        messages.success(request, "Producto quitado del carrito.")
+    return redirect("orders:carrito")
 
 
 @login_required

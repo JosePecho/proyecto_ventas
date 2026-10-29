@@ -1,31 +1,36 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static producto_imagen %}
 {% block title %}{{ producto.nombre }}{% endblock %}
 {% block content %}
 <nav aria-label="breadcrumb"><ol class="breadcrumb">
   <li class="breadcrumb-item"><a href="{% url 'catalog:catalogo' %}">Catalogo</a></li>
   <li class="breadcrumb-item active">{{ producto.nombre }}</li>
 </ol></nav>
-<div class="row">
+<div class="row g-4 product-detail">
   <div class="col-md-5">
-    <img src="{% if producto.imagen %}{{ producto.imagen.url }}{% else %}{% static 'images/placeholder.png' %}{% endif %}"
-         class="img-fluid rounded border" alt="{{ producto.nombre }}">
+    <img src="{% if producto.imagen %}{{ producto.imagen.url }}{% else %}{% imagen_ilustrativa producto.nombre %}?v=transparent{% endif %}"
+         class="img-fluid product-detail-image" alt="{{ producto.nombre }}">
   </div>
   <div class="col-md-7">
     <h3>{{ producto.nombre }}</h3>
     <p class="text-muted">{{ producto.descripcion }}</p>
     <p><span class="badge bg-secondary">{{ producto.categoria|default:"Sin categoria" }}</span></p>
     <h2 class="text-primary">S/ {{ producto.precio_venta|floatformat:2 }}</h2>
-    <p class="{% if disponibilidad.vendible %}text-success{% else %}text-danger{% endif %}">
-      {% if disponibilidad.vendible %}<i class="bi bi-check-circle"></i> Disponible
+    {% if request.session.rol == 'ADMINISTRADOR' or request.session.rol == 'GERENTE' or request.session.rol == 'ALMACENERO' %}
+    <a class="btn btn-outline-primary mb-3" href="{% url 'catalog:producto_editar' producto.id %}"><i class="bi bi-pencil-square" aria-hidden="true"></i> Actualizar precio / producto</a>
+    {% endif %}
+    <p class="{% if not disponibilidad.vendible or producto.requiere_stock and disponibilidad.stock_minimo %}text-danger{% else %}text-success{% endif %}">
+      {% if not producto.requiere_stock %}<i class="bi bi-check-circle"></i> Disponible
+      {% elif disponibilidad.vendible %}<i class="bi bi-check-circle"></i> {% if disponibilidad.stock_minimo %}Stock bajo{% else %}Disponible{% endif %}
         ({{ disponibilidad.stock_disponible }} u.)
       {% else %}<i class="bi bi-x-circle"></i> Agotado (0 u.){% endif %}
     </p>
     {% if user.is_authenticated and disponibilidad.vendible %}
       <form method="post" action="{% url 'orders:agregar' producto.id %}">
         {% csrf_token %}
-        <div class="input-group" style="max-width: 220px;">
-          <input type="number" name="cantidad" value="1" min="1" class="form-control">
+        <div class="product-purchase-controls">
+          <label for="detalle-cantidad" class="form-label mb-0">Cantidad</label>
+          <input id="detalle-cantidad" type="number" name="cantidad" value="1" min="1" {% if producto.requiere_stock %}max="{{ disponibilidad.stock_disponible }}"{% endif %} class="form-control" aria-label="Cantidad de {{ producto.nombre }}">
           <button class="btn btn-primary" type="submit"><i class="bi bi-bag-plus"></i> Agregar al carrito</button>
         </div>
       </form>

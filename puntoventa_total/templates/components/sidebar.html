@@ -1,14 +1,41 @@
 <aside class="col-md-2 bg-light border-end p-3 no-print" id="sidebar">
+  <button class="btn btn-outline-primary d-md-none w-100 text-start" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false"><i class="bi bi-list me-2" aria-hidden="true"></i> Menú de navegación</button>
+  <div class="sidebar-heading">TU ESPACIO</div>
+  <div class="collapse d-md-block" id="sidebarMenu">
   <ul class="nav nav-pills flex-column small">
     <li><a class="nav-link" href="{% url 'catalog:catalogo' %}"><i class="bi bi-grid"></i> Catalogo</a></li>
+    {% if request.session.rol == 'ADMINISTRADOR' or request.session.rol == 'GERENTE' or request.session.rol == 'CAJERO' %}
     <li><a class="nav-link" href="{% url 'sales:pos' %}"><i class="bi bi-upc-scan"></i> Punto de venta</a></li>
+    <li><a class="nav-link" href="{% url 'sales:ventas' %}">Ventas del dia</a></li>
+    <li><a class="nav-link" href="{% url 'cash_register:apertura' %}"><i class="bi bi-cash-stack"></i> Caja</a></li>
+    {% if request.session.turno_caja_id %}
+    <li><a class="nav-link" href="{% url 'cash_register:arqueo' %}">Arqueo</a></li>
+    <li><a class="nav-link" href="{% url 'cash_register:cierre' %}">Cerrar caja</a></li>
+    {% endif %}
+    <li><a class="nav-link" href="{% url 'orders:cocina' %}"><i class="bi bi-journal-check"></i> Pedidos</a></li>
+    <li><a class="nav-link" href="{% url 'customers:registro' %}">Registrar cliente frecuente</a></li>
+    {% endif %}
+    {% if request.session.rol == 'ADMINISTRADOR' or request.session.rol == 'GERENTE' or request.session.rol == 'ALMACENERO' %}
+    <li><a class="nav-link" href="{% url 'catalog:productos_admin' %}"><i class="bi bi-pencil-square" aria-hidden="true"></i> Actualizar productos</a></li>
     <li><a class="nav-link" href="{% url 'inventory:inventario' %}"><i class="bi bi-box-seam"></i> Inventario</a></li>
     <li><a class="nav-link" href="{% url 'inventory:alertas' %}"><i class="bi bi-exclamation-triangle"></i> Alertas</a></li>
-    <li><a class="nav-link" href="{% url 'cash_register:apertura' %}"><i class="bi bi-cash-stack"></i> Caja</a></li>
-    <li><a class="nav-link" href="{% url 'orders:cocina' %}"><i class="bi bi-journal-check"></i> Pedidos</a></li>
+    {% endif %}
+    <li><a class="nav-link" href="{% url 'orders:mis_pedidos' %}">Mis pedidos</a></li>
+    {% if request.session.cliente_id %}
+    <li><a class="nav-link" href="{% url 'customers:perfil' request.session.cliente_id %}">Mi perfil</a></li>
+    <li><a class="nav-link" href="{% url 'customers:historial' request.session.cliente_id %}">Mi historial de compras</a></li>
+    {% endif %}
     <li><a class="nav-link" href="{% url 'promotions:activas' %}"><i class="bi bi-tags"></i> Promociones</a></li>
+    {% if request.session.rol == 'ADMINISTRADOR' or request.session.rol == 'GERENTE' %}
+    <li><a class="nav-link" href="{% url 'catalog:categorias' %}">Categorias</a></li>
+    <li><a class="nav-link" href="{% url 'promotions:promociones' %}">Gestionar promociones</a></li>
     <li><a class="nav-link" href="{% url 'reporting:dashboard' %}"><i class="bi bi-graph-up"></i> Reportes</a></li>
+    {% endif %}
+    {% if request.session.rol == 'ADMINISTRADOR' %}
+    <li><a class="nav-link" href="{% url 'identity:usuarios' %}">Usuarios</a></li>
     <li><a class="nav-link" href="{% url 'auditing:registros' %}"><i class="bi bi-shield-lock"></i> Auditoria</a></li>
+    {% endif %}
   </ul>
+  </div>
 </aside>
 

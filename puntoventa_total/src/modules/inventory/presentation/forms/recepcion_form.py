@@ -1,7 +1,9 @@
 from django import forms
 
+from src.shared.infrastructure.form_validation import ValidatedForm
 
-class RecepcionForm(forms.Form):
+
+class RecepcionForm(ValidatedForm):
     producto_id = forms.ModelChoiceField(queryset=None, label="Producto", widget=forms.Select(attrs={"class": "form-select"}))
     numero_lote = forms.CharField(max_length=40, widget=forms.TextInput(attrs={"class": "form-control"}))
     cantidad = forms.IntegerField(min_value=1, widget=forms.NumberInput(attrs={"class": "form-control"}))

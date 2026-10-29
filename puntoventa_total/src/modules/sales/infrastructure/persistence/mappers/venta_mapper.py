@@ -45,6 +45,8 @@ class VentaMapper:
                 producto_id=str(d.producto_id),
                 producto_nombre=d.producto_nombre,
                 cantidad=d.cantidad,
+                requiere_stock=d.requiere_stock,
+                costo_unitario=Monto(d.costo_unitario, m.moneda) if d.costo_unitario is not None else None,
                 precio_unitario=Monto(Decimal(d.precio_unitario), m.moneda),
                 descuento=Monto(Decimal(d.descuento), m.moneda),
                 pct_descuento=Decimal(d.pct_descuento),
@@ -66,45 +68,68 @@ class VentaMapper:
             )
             for p in m.pagos.all()
         ]
-        return VentaAggregate(venta=venta, lineas=lineas, pagos=pagos)
+        return VentaAggregate(venta=venta, lineas=lineas, pagos=pagos, descuento_venta_pct=Decimal(m.descuento_venta_pct))
 
     @staticmethod
-    def guardar_agregado(agregado: VentaAggregate) -> VentaModel:
+    def guardar_agregado(agregado: VentaAggregate, modelo: VentaModel | None = None) -> VentaModel:
         v = agregado.venta
-        modelo = VentaModel.objects.filter(pk=v.id).first() or VentaModel(id=v.id)
+        if modelo is None:
+            modelo = VentaModel.objects.filter(pk=v.id).first() or VentaModel(id=v.id)
         modelo.id = v.id if isinstance(v.id, uuid.UUID) else uuid.UUID(str(v.id))
         modelo.numero_ticket = v.numero_ticket
         modelo.cajero_id = uuid.UUID(str(v.cajero_id))
         modelo.turno_caja_id = uuid.UUID(str(v.turno_caja_id)) if v.turno_caja_id else None
         modelo.cliente_id = uuid.UUID(str(v.cliente_id)) if v.cliente_id else None
         modelo.estado = v.estado.value
+        modelo.descuento_venta_pct = agregado.descuento_venta_pct
         modelo.subtotal, modelo.descuento, modelo.igv, modelo.total = v.subtotal, v.descuento, v.igv, v.total
         modelo.moneda, modelo.observacion, modelo.activo = v.moneda, v.observacion, v.activo
-        modelo.save()
+        modelo.save(force_insert=modelo._state.adding)
 
+        detalles_existentes = {str(d.id): d for d in modelo.detalles.all()}
+        eliminados = set(detalles_existentes) - {str(linea.id) for linea in agregado.lineas}
+        if eliminados:
+            modelo.detalles.filter(pk__in=eliminados).delete()
         for linea in agregado.lineas:
-            d = DetalleVentaModel.objects.filter(pk=linea.id).first() or DetalleVentaModel(id=linea.id)
+            d = detalles_existentes.get(str(linea.id))
+            costo = linea.costo_unitario.valor if linea.costo_unitario is not None else None
+            if d is not None and (
+                str(d.producto_id), d.producto_nombre, d.cantidad, d.precio_unitario, d.costo_unitario,
+                d.pct_descuento, d.descuento, d.subtotal, d.total, d.requiere_stock
+            ) == (str(linea.producto_id), linea.producto_nombre, linea.cantidad, linea.precio_unitario.valor,
+                  costo, linea.pct_descuento, linea.descuento.valor, linea.subtotal.valor, linea.total.valor, linea.requiere_stock):
+                continue
+            d = d or DetalleVentaModel(id=linea.id)
             d.id = linea.id if isinstance(linea.id, uuid.UUID) else uuid.UUID(str(linea.id))
             d.venta = modelo
             d.producto_id = uuid.UUID(str(linea.producto_id))
             d.producto_nombre = linea.producto_nombre
             d.cantidad = linea.cantidad
+            d.requiere_stock = linea.requiere_stock
+            d.costo_unitario = linea.costo_unitario.valor if linea.costo_unitario is not None else None
             d.precio_unitario = linea.precio_unitario.valor
             d.pct_descuento = linea.pct_descuento
             d.descuento = linea.descuento.valor
             d.subtotal = linea.subtotal.valor
             d.total = linea.total.valor
-            d.save()
+            d.save(force_insert=d._state.adding)
 
+        pagos_existentes = {str(p.id): p for p in modelo.pagos.all()} if agregado.pagos else {}
         for pago in agregado.pagos:
-            p = PagoModel.objects.filter(pk=pago.id).first() or PagoModel(id=pago.id)
+            p = pagos_existentes.get(str(pago.id))
+            vuelto = pago.vuelto.valor if pago.vuelto else None
+            if p is not None and (p.metodo, p.monto, p.vuelto, p.referencia) == (
+                pago.metodo.tipo, pago.metodo.monto.valor, vuelto, pago.metodo.referencia
+            ):
+                continue
+            p = p or PagoModel(id=pago.id)
             p.id = pago.id if isinstance(pago.id, uuid.UUID) else uuid.UUID(str(pago.id))
             p.venta = modelo
             p.metodo = pago.metodo.tipo
             p.monto = pago.metodo.monto.valor
             p.vuelto = pago.vuelto.valor if pago.vuelto else None
             p.referencia = pago.metodo.referencia
-            p.save()
+            p.save(force_insert=p._state.adding)
 
         agregado.lineas_vinculadas = True  # marca interna para no reinsertar
         return modelo

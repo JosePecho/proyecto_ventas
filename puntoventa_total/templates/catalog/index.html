@@ -1,17 +1,21 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block title %}Catalogo{% endblock %}
-{% block extra_css %}<link href="{% static 'css/catalog.css' %}" rel="stylesheet">{% endblock %}
+{% block extra_css %}<link href="{% static 'css/catalog.css' %}?v=20261023-design" rel="stylesheet">{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3 no-print">
-  <h4><i class="bi bi-grid"></i> Catalogo de productos</h4>
+<section class="catalog-hero">
+  <div><span class="eyebrow">TU TIENDA, A UN CLIC</span><h1>Encuentra tus <span>favoritos.</span></h1><p>Explora, elige y prepara tu próxima compra.</p></div>
+  <div class="hero-symbol" aria-hidden="true"><i class="bi bi-basket2"></i><span class="hero-spark">✦</span></div>
+</section>
+<div class="catalog-toolbar d-flex justify-content-between align-items-center mb-3 no-print">
+  <div><span class="eyebrow text-muted">EXPLORA LA TIENDA</span><h4>Catálogo de productos</h4></div>
   <form class="d-flex" method="get" id="form-busqueda">
     <input class="form-control me-2" name="q" value="{{ termino }}" placeholder="Buscar producto..." aria-label="Buscar producto por nombre">
     {% if categoria_actual %}<input type="hidden" name="categoria" value="{{ categoria_actual }}">{% endif %}
     <button class="btn btn-primary" type="submit" aria-label="Buscar"><i class="bi bi-search"></i></button>
   </form>
 </div>
-<div class="mb-3">
+<div class="category-filters mb-3" aria-label="Categorías de productos">
   <a class="btn btn-sm btn-outline-primary" href="?q={{ termino|urlencode }}">Todos</a>
   {% for c in categorias %}
     <a class="btn btn-sm {% if categoria_actual == c.id|stringformat:'s' %}btn-secondary{% else %}btn-outline-secondary{% endif %}" href="?categoria={{ c.id }}&amp;q={{ termino|urlencode }}">{{ c.nombre }}</a>

@@ -3,6 +3,7 @@
 Uso: python scripts/crear_admin.py [--username admin] [--password Secreta123]
 """
 import argparse
+from getpass import getpass
 import os
 import sys
 from pathlib import Path
@@ -24,9 +25,13 @@ from src.modules.identity.infrastructure.factories import construir_hasher, cons
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--username", default="admin")
-    parser.add_argument("--password", default="Admin1234!")
+    parser.add_argument("--password", help="Si se omite, se solicita sin mostrarla en pantalla")
     parser.add_argument("--nombre", default="Administrador")
     args = parser.parse_args()
+    if not args.password:
+        args.password = getpass("Contrasena del administrador: ")
+        if args.password != getpass("Confirmar contrasena: "):
+            parser.error("Las contrasenas no coinciden")
 
     repo, hasher = construir_repositorio(), construir_hasher()
     existente = repo.buscar_por_username(args.username)

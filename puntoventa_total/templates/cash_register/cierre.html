@@ -23,11 +23,11 @@
   </div>
   <div class="col-md-6">
     <h5>Desglose por metodo de pago</h5>
-    <table class="table table-sm">
+    <div class="table-responsive" role="region" aria-label="Tabla de datos" tabindex="0"><table class="table table-sm">
       {% for metodo, monto in arqueo.desglose_metodos.items %}
         <tr><td>{{ metodo }}</td><td class="text-end">S/ {{ monto }}</td></tr>
       {% empty %}<tr><td class="text-muted">Sin pagos registrados</td></tr>{% endfor %}
-    </table>
+    </table></div>
   </div>
 </div>
 {% endblock %}

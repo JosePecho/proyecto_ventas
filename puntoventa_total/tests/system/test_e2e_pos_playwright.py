@@ -150,8 +150,10 @@ def test_flujo_completo_del_pos_en_el_navegador(live_server, navegador, datos_po
 
     # 4. escanear codigo de barras -> un solo resultado -> auto-agrega al carrito
     page.fill("#buscador-pos", CODIGO_BARRAS)
-    page.press("#buscador-pos", "Enter")
-    page.wait_for_load_state("networkidle")
+    with page.expect_response(lambda response: "/agregar/" in response.url and response.request.method == "POST") as agregado:
+        page.press("#buscador-pos", "Enter")
+    assert agregado.value.status == 200
+    page.locator(f'[data-producto="{datos_pos.id}"]').wait_for()
     assert VentaModel.objects.get(pk=venta_id).total == Decimal("8.50")
 
     # 5. cobrar en efectivo: 8.50 de 10.00 (vuelto 1.50)

@@ -4,11 +4,13 @@ from __future__ import annotations
 import logging
 
 from celery import shared_task
+from src.modules.auditing.infrastructure.request_audit import auditar_tarea
 
 logger = logging.getLogger(__name__)
 
 
 @shared_task(name="src.modules.promotions.tasks.actualizar_estado_promociones.run", bind=True)
+@auditar_tarea
 def run(self) -> dict:
     from django.utils import timezone
 
@@ -20,7 +22,11 @@ def run(self) -> dict:
     activadas = finalizadas = 0
 
     for promocion in repo.listar():
-        if promocion.estado == EstadoPromocion.PROGRAMADA and promocion.vigencia_desde and promocion.vigencia_desde <= ahora:
+        if promocion.estado in (EstadoPromocion.PROGRAMADA, EstadoPromocion.ACTIVA) and promocion.vigencia_hasta and promocion.vigencia_hasta <= ahora:
+            promocion.finalizar()
+            repo.guardar(promocion)
+            finalizadas += 1
+        elif promocion.estado == EstadoPromocion.PROGRAMADA and promocion.vigencia_desde and promocion.vigencia_desde <= ahora:
             promocion.activar()
             repo.guardar(promocion)
             activadas += 1

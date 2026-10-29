@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 {% block title %}Utilidad{% endblock %}
 {% block content %}
+{{ form.errors }}
+{% if reporte.estimado %}<p>Costos históricos incompletos: utilidad parcial. No se reemplazan con costos actuales.</p>{% endif %}
 <h4 class="mb-3"><i class="bi bi-cash-stack"></i> Utilidad {{ desde }} - {{ hasta }}</h4>
 <div class="alert alert-light border d-flex gap-4">
   <span><strong>Ingresos:</strong> S/ {{ reporte.ingresos_totales }}</span>
@@ -8,17 +10,18 @@
   <span><strong>Utilidad:</strong> S/ {{ reporte.utilidad_total }}</span>
   <span><strong>Margen:</strong> {{ reporte.margen_pct }}%</span>
 </div>
-<table class="table table-sm table-striped">
-  <thead><tr><th>Producto</th><th>Unidades</th><th>Ingresos</th><th>Costo</th><th>Utilidad</th></tr></thead>
+<div class="table-responsive" role="region" aria-label="Tabla de datos" tabindex="0"><table class="table table-sm table-striped">
+  <thead><tr><th>Producto</th><th>Unidades</th><th>Ingresos</th><th>Costo</th><th>Utilidad</th><th>Margen</th></tr></thead>
   <tbody>
   {% for p in reporte.por_producto %}
     <tr>
       <td>{{ p.producto_nombre }}</td><td>{{ p.unidades }}</td>
       <td>S/ {{ p.ingresos }}</td><td>S/ {{ p.costo }}</td>
       <td class="{% if p.utilidad >= 0 %}text-success{% else %}text-danger{% endif %}">S/ {{ p.utilidad }}</td>
+      <td>{% if p.margen_pct != None %}{{ p.margen_pct|floatformat:2 }}%{% else %}No disponible{% endif %}</td>
     </tr>
-  {% empty %}<tr><td colspan="5" class="text-center text-muted">Sin datos</td></tr>{% endfor %}
+  {% empty %}<tr><td colspan="6" class="text-center text-muted">Sin datos</td></tr>{% endfor %}
   </tbody>
-</table>
+</table></div>
 {% endblock %}
 

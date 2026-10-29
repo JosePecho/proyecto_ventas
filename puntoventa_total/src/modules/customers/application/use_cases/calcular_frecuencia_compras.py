@@ -1,6 +1,7 @@
 from src.modules.customers.application.ports.historial_compras_port import HistorialComprasPort
 from src.modules.customers.domain.repositories.cliente_repository import ClienteRepository
 from src.modules.customers.domain.services.frecuencia_compra import FrecuenciaCompra
+from src.shared.domain.clock import utc_now
 
 
 class CalcularFrecuenciaCompras:
@@ -16,7 +17,7 @@ class CalcularFrecuenciaCompras:
             "cliente_id": cliente_id,
             "compras_totales": len(fechas),
             "dias_promedio_entre_compras": dias,
-            "dias_desde_ultima_compra": FrecuenciaCompra.ultimo_intervalo(fechas),
+            "dias_desde_ultima_compra": max(0, (utc_now() - max(fechas)).days) if fechas else None,
             "clasificacion": FrecuenciaCompra.clasificar(dias),
         }
 

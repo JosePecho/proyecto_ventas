@@ -5,36 +5,36 @@
 <div class="row">
   <div class="col-md-6">
     <h5>Stock minimo ({{ stock_minimo.cantidad }})</h5>
-    <table class="table table-sm">
+    <div class="table-responsive" role="region" aria-label="Tabla de datos" tabindex="0"><table class="table table-sm">
       <thead><tr><th>Producto</th><th>Disponible</th><th>Minimo</th></tr></thead>
       <tbody>
       {% for p in stock_minimo.productos_bajo_minimo %}
         <tr><td>{{ p.producto_nombre }}</td><td>{{ p.disponible }}</td><td>{{ p.stock_minimo }}</td></tr>
       {% empty %}<tr><td colspan="3" class="text-muted">Sin faltantes</td></tr>{% endfor %}
       </tbody>
-    </table>
+    </table></div>
   </div>
   <div class="col-md-6">
     <h5>Baja rotacion: sin ventas en los ultimos 60 dias</h5>
-    <table class="table table-sm">
+    <div class="table-responsive" role="region" aria-label="Tabla de datos" tabindex="0"><table class="table table-sm">
       <thead><tr><th>Producto</th><th>Observacion</th></tr></thead>
       <tbody>
       {% for p in baja_rotacion %}
         <tr><td>{{ p.producto_nombre }}</td><td><small>{{ p.ultimo_movimiento }}</small></td></tr>
       {% empty %}<tr><td colspan="2" class="text-muted">Todos rotan</td></tr>{% endfor %}
       </tbody>
-    </table>
+    </table></div>
   </div>
 </div>
 <h5 class="mt-4">Mayor ganancia por producto</h5>
 <p class="text-muted">Ordenado por margen sobre costo: (precio - costo) / costo × 100. Para costo cero se usa 100 %, segun la regla del catalogo.</p>
-<table class="table table-sm">
+<div class="table-responsive" role="region" aria-label="Tabla de datos" tabindex="0"><table class="table table-sm">
   <thead><tr><th>Producto</th><th>Costo</th><th>Precio</th><th>Ganancia unitaria</th><th>Margen (%)</th></tr></thead>
   <tbody>
     {% for p in mayor_ganancia %}
     <tr><td>{{ p.producto_nombre }}</td><td>{{ p.costo }}</td><td>{{ p.precio_venta }}</td><td>{{ p.ganancia_unitaria }}</td><td>{{ p.margen_pct }}</td></tr>
     {% empty %}<tr><td colspan="5">Sin productos</td></tr>{% endfor %}
   </tbody>
-</table>
+</table></div>
 {% endblock %}
 

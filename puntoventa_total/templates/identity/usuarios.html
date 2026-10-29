@@ -8,6 +8,7 @@
   <div class="card-body">
     <form method="post" class="row g-2">
       {% csrf_token %}
+      {{ form.errors }}
       {% for campo in form %}
         <div class="col-md-3">
           <label class="form-label">{{ campo.label }}</label>
@@ -21,7 +22,7 @@
   </div>
 </div>
 {% endif %}
-<table class="table table-sm table-hover align-middle">
+<div class="table-responsive" role="region" aria-label="Tabla de datos" tabindex="0"><table class="table table-sm table-hover align-middle">
   <thead><tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th>Estado</th><th>Ultimo acceso</th><th></th></tr></thead>
   <tbody>
   {% for u in usuarios %}
@@ -32,6 +33,7 @@
       <td><span class="badge bg-{% if u.activo %}success{% else %}danger{% endif %}">{{ u.estado }}</span></td>
       <td>{{ u.ultimo_acceso|date:"d/m/Y H:i"|default:"-" }}</td>
       <td class="text-end">
+        <a href="{% url 'identity:usuario_editar' u.id %}">Editar</a>
         <form method="post" action="{% url 'identity:usuario_desactivar' u.id %}" class="d-inline">
           {% csrf_token %}
           <button class="btn btn-sm btn-outline-danger" type="submit">Desactivar</button>
@@ -42,7 +44,7 @@
     <tr><td colspan="6" class="text-center text-muted">Sin usuarios</td></tr>
   {% endfor %}
   </tbody>
-</table>
+</table></div>
 <a class="btn btn-outline-primary btn-sm" href="?">Refrescar</a>
 {% endblock %}
 

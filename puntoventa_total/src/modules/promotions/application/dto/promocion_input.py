@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 
@@ -14,4 +14,5 @@ class PromocionInputDTO:
     vigencia_desde: Optional[str] = None
     vigencia_hasta: Optional[str] = None
     aplica_clientes_frecuentes: bool = False
+    componentes: list[dict] = field(default_factory=list)
 

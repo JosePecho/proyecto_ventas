@@ -35,5 +35,5 @@ class FiltroAuditoriaDTO:
     usuario_id: Optional[str] = None
     desde: Optional[str] = None
     hasta: Optional[str] = None
-    limite: int = 100
+    limite: Optional[int] = None
 

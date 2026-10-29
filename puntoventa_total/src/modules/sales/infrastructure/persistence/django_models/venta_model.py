@@ -2,6 +2,7 @@ from django.db import models
 
 
 class VentaModel(models.Model):
+    descuento_venta_pct = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     id = models.UUIDField(primary_key=True, editable=False)
     numero_ticket = models.CharField(max_length=20, unique=True, db_index=True)
     cajero_id = models.UUIDField()

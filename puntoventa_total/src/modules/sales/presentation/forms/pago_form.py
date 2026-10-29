@@ -1,9 +1,11 @@
 from django import forms
 
+from src.shared.infrastructure.form_validation import ValidatedForm
+
 from src.modules.sales.domain.value_objects.metodo_pago import MetodoPago
 
 
-class PagoForm(forms.Form):
+class PagoForm(ValidatedForm):
     metodo = forms.ChoiceField(
         choices=[(t, t) for t in MetodoPago.TIPOS],
         widget=forms.Select(attrs={"class": "form-select"}),
@@ -25,7 +27,7 @@ class PagoForm(forms.Form):
         if datos.get("metodo") == "EFECTIVO":
             entregado = datos.get("monto_entregado")
             monto = datos.get("monto")
-            if entregado is not None and entregado < monto:
+            if entregado is not None and monto is not None and entregado < monto:
                 self.add_error("monto_entregado", "El efectivo entregado no puede ser menor al monto")
         elif not datos.get("referencia"):
             self.add_error("referencia", "Indique la referencia del pago electronico")

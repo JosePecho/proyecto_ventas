@@ -11,11 +11,17 @@ from src.modules.sales.infrastructure.persistence.mappers.venta_mapper import Ve
 
 
 class DjangoVentaRepository(VentaRepository):
+    def __init__(self):
+        # Identidad ORM local a esta instancia de repositorio/unidad de trabajo.
+        self._cargadas = {}
+
     def buscar_por_id(self, venta_id) -> Optional[VentaAggregate]:
         qs = VentaModel.objects.filter(pk=venta_id)
         if connection.in_atomic_block:
             qs = qs.select_for_update()
         m = qs.prefetch_related("detalles", "pagos").first()
+        if m is not None:
+            self._cargadas[str(m.pk)] = m
         return VentaMapper.agregado_a_dominio(m) if m else None
 
     def buscar_por_numero_ticket(self, numero_ticket: str) -> Optional[VentaAggregate]:
@@ -27,7 +33,7 @@ class DjangoVentaRepository(VentaRepository):
         return VentaMapper.agregado_a_dominio(m) if m else None
 
     def guardar(self, agregado: VentaAggregate) -> VentaAggregate:
-        VentaMapper.guardar_agregado(agregado)
+        VentaMapper.guardar_agregado(agregado, self._cargadas.pop(str(agregado.venta.id), None))
         return agregado
 
     def listar_por_turno(self, turno_caja_id: str) -> Sequence[VentaAggregate]:

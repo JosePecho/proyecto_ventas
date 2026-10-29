@@ -1,7 +1,9 @@
 from django import forms
 
+from src.shared.infrastructure.form_validation import ValidatedForm
 
-class KardexForm(forms.Form):
+
+class KardexForm(ValidatedForm):
     producto_id = forms.ModelChoiceField(
         queryset=None, required=False, label="Producto",
         widget=forms.Select(attrs={"class": "form-select"}),

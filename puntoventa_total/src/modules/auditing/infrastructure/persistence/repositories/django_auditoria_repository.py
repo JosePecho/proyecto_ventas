@@ -13,8 +13,8 @@ class DjangoAuditoriaRepository(AuditoriaRepository):
         self._mapper = AuditoriaMapper()
 
     def guardar(self, registro: RegistroAuditoria) -> RegistroAuditoria:
-        m = AuditoriaModel.objects.filter(pk=registro.id).first()
-        AuditoriaMapper.a_modelo(registro, m).save()
+        # Auditoria es append-only: no consultar ni sobrescribir registros previos.
+        AuditoriaMapper.a_modelo(registro).save(force_insert=True)
         return registro
 
     def buscar_por_id(self, registro_id) -> Optional[RegistroAuditoria]:

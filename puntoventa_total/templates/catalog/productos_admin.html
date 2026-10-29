@@ -1,11 +1,12 @@
 {% extends 'base.html' %}
-{% block title %}Administrar productos{% endblock %}
+{% block title %}Actualizar productos{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between mb-3">
-  <h4><i class="bi bi-box-seam"></i> Productos</h4>
+  <h4><i class="bi bi-pencil-square"></i> Actualizar productos</h4>
   <a class="btn btn-primary" href="{% url 'catalog:producto_nuevo' %}"><i class="bi bi-plus-lg"></i> Nuevo producto</a>
 </div>
-<table class="table table-sm table-hover align-middle">
+<p class="text-muted">Selecciona un producto para actualizar su precio y sus datos.</p>
+<div class="table-responsive" role="region" aria-label="Tabla de datos" tabindex="0"><table class="table table-sm table-hover align-middle">
   <thead><tr><th>Nombre</th><th>Codigo</th><th>Costo</th><th>Precio</th><th>Margen</th><th>Stock minimo</th><th>Vencimiento</th><th>Estado</th><th></th></tr></thead>
   <tbody>
   {% for p in productos %}
@@ -19,7 +20,7 @@
       <td>{{ p.fecha_vencimiento|date:'d/m/Y'|default:'Sin vencimiento' }}</td>
       <td><span class="badge bg-{% if p.activo %}success{% else %}secondary{% endif %}">{{ p.estado }}</span></td>
       <td class="text-end">
-        <a class="btn btn-sm btn-outline-primary" href="{% url 'catalog:producto_editar' p.id %}">Editar</a>
+        <a class="btn btn-sm btn-outline-primary" href="{% url 'catalog:producto_editar' p.id %}"><i class="bi bi-pencil-square" aria-hidden="true"></i> Actualizar precio / producto</a>
         {% if request.session.rol == 'ADMINISTRADOR' or request.session.rol == 'GERENTE' %}
         <form method="post" action="{% url 'catalog:producto_descontinuar' p.id %}" class="d-inline">
           {% csrf_token %}
@@ -32,6 +33,6 @@
     <tr><td colspan="9" class="text-center text-muted">Sin productos</td></tr>
   {% endfor %}
   </tbody>
-</table>
+</table></div>
 {% endblock %}
 

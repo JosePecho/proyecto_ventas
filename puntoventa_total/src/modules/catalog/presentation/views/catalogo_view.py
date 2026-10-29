@@ -10,6 +10,7 @@ from django.shortcuts import render
 from django.views.decorators.cache import never_cache
 
 from src.modules.catalog.application.use_cases.listar_productos import ListarProductos
+from src.modules.catalog.presentation.stock_carrito import cantidades_en_carrito
 from src.modules.catalog.infrastructure.factories import (
     construir_categoria_repository,
     construir_producto_repository,
@@ -35,7 +36,8 @@ def catalogo_view(request):
         pagina=pagina, termino=termino or None, categoria_id=categoria_id,
     )
     stocks = construir_disponibilidad_port().stock_disponible_lote([p.id for p in pagina_dto.items])
-    items = [replace(p, stock_disponible=stocks.get(p.id, 0),
+    en_carrito = cantidades_en_carrito(request)
+    items = [replace(p, stock_disponible=max(0, stocks.get(p.id, 0) - en_carrito.get(p.id, 0)),
                      imagen=default_storage.url(p.imagen) if p.imagen else "") for p in pagina_dto.items]
 
     categorias = construir_categoria_repository().listar()

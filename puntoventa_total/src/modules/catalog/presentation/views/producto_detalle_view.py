@@ -9,6 +9,7 @@ from src.modules.catalog.infrastructure.factories import (
     construir_producto_repository,
 )
 from src.modules.catalog.infrastructure.persistence.django_models.producto_model import ProductoModel
+from src.modules.catalog.presentation.stock_carrito import cantidades_en_carrito
 
 
 @never_cache
@@ -17,6 +18,12 @@ def producto_detalle_view(request, producto_id):
     disponibilidad = ConsultarDisponibilidad(
         construir_producto_repository(), construir_disponibilidad_port()
     ).ejecutar(str(producto.id))
+    if producto.requiere_stock:
+        disponibilidad["stock_disponible"] = max(
+            0, disponibilidad["stock_disponible"] - cantidades_en_carrito(request).get(str(producto.id), 0),
+        )
+        disponibilidad["stock_minimo"] = disponibilidad["stock_disponible"] <= producto.stock_minimo
+        disponibilidad["vendible"] = disponibilidad["vendible"] and disponibilidad["stock_disponible"] > 0
     return render(
         request,
         "catalog/producto_detalle.html",
