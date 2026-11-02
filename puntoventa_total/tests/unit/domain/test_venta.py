@@ -8,7 +8,6 @@ from src.modules.sales.domain.entities.venta import Venta
 from src.modules.sales.domain.enums.estado_venta import EstadoVenta
 from src.modules.sales.domain.exceptions.venta_exceptions import (
     ProductoYaAgregado,
-    VentaException,
 )
 from src.shared.domain.value_objects.monto import Monto
 

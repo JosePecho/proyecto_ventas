@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from src.modules.promotions.domain.entities.promocion import Promocion
 
 
 class PromocionRepository(ABC):
     @abstractmethod
-    def buscar_por_id(self, promocion_id) -> Optional[Promocion]:
+    def buscar_por_id(self, promocion_id) -> Promocion | None:
         ...
 
     @abstractmethod
@@ -18,7 +18,7 @@ class PromocionRepository(ABC):
         ...
 
     @abstractmethod
-    def activa_para_producto(self, producto_id: str) -> Optional[Promocion]:
+    def activa_para_producto(self, producto_id: str) -> Promocion | None:
         ...
 
     @abstractmethod

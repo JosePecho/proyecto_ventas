@@ -1,8 +1,8 @@
 """Configuracion base compartida por todos los entornos."""
 from pathlib import Path
 
-import environ
 import django
+import environ
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -39,6 +39,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "src.modules.auditing.infrastructure.request_audit.RequestAuditMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]

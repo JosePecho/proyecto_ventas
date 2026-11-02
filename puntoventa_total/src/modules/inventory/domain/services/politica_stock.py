@@ -1,8 +1,8 @@
 """Politica de stock: umbrales, PEPS y reglas de merma."""
 from __future__ import annotations
 
-from datetime import date, timedelta
-from typing import Sequence
+from collections.abc import Sequence
+from datetime import date
 
 from src.modules.inventory.domain.entities.lote import Lote
 from src.modules.inventory.domain.enums.tipo_movimiento import TipoMovimiento
@@ -28,7 +28,7 @@ class PoliticaStock:
     @classmethod
     def planificar_salida_peps(cls, lotes: Sequence[Lote], cantidad: int) -> list[tuple[Lote, int]]:
         """Distribuye una salida entre lotes usando PEPS (vencimiento mas proximo primero)."""
-        ordenados = sorted(lotes, key=lambda l: (l.fecha_vencimiento or date.max, l.fecha_recepcion or date.min))
+        ordenados = sorted(lotes, key=lambda elemento: (elemento.fecha_vencimiento or date.max, elemento.fecha_recepcion or date.min))
         pendiente = cantidad
         plan: list[tuple[Lote, int]] = []
         for lote in ordenados:

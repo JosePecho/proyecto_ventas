@@ -24,6 +24,7 @@ class PromocionMapper:
             vigencia_desde=m.vigencia_desde,
             vigencia_hasta=m.vigencia_hasta,
             aplica_clientes_frecuentes=m.aplica_clientes_frecuentes,
+            componentes=m.componentes,
             activo=m.activo,
             fecha_creacion=m.fecha_creacion,
             fecha_actualizacion=m.fecha_actualizacion,
@@ -45,6 +46,7 @@ class PromocionMapper:
         m.vigencia_desde = e.vigencia_desde
         m.vigencia_hasta = e.vigencia_hasta
         m.aplica_clientes_frecuentes = e.aplica_clientes_frecuentes
+        m.componentes = e.componentes
         m.activo = e.activo
         return m
 

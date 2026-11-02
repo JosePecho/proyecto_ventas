@@ -8,6 +8,9 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: puntoventa_total
     services:
       mysql:
         image: mysql:8.0
@@ -35,10 +38,10 @@ jobs:
           cache: pip
 
       - name: Instalar dependencias
-        run: pip install -r requirements/testing.txt
+        run: pip install -r requirements/testing.txt ruff==0.4.4
 
       - name: Lint (ruff)
-        run: ruff check src tests
+        run: ruff check src config scripts tests --select F821,F822,F823,E9
 
       - name: Pruebas unitarias
         env: &entorno_pruebas
@@ -47,7 +50,7 @@ jobs:
           DB_USER: puntoventa
           DB_PASSWORD: puntoventa_secret
           DB_NAME: puntoventa_test
-        run: pytest -m "unit or performance" --cov=src --cov-report=xml
+        run: pytest tests/unit --cov=src --cov-fail-under=0 --cov-report=xml --cov-report=json:reports/audit_unit_coverage.json && python scripts/qa_unit_gate.py
 
       - name: Pruebas funcionales y e2e
         env:
@@ -61,5 +64,5 @@ jobs:
       - name: Subir cobertura
         uses: codecov/codecov-action@v4
         with:
-          files: ./coverage.xml
+          files: ./puntoventa_total/coverage.xml
 

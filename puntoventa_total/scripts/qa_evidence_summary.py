@@ -1,7 +1,7 @@
 """Comprueba artefactos del CI: sin omisiones, cobertura y presupuesto k6."""
 import json
 from pathlib import Path
-import xml.etree.ElementTree as ET
+from xml.etree import ElementTree
 
 
 def main():
@@ -12,11 +12,11 @@ def main():
     evidence = {"run": run["url"], "commit": run["head_sha"], "profiles": {}}
     for artifact in run["artifacts"]:
         directory = Path(artifact["directory"])
-        suite = ET.parse(directory / "full-suite.xml").getroot()
+        suite = ElementTree.parse(directory / "full-suite.xml").getroot()
         suites = list(suite) if suite.tag == "testsuites" else [suite]
         counts = {name: sum(int(s.attrib.get(name, 0)) for s in suites)
                   for name in ("tests", "failures", "errors", "skipped")}
-        coverage = float(ET.parse(directory / "full-coverage.xml").getroot().attrib["line-rate"]) * 100
+        coverage = float(ElementTree.parse(directory / "full-coverage.xml").getroot().attrib["line-rate"]) * 100
         metrics = json.loads((directory / "k6-pos-summary.json").read_text())["metrics"]
         result = dict(counts, coverage_pct=round(coverage, 2),
             k6_checks_pct=metrics["checks"]["value"] * 100,

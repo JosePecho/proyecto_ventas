@@ -6,25 +6,28 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.shortcuts import redirect, render
 
+from src.modules.inventory.domain.exceptions.stock_exceptions import StockException
 from src.modules.sales.application.use_cases.procesar_pago import ProcesarPago
 from src.modules.sales.domain.exceptions.venta_exceptions import VentaException
-from src.modules.inventory.domain.exceptions.stock_exceptions import StockException
-from src.shared.domain.exceptions.validation_exception import ValidationException
 from src.modules.sales.infrastructure.factories import (
     construir_auditoria_port,
     construir_inventario_port,
+    construir_promociones_port,
     construir_venta_repository,
 )
 from src.modules.sales.presentation.forms.pago_form import PagoForm
 from src.modules.sales.presentation.permissions.venta_permissions import (
     requiere_caja_abierta,
     requiere_cajero,
+    venta_propia,
 )
+from src.shared.domain.exceptions.validation_exception import ValidationException
 
 
 @login_required
 @requiere_cajero
 @requiere_caja_abierta
+@venta_propia
 def pago_view(request, venta_id):
     if request.method == "POST":
         form = PagoForm(request.POST)
@@ -37,6 +40,7 @@ def pago_view(request, venta_id):
                     construir_inventario_port(),
                     construir_auditoria_port(),
                     uow=transaction.atomic(),
+                    promociones=construir_promociones_port(),
                 ).ejecutar(
                     ProcesarPagoDTO(
                         venta_id=venta_id,
@@ -49,14 +53,17 @@ def pago_view(request, venta_id):
             except (VentaException, StockException, ValidationException) as exc:
                 messages.error(request, str(exc))
             else:
-                request.session.pop("venta_actual", None)
                 if resultado["estado"] == "PAGADA":
+                    request.session.pop("venta_actual", None)
                     messages.success(request, f"Venta cobrada. Vuelto: {resultado['vuelto']:.2f}")
                     return redirect("sales:ticket", venta_id=venta_id)
                 messages.warning(request, f"Pago parcial. Saldo pendiente: {resultado['saldo']:.2f}")
                 return redirect("sales:pago", venta_id=venta_id)
     else:
-        form = PagoForm()
+        from src.modules.sales.application.use_cases.preparar_beneficios import PrepararBeneficiosVenta
+        with transaction.atomic():
+            agregado = PrepararBeneficiosVenta(construir_venta_repository(), construir_promociones_port()).ejecutar(venta_id)
+        form = PagoForm(initial={"monto": max(0, agregado.saldo_pendiente())})
 
     return render(request, "pos/pago.html", {"form": form, "venta_id": venta_id})
 

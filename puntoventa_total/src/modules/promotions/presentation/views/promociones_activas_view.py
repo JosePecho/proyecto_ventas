@@ -8,7 +8,7 @@ from src.modules.promotions.infrastructure.factories import construir_promocion_
 
 
 def promociones_activas_view(request):
-    activas = construir_promocion_repository().listar_activas()
+    activas = [p for p in construir_promocion_repository().listar_activas() if p.esta_vigente()]
     if request.headers.get("Accept") == "application/json":
         return JsonResponse(
             {"promociones": [{"id": str(p.id), "nombre": p.nombre, "tipo": p.tipo.value} for p in activas]}

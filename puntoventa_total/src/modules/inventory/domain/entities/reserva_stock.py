@@ -3,11 +3,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Optional
 
 from src.modules.inventory.domain.exceptions.stock_exceptions import ReservaYaConfirmada
-from src.shared.domain.entities.base_entity import BaseEntity
 from src.shared.domain.clock import utc_now
+from src.shared.domain.entities.base_entity import BaseEntity
 from src.shared.domain.exceptions.validation_exception import ValidationException
 
 
@@ -16,7 +15,7 @@ class ReservaStock(BaseEntity):
     producto_id: str = ""
     cantidad: int = 0
     referencia: str = ""
-    expira_en: Optional[datetime] = None
+    expira_en: datetime | None = None
     confirmada: bool = False
     liberada: bool = False
     permanente: bool = False

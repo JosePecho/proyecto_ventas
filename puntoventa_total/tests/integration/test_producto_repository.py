@@ -6,7 +6,8 @@ from src.modules.catalog.domain.value_objects.precio import Precio
 from src.modules.catalog.infrastructure.factories import construir_producto_repository
 from src.shared.domain.value_objects.monto import Monto
 
-pytestmark = [pytest.mark.integration, pytest.mark.django_db]
+pytestmark = [pytest.mark.integration, pytest.mark.django_db,
+              pytest.mark.core, pytest.mark.slow, pytest.mark.catalogo]
 
 
 def _crear(nombre="Cafe 250g", codigo="7759999000011"):

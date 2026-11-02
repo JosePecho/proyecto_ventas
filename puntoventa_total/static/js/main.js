@@ -33,17 +33,31 @@ const PV = {
   alerta(tipo, mensaje) {
     const cont = document.createElement("div");
     cont.className = `alert alert-${tipo} alert-dismissible fade show py-2`;
-    cont.innerHTML = `${mensaje}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+    cont.appendChild(document.createTextNode(String(mensaje)));
+    const cerrar = document.createElement("button");
+    cerrar.type = "button";
+    cerrar.className = "btn-close";
+    cerrar.dataset.bsDismiss = "alert";
+    cerrar.setAttribute("aria-label", "Cerrar");
+    cont.appendChild(cerrar);
     const main = document.querySelector("main");
     main.prepend(cont);
     setTimeout(() => cont.remove(), 5000);
   },
 };
 
+// Resaltar la seccion actual sin modificar rutas ni permisos.
+document.querySelectorAll('#sidebar .nav-link, .navbar .nav-link[href]').forEach((enlace) => {
+  if (new URL(enlace.href, location.origin).pathname === location.pathname) {
+    enlace.classList.add('active');
+    enlace.setAttribute('aria-current', 'page');
+  }
+});
+
 // Registro del service worker (PWA / modo offline)
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/static/js/offline/service_worker.js").catch(() => {});
+    navigator.serviceWorker.register("/service-worker.js", { scope: "/" }).catch(console.error);
   });
 }
 

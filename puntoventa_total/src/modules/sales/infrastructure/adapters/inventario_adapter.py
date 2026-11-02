@@ -1,7 +1,7 @@
 """Adaptador InventarioPort -> modulo inventory (capa anticorrupcion)."""
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 from django.db import transaction
 
@@ -73,8 +73,9 @@ class InventarioAdapter(InventarioPort):
                 break
         if pendiente:
             # Compatibilidad con ventas historicas sin trazabilidad por lote.
-            from src.modules.inventory.domain.entities.lote import Lote
             from uuid import uuid4
+
+            from src.modules.inventory.domain.entities.lote import Lote
             lotes_repo.guardar(Lote(producto_id=producto_id, numero_lote=f"DEV-{uuid4().hex[:12]}",
                                    cantidad_inicial=pendiente, cantidad_restante=pendiente))
         construir_stock_repository().guardar(existencia)

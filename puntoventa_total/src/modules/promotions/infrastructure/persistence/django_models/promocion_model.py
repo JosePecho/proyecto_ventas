@@ -2,6 +2,7 @@ from django.db import models
 
 
 class PromocionModel(models.Model):
+    componentes = models.JSONField(default=list, blank=True)
     id = models.UUIDField(primary_key=True, editable=False)
     nombre = models.CharField(max_length=120)
     tipo = models.CharField(max_length=20)

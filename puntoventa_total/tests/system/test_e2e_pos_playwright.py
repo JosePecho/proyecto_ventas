@@ -8,11 +8,11 @@ Si Chromium no esta instalado o el modulo falta, el test se omite sin romper
 la suite (el nivel 3 ya queda cubierto igualmente por test_flujo_pos_sistema).
 """
 import os
-from pathlib import Path
 import re
 import uuid
 from datetime import date
 from decimal import Decimal
+from pathlib import Path
 
 import pytest
 
@@ -29,18 +29,18 @@ except ImportError:
         raise
     pytest.skip("Requiere: pip install playwright", allow_module_level=True)
 
+from src.modules.cash_register.infrastructure.persistence.django_models.turno_caja_model import (  # noqa: E402
+    TurnoCajaModel,
+)
+from src.modules.catalog.infrastructure.persistence.django_models.producto_model import (  # noqa: E402
+    ProductoModel,
+)
 from src.modules.identity.application.dto.usuario_input import UsuarioInputDTO  # noqa: E402
 from src.modules.identity.application.use_cases.crear_usuario import CrearUsuario  # noqa: E402
 from src.modules.identity.domain.enums.rol_usuario import RolUsuario  # noqa: E402
 from src.modules.identity.infrastructure.factories import (  # noqa: E402
     construir_hasher,
     construir_repositorio,
-)
-from src.modules.cash_register.infrastructure.persistence.django_models.turno_caja_model import (  # noqa: E402
-    TurnoCajaModel,
-)
-from src.modules.catalog.infrastructure.persistence.django_models.producto_model import (  # noqa: E402
-    ProductoModel,
 )
 from src.modules.inventory.infrastructure.persistence.django_models.existencia_model import (  # noqa: E402
     ExistenciaModel,
@@ -150,8 +150,10 @@ def test_flujo_completo_del_pos_en_el_navegador(live_server, navegador, datos_po
 
     # 4. escanear codigo de barras -> un solo resultado -> auto-agrega al carrito
     page.fill("#buscador-pos", CODIGO_BARRAS)
-    page.press("#buscador-pos", "Enter")
-    page.wait_for_load_state("networkidle")
+    with page.expect_response(lambda response: "/agregar/" in response.url and response.request.method == "POST") as agregado:
+        page.press("#buscador-pos", "Enter")
+    assert agregado.value.status == 200
+    page.locator(f'[data-producto="{datos_pos.id}"]').wait_for()
     assert VentaModel.objects.get(pk=venta_id).total == Decimal("8.50")
 
     # 5. cobrar en efectivo: 8.50 de 10.00 (vuelto 1.50)

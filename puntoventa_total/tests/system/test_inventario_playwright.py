@@ -4,13 +4,13 @@ from datetime import date, timedelta
 
 import pytest
 
-from tests.system.test_e2e_pos_playwright import navegador  # noqa: F401
 from src.modules.catalog.models import CategoriaModel, ProductoModel
 from src.modules.identity.application.dto.usuario_input import UsuarioInputDTO
 from src.modules.identity.application.use_cases.crear_usuario import CrearUsuario
 from src.modules.identity.domain.enums.rol_usuario import RolUsuario
 from src.modules.identity.infrastructure.factories import construir_hasher, construir_repositorio
 from src.modules.inventory.models import ExistenciaModel, LoteModel, MovimientoModel
+from tests.system.test_e2e_pos_playwright import navegador as navegador  # noqa: F401
 
 pytestmark = [pytest.mark.system, pytest.mark.e2e, pytest.mark.django_db]
 
@@ -38,7 +38,7 @@ def test_almacenero_completa_flujo_de_inventario(live_server, navegador):
     page.select_option("select[name=categoria_id]", str(categoria.id))
     page.fill("input[name=stock_minimo]", "8")
     page.fill("input[name=fecha_vencimiento]", vencimiento)
-    page.get_by_role("button", name="Guardar", exact=True).click()
+    page.get_by_role("button", name="Guardar producto", exact=True).click()
     page.wait_for_url("**/catalogo/productos/admin/")
     producto = ProductoModel.objects.get(codigo_barras="7751234567811")
     assert producto.stock_minimo == 8 and producto.categoria_id == categoria.id

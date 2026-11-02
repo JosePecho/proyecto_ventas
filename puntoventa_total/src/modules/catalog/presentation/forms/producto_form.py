@@ -1,7 +1,9 @@
 from django import forms
 
+from src.shared.infrastructure.form_validation import ValidatedForm
 
-class ProductoForm(forms.Form):
+
+class ProductoForm(ValidatedForm):
     nombre = forms.CharField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control"}))
     descripcion = forms.CharField(
         required=False, widget=forms.Textarea(attrs={"class": "form-control", "rows": 3})
@@ -21,7 +23,9 @@ class ProductoForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        from src.modules.catalog.infrastructure.persistence.django_models.categoria_model import CategoriaModel
+        from src.modules.catalog.infrastructure.persistence.django_models.categoria_model import (
+            CategoriaModel,
+        )
         self.fields["categoria_id"].queryset = CategoriaModel.objects.filter(activo=True)
 
     def clean_categoria_id(self):

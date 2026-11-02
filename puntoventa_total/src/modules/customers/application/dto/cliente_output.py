@@ -1,12 +1,11 @@
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass(frozen=True)
 class ClienteOutputDTO:
     id: str
     nombre: str
-    dni: Optional[str]
+    dni: str | None
     email: str
     telefono: str
     direccion: str

@@ -5,9 +5,9 @@ from django.shortcuts import redirect, render
 
 from src.modules.customers.application.dto.cliente_input import ClienteInputDTO
 from src.modules.customers.application.use_cases.registrar_cliente import RegistrarCliente
-from src.modules.customers.domain.exceptions.cliente_exceptions import ClienteException
 from src.modules.customers.infrastructure.factories import construir_cliente_repository
 from src.modules.customers.presentation.forms.registro_cliente_form import RegistroClienteForm
+from src.shared.domain.exceptions.domain_exception import DomainException
 
 
 def registro_cliente_view(request):
@@ -17,6 +17,8 @@ def registro_cliente_view(request):
         return redirect("catalog:catalogo")
     if request.method == "POST":
         form = RegistroClienteForm(request.POST)
+        for campo in ("dni", "telefono"):
+            form.fields[campo].required = True
         if form.is_valid():
             try:
                 cliente = RegistrarCliente(construir_cliente_repository()).ejecutar(
@@ -26,22 +28,26 @@ def registro_cliente_view(request):
                         email=form.cleaned_data.get("email", ""),
                         telefono=form.cleaned_data.get("telefono", ""),
                         direccion=form.cleaned_data.get("direccion", ""),
-                        usuario_id=str(request.session.get("usuario_id", "")) or None,
+                        usuario_id=None,
                     )
                 )
-            except ClienteException as exc:
-                messages.error(request, str(exc))
+            except DomainException as exc:
+                form.add_error(None, str(exc))
             else:
                 messages.success(request, f"Cliente {cliente.nombre} registrado")
                 return redirect("customers:perfil", cliente_id=cliente.id)
     else:
         form = RegistroClienteForm()
+        for campo in ("dni", "telefono"):
+            form.fields[campo].required = True
     return render(request, "customers/registro.html", {"form": form})
 
 
 def registro_web_view(request):
     from hashlib import sha256
+
     from django.db import IntegrityError, transaction
+
     from src.modules.customers.presentation.forms.registro_web_form import RegistroWebForm
     from src.modules.identity.application.dto.usuario_input import UsuarioInputDTO
     from src.modules.identity.application.use_cases.crear_usuario import CrearUsuario

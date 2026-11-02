@@ -2,6 +2,8 @@ from src.modules.sales.infrastructure.persistence.django_models.detalle_venta_mo
     DetalleVentaModel,
 )
 from src.modules.sales.infrastructure.persistence.django_models.pago_model import PagoModel  # noqa: F401
+from src.modules.sales.infrastructure.persistence.django_models.ticket_sequence_model import (
+    TicketSequenceModel as TicketSequenceModel,
+)
 from src.modules.sales.infrastructure.persistence.django_models.venta_model import VentaModel  # noqa: F401
-from src.modules.sales.infrastructure.persistence.django_models.ticket_sequence_model import TicketSequenceModel as TicketSequenceModel
 

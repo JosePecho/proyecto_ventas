@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass(frozen=True)
@@ -10,7 +9,7 @@ class PedidoOutputDTO:
     cliente_nombre: str
     total: float
     moneda: str
-    hora_recojo: Optional[str]
+    hora_recojo: str | None
     lineas: list[dict]
 
     @property

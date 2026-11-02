@@ -1,5 +1,4 @@
 from src.modules.promotions.domain.entities.promocion import Promocion
-from src.modules.promotions.domain.services.motor_promociones import MotorPromociones
 from src.modules.promotions.domain.services.politica_promociones import PoliticaPromociones
 from src.shared.domain.value_objects.monto import Monto
 

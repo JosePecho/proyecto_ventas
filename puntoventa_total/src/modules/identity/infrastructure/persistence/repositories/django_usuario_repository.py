@@ -1,7 +1,7 @@
 """Repositorio de Usuario sobre Django ORM."""
 from __future__ import annotations
 
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from django.db import IntegrityError
 
@@ -16,18 +16,18 @@ class DjangoUsuarioRepository(UsuarioRepository):
     def __init__(self):
         self._mapper = UsuarioMapper()
 
-    def buscar_por_id(self, usuario_id) -> Optional[Usuario]:
+    def buscar_por_id(self, usuario_id) -> Usuario | None:
         try:
-            modelo = UsuarioModel.objects.select_related().get(pk=usuario_id)
+            modelo = UsuarioModel.objects.get(pk=usuario_id)
         except UsuarioModel.DoesNotExist:
             return None
         return self._mapper.a_dominio(modelo)
 
-    def buscar_por_username(self, username: str) -> Optional[Usuario]:
+    def buscar_por_username(self, username: str) -> Usuario | None:
         modelo = UsuarioModel.objects.filter(username__iexact=username).first()
         return self._mapper.a_dominio(modelo) if modelo else None
 
-    def buscar_por_email(self, email: str) -> Optional[Usuario]:
+    def buscar_por_email(self, email: str) -> Usuario | None:
         modelo = UsuarioModel.objects.filter(email__iexact=email).first()
         return self._mapper.a_dominio(modelo) if modelo else None
 

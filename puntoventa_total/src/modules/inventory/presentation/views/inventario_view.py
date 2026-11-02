@@ -4,8 +4,8 @@ from __future__ import annotations
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
-from src.modules.inventory.infrastructure.factories import construir_stock_repository
 from src.modules.identity.presentation.permissions.role_required import role_required
+from src.modules.inventory.infrastructure.factories import construir_stock_repository
 
 
 @login_required

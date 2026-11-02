@@ -1,8 +1,8 @@
 """Genera un informe auditable desde JUnit, coverage JSON y fuentes reales."""
-from collections import defaultdict
 import json
+from collections import defaultdict
 from pathlib import Path
-import xml.etree.ElementTree as ET
+from xml.etree import ElementTree
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -13,7 +13,7 @@ def source(path, language="python"):
 
 def main():
     coverage = json.loads((ROOT / "reports/audit_final_coverage.json").read_text())
-    junit = ET.parse(ROOT / "reports/audit_final_junit.xml")
+    junit = ElementTree.parse(ROOT / "reports/audit_final_junit.xml")
     counts = defaultdict(lambda: defaultdict(int))
     for case in junit.iter("testcase"):
         parts = case.attrib["classname"].split(".")

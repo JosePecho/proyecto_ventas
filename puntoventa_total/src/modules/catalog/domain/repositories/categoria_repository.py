@@ -1,18 +1,18 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from src.modules.catalog.domain.entities.categoria import Categoria
 
 
 class CategoriaRepository(ABC):
     @abstractmethod
-    def buscar_por_id(self, categoria_id) -> Optional[Categoria]:
+    def buscar_por_id(self, categoria_id) -> Categoria | None:
         ...
 
     @abstractmethod
-    def buscar_por_slug(self, slug: str) -> Optional[Categoria]:
+    def buscar_por_slug(self, slug: str) -> Categoria | None:
         ...
 
     @abstractmethod

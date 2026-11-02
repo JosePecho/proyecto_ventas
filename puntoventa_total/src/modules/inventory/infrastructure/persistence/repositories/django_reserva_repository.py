@@ -1,4 +1,5 @@
-from typing import Optional, Sequence
+from collections.abc import Sequence
+
 from django.db import connection
 from django.utils import timezone
 
@@ -23,7 +24,7 @@ class DjangoReservaRepository(ReservaRepository):
             fecha_actualizacion=m.fecha_actualizacion,
         )
 
-    def buscar_por_id(self, reserva_id) -> Optional[ReservaStock]:
+    def buscar_por_id(self, reserva_id) -> ReservaStock | None:
         qs = ReservaModel.objects.filter(pk=reserva_id)
         if connection.in_atomic_block:
             qs = qs.select_for_update()

@@ -2,23 +2,25 @@
 {% block title %}Iniciar sesion{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
-  <div class="col-md-4">
+  <div class="col-md-6 col-lg-4 auth-panel">
     <div class="card shadow-sm mt-5">
       <div class="card-body">
-        <h4 class="card-title text-center mb-3"><i class="bi bi-person-circle"></i> Iniciar sesion</h4>
+        <div class="auth-emblem"><i class="bi bi-person-circle" aria-hidden="true"></i></div>
+        <h4 class="card-title text-center mb-2">Qué bueno verte.</h4>
+        <p class="text-muted text-center small mb-4">Inicia sesión para continuar con tu compra.</p>
         <form method="post" novalidate>
           {% csrf_token %}
           {% for campo in form %}
             <div class="mb-3">
-              <label class="form-label">{{ campo.label }}</label>
+              <label class="form-label" for="id_{{ campo.name }}">{{ campo.label }}</label>
               <input type="{{ campo.field.widget.input_type|default:'text' }}" name="{{ campo.name }}"
-                     {% if campo.name != 'password' %}value="{{ campo.value|default:'' }}"{% endif %} class="form-control" {% if campo.errors %}is-invalid{% endif %}>
+                     id="id_{{ campo.name }}" {% if campo.name != 'password' %}value="{{ campo.value|default:'' }}"{% endif %} class="form-control {% if campo.errors %}is-invalid{% endif %}">
               {% for error in campo.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
             </div>
           {% endfor %}
           <button class="btn btn-primary w-100" type="submit">Ingresar</button>
         </form>
-        <a href="{% url 'customers:registro' %}">Crear cuenta de cliente</a>
+        <p class="text-center small mt-4 mb-0">¿Primera vez aquí? <a href="{% url 'customers:registro' %}">Crea tu cuenta</a></p>
       </div>
     </div>
   </div>

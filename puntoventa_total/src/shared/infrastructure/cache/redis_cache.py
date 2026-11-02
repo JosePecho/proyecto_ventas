@@ -1,10 +1,10 @@
 """Cliente de cache con claves namespaced y invalidacion por entorno."""
 from __future__ import annotations
 
+import json
+from collections.abc import Callable
 from functools import wraps
 from hashlib import sha256
-import json
-from typing import Callable
 
 from django.core.cache import cache
 

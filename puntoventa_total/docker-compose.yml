@@ -2,6 +2,11 @@ services:
   web:
     build: .
     env_file: .env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      DB_HOST: db
+      REDIS_URL: redis://cache:6379/0
+      CELERY_BROKER_URL: redis://cache:6379/1
     command: >
       sh -c "python manage.py migrate --noinput &&
              python manage.py collectstatic --noinput &&
@@ -10,27 +15,32 @@ services:
       - ./media:/app/media
       - static_volume:/app/staticfiles
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     depends_on:
       db:
         condition: service_healthy
       cache:
         condition: service_started
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
 
   db:
     image: mysql:8.0
     environment:
-      MYSQL_DATABASE: puntoventa
-      MYSQL_USER: puntoventa
-      MYSQL_PASSWORD: puntoventa_secret
-      MYSQL_ROOT_PASSWORD: puntoventa_secret_root
+      MYSQL_DATABASE: ${DB_NAME:-puntoventa}
+      MYSQL_USER: ${DB_USER:-puntoventa}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Defina DB_PASSWORD en .env}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Defina DB_ROOT_PASSWORD en .env}
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./deployment/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     ports:
-      - "3306:3306"
+      - "127.0.0.1:3306:3306"
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
@@ -40,23 +50,38 @@ services:
   cache:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
 
   worker:
     build: .
     env_file: .env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      DB_HOST: db
+      REDIS_URL: redis://cache:6379/0
+      CELERY_BROKER_URL: redis://cache:6379/1
     command: celery -A config worker -l info --concurrency=2
     depends_on:
-      - web
-      - cache
+      web:
+        condition: service_healthy
+      cache:
+        condition: service_started
     restart: unless-stopped
 
   beat:
     build: .
     env_file: .env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      DB_HOST: db
+      REDIS_URL: redis://cache:6379/0
+      CELERY_BROKER_URL: redis://cache:6379/1
     command: celery -A config beat -l info
     depends_on:
-      - cache
+      web:
+        condition: service_healthy
+      cache:
+        condition: service_started
     restart: unless-stopped
 
   nginx:
@@ -68,7 +93,8 @@ services:
     ports:
       - "80:80"
     depends_on:
-      - web
+      web:
+        condition: service_healthy
 
 volumes:
   mysql_data:

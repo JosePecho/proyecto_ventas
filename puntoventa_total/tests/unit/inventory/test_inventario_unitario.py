@@ -4,7 +4,8 @@ from types import SimpleNamespace
 from unittest.mock import Mock
 
 import pytest
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from src.modules.inventory.application.dto.lote_dto import RecepcionLoteDTO
 from src.modules.inventory.application.dto.stock_dto import AjusteStockDTO
@@ -26,8 +27,12 @@ from src.modules.inventory.domain.entities.movimiento_stock import MovimientoSto
 from src.modules.inventory.domain.entities.reserva_stock import ReservaStock
 from src.modules.inventory.domain.enums.tipo_movimiento import TipoMovimiento
 from src.modules.inventory.domain.exceptions.stock_exceptions import (
-    ExistenciaNegativa, LoteNoEncontrado, ReservaNoEncontrada, ReservaYaConfirmada,
-    StockException, StockInsuficiente,
+    ExistenciaNegativa,
+    LoteNoEncontrado,
+    ReservaNoEncontrada,
+    ReservaYaConfirmada,
+    StockException,
+    StockInsuficiente,
 )
 from src.modules.inventory.domain.repositories.lote_repository import LoteRepository
 from src.modules.inventory.domain.repositories.movimiento_repository import MovimientoRepository
@@ -125,7 +130,7 @@ def test_peps_distribuye_y_omite_lotes_vencidos_sin_mutarlos():
     vencido, cercano, lejano = lote(10, -1), lote(3, 1), lote(9, 20)
     plan = PoliticaStock.planificar_salida_peps([lejano, vencido, cercano], 5)
     assert plan == [(cercano, 3), (lejano, 2)]
-    assert [l.cantidad_restante for l in (vencido, cercano, lejano)] == [10, 3, 9]
+    assert [elemento.cantidad_restante for elemento in (vencido, cercano, lejano)] == [10, 3, 9]
     with pytest.raises(StockInsuficiente):
         PoliticaStock.planificar_salida_peps([vencido], 1)
 
@@ -138,18 +143,18 @@ def test_limites_alerta_vencimiento(dias, esperado):
 def test_lote_valida_cantidad_y_agotamiento():
     with pytest.raises(ValidationException):
         lote(0)
-    l = lote(2)
+    elemento = lote(2)
     with pytest.raises(ValidationException):
-        l.descontar(0)
+        elemento.descontar(0)
     with pytest.raises(StockInsuficiente):
-        l.descontar(3)
-    l.descontar(2)
-    assert l.agotado
-    l.fecha_vencimiento = None
-    assert l.dias_para_vencer is None and not l.vencido()
-    l.cantidad_restante = 3
+        elemento.descontar(3)
+    elemento.descontar(2)
+    assert elemento.agotado
+    elemento.fecha_vencimiento = None
+    assert elemento.dias_para_vencer is None and not elemento.vencido()
+    elemento.cantidad_restante = 3
     with pytest.raises(ValidationException):
-        l.__post_init__()
+        elemento.__post_init__()
 
 
 def test_movimiento_signo_y_validaciones():

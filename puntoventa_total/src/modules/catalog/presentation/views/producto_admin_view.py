@@ -58,16 +58,16 @@ def producto_form_view(request, producto_id=None):
 
 
 def _guardar_producto(request, repo, producto, form):
-    datos = dict(
-        nombre=form.cleaned_data["nombre"],
-        descripcion=form.cleaned_data.get("descripcion", ""),
-        codigo_barras=form.cleaned_data["codigo_barras"],
-        costo=form.cleaned_data["costo"],
-        precio_venta=form.cleaned_data["precio_venta"],
-        categoria_id=form.cleaned_data["categoria_id"],
-        stock_minimo=form.cleaned_data["stock_minimo"],
-        fecha_vencimiento=form.cleaned_data.get("fecha_vencimiento"),
-    )
+    datos = {
+        "nombre": form.cleaned_data["nombre"],
+        "descripcion": form.cleaned_data.get("descripcion", ""),
+        "codigo_barras": form.cleaned_data["codigo_barras"],
+        "costo": form.cleaned_data["costo"],
+        "precio_venta": form.cleaned_data["precio_venta"],
+        "categoria_id": form.cleaned_data["categoria_id"],
+        "stock_minimo": form.cleaned_data["stock_minimo"],
+        "fecha_vencimiento": form.cleaned_data.get("fecha_vencimiento"),
+    }
     if producto is None:
         resultado = CrearProducto(repo).ejecutar(ProductoInputDTO(**datos))
     else:

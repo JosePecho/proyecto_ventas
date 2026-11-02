@@ -1,17 +1,18 @@
 import base64
-from concurrent.futures import ThreadPoolExecutor
 import json
-from pathlib import Path
 import time
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 from urllib.request import urlopen
 
 import pytest
 from django.core.files.base import ContentFile
 from playwright.sync_api import expect
 
-from tests.factories.catalogo_web import categoria, producto
-from tests.system.test_e2e_pos_playwright import navegador  # noqa: F401
 from src.modules.sales.infrastructure.adapters.inventario_adapter import InventarioAdapter
+from tests.factories.catalogo_web import categoria as categoria
+from tests.factories.catalogo_web import producto as producto
+from tests.system.test_e2e_pos_playwright import navegador as navegador  # noqa: F401
 
 pytestmark = [pytest.mark.system, pytest.mark.django_db(transaction=True)]
 

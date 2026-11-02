@@ -4,7 +4,6 @@ import json
 from pathlib import Path
 
 import requests
-
 from qa_github_status import github_context
 
 

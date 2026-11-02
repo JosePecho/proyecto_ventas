@@ -15,6 +15,12 @@ collectstatic/
 
 # Entorno
 .env
+.env.*
+!.env.example
+!.env.development.example
+deployment/tls/
+*.pem
+*.key
 
 # IDE / SO
 .idea/

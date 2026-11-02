@@ -1,5 +1,5 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 
 @dataclass(frozen=True)
@@ -11,4 +11,5 @@ class UtilidadReporteDTO:
     costos_totales: float
     utilidad_total: float
     margen_pct: float
+    estimado: bool = False
 

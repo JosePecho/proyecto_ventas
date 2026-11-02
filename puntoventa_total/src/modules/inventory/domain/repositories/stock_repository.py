@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import Optional
 
 from src.modules.inventory.domain.entities.existencia import Existencia
 
@@ -15,7 +14,7 @@ class StockRepository(ABC):
         return defecto
 
     @abstractmethod
-    def obtener(self, producto_id: str) -> Optional[Existencia]:
+    def obtener(self, producto_id: str) -> Existencia | None:
         ...
 
     @abstractmethod

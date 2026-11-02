@@ -1,5 +1,6 @@
+from collections.abc import Sequence
 from datetime import date, timedelta
-from typing import Optional, Sequence
+
 from django.db import connection
 
 from src.modules.inventory.domain.entities.lote import Lote
@@ -12,7 +13,7 @@ class DjangoLoteRepository(LoteRepository):
     def __init__(self):
         self._mapper = LoteMapper()
 
-    def buscar_por_id(self, lote_id) -> Optional[Lote]:
+    def buscar_por_id(self, lote_id) -> Lote | None:
         qs = LoteModel.objects.filter(pk=lote_id)
         if connection.in_atomic_block:
             qs = qs.select_for_update()

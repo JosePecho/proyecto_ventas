@@ -1,13 +1,12 @@
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass(frozen=True)
 class CrearPedidoDTO:
     cliente_nombre: str
     cliente_telefono: str = ""
-    cliente_dni: Optional[str] = None
-    cliente_id: Optional[str] = None
+    cliente_dni: str | None = None
+    cliente_id: str | None = None
     observaciones: str = ""
     moneda: str = "PEN"
     cliente_email: str = ""

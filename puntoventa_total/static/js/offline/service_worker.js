@@ -1,5 +1,5 @@
 /* Service worker: cache de assets y fallback offline */
-const CACHE = "puntoventa-v1";
+const CACHE = "puntoventa-assets-v2";
 const ASSETS = [
   "/static/css/base.css",
   "/static/css/pos.css",
@@ -17,18 +17,20 @@ self.addEventListener("install", (evento) => {
 
 self.addEventListener("activate", (evento) => {
   evento.waitUntil(
-    caches.keys().then((claves) => Promise.all(claves.filter((c) => c !== CACHE).map((c) => caches.delete(c))))
+    caches.keys().then((claves) => Promise.all(claves.filter((c) => c.startsWith("puntoventa-") && c !== CACHE).map((c) => caches.delete(c))))
   );
   self.clients.claim();
 });
 
 self.addEventListener("fetch", (evento) => {
-  if (evento.request.method !== "GET") return;
+  const url = new URL(evento.request.url);
+  // Nunca guardar paginas privadas, tickets ni respuestas de otros dominios.
+  if (evento.request.method !== "GET" || url.origin !== self.location.origin || !url.pathname.startsWith("/static/")) return;
   evento.respondWith(
     fetch(evento.request)
       .then((respuesta) => {
         const copia = respuesta.clone();
-        caches.open(CACHE).then((cache) => cache.put(evento.request, copia));
+        if (respuesta.ok) evento.waitUntil(caches.open(CACHE).then((cache) => cache.put(evento.request, copia)));
         return respuesta;
       })
       .catch(() => caches.match(evento.request))

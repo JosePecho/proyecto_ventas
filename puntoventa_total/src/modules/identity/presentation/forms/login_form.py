@@ -1,7 +1,9 @@
 from django import forms
 
+from src.shared.infrastructure.form_validation import ValidatedForm
 
-class LoginForm(forms.Form):
+
+class LoginForm(ValidatedForm):
     username = forms.CharField(
         label="Usuario o email",
         max_length=254,

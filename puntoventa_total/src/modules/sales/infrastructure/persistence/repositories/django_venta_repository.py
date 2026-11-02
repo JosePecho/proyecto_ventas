@@ -1,24 +1,33 @@
-from typing import Optional, Sequence
+from collections.abc import Sequence
+
 from django.db import connection, transaction
 from django.utils import timezone
-from src.modules.sales.infrastructure.persistence.django_models.ticket_sequence_model import TicketSequenceModel
-from src.shared.infrastructure.database.date_bounds import date_bound
 
 from src.modules.sales.domain.aggregates.venta_aggregate import VentaAggregate
 from src.modules.sales.domain.repositories.venta_repository import VentaRepository
+from src.modules.sales.infrastructure.persistence.django_models.ticket_sequence_model import (
+    TicketSequenceModel,
+)
 from src.modules.sales.infrastructure.persistence.django_models.venta_model import VentaModel
 from src.modules.sales.infrastructure.persistence.mappers.venta_mapper import VentaMapper
+from src.shared.infrastructure.database.date_bounds import date_bound
 
 
 class DjangoVentaRepository(VentaRepository):
-    def buscar_por_id(self, venta_id) -> Optional[VentaAggregate]:
+    def __init__(self):
+        # Identidad ORM local a esta instancia de repositorio/unidad de trabajo.
+        self._cargadas = {}
+
+    def buscar_por_id(self, venta_id) -> VentaAggregate | None:
         qs = VentaModel.objects.filter(pk=venta_id)
         if connection.in_atomic_block:
             qs = qs.select_for_update()
         m = qs.prefetch_related("detalles", "pagos").first()
+        if m is not None:
+            self._cargadas[str(m.pk)] = m
         return VentaMapper.agregado_a_dominio(m) if m else None
 
-    def buscar_por_numero_ticket(self, numero_ticket: str) -> Optional[VentaAggregate]:
+    def buscar_por_numero_ticket(self, numero_ticket: str) -> VentaAggregate | None:
         m = (
             VentaModel.objects.filter(numero_ticket=numero_ticket)
             .prefetch_related("detalles", "pagos")
@@ -27,7 +36,7 @@ class DjangoVentaRepository(VentaRepository):
         return VentaMapper.agregado_a_dominio(m) if m else None
 
     def guardar(self, agregado: VentaAggregate) -> VentaAggregate:
-        VentaMapper.guardar_agregado(agregado)
+        VentaMapper.guardar_agregado(agregado, self._cargadas.pop(str(agregado.venta.id), None))
         return agregado
 
     def listar_por_turno(self, turno_caja_id: str) -> Sequence[VentaAggregate]:

@@ -2,10 +2,10 @@
 import argparse
 import hashlib
 import json
-from pathlib import Path
 import tempfile
-from urllib.request import Request, urlopen
 import zipfile
+from pathlib import Path
+from urllib.request import Request, urlopen
 
 
 def main():

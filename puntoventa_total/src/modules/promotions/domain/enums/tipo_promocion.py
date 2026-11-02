@@ -6,6 +6,7 @@ class TipoPromocion(str, Enum):
     MONTO_FIJO = "MONTO_FIJO"
     NX1 = "NX1"          # 2x1, 3x2, etc.
     PRECIO_ESPECIAL = "PRECIO_ESPECIAL"
+    COMBO = "COMBO"
 
     @classmethod
     def opciones(cls):

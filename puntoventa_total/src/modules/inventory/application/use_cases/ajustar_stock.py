@@ -7,7 +7,6 @@ from src.modules.inventory.domain.entities.movimiento_stock import MovimientoSto
 from src.modules.inventory.domain.enums.tipo_movimiento import TipoMovimiento
 from src.modules.inventory.domain.repositories.movimiento_repository import MovimientoRepository
 from src.modules.inventory.domain.repositories.stock_repository import StockRepository
-from src.modules.inventory.domain.services.politica_stock import PoliticaStock
 from src.shared.application.interfaces.unit_of_work import NullUnitOfWork, UnitOfWork
 
 

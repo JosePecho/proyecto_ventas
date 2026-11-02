@@ -2,22 +2,22 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from src.modules.identity.domain.entities.usuario import Usuario
 
 
 class UsuarioRepository(ABC):
     @abstractmethod
-    def buscar_por_id(self, usuario_id) -> Optional[Usuario]:
+    def buscar_por_id(self, usuario_id) -> Usuario | None:
         ...
 
     @abstractmethod
-    def buscar_por_username(self, username: str) -> Optional[Usuario]:
+    def buscar_por_username(self, username: str) -> Usuario | None:
         ...
 
     @abstractmethod
-    def buscar_por_email(self, email: str) -> Optional[Usuario]:
+    def buscar_por_email(self, email: str) -> Usuario | None:
         ...
 
     @abstractmethod

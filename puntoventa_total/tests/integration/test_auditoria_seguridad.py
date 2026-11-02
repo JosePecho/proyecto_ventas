@@ -87,5 +87,5 @@ def test_historial_ajeno_no_es_visible_para_cliente(client, cliente_ajeno):
     sesion["rol"] = "CLIENTE"
     sesion.save()
     respuesta = client.get(f"/clientes/historial/{cliente_ajeno.id}/")
-    assert respuesta.status_code == 302
+    assert respuesta.status_code == 403
     assert b"privado@example.test" not in respuesta.content

@@ -1,4 +1,3 @@
-from src.modules.sales.application.dto.venta_output import VentaOutputDTO
 from src.modules.sales.domain.repositories.venta_repository import VentaRepository
 from src.modules.sales.domain.services.calculadora_venta import CalculadoraVenta
 

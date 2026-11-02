@@ -1,15 +1,15 @@
 """Redis efimero real en localhost; sin servicios persistentes ni datos existentes."""
 import argparse
-from contextlib import contextmanager
 import json
 import os
-from pathlib import Path
 import secrets
 import socket
 import subprocess
 import sys
 import tempfile
 import time
+from contextlib import contextmanager
+from pathlib import Path
 from urllib.parse import quote
 
 from redis import Redis

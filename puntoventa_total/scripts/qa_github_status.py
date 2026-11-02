@@ -1,17 +1,18 @@
 """Inspeccion read-only del acceso y workflows del remoto, sin imprimir secretos."""
-import json
 import argparse
 import io
+import json
 import os
-from pathlib import Path
 import re
 import subprocess
 import sys
 import time
 import zipfile
-import requests
+from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
+
+import requests
 
 
 def github_context():
@@ -48,7 +49,7 @@ def collect(branch=None):
             else:
                 evidence["runs"] = [{"name": r["name"], "status": r["status"], "conclusion": r["conclusion"],
                     "url": r["html_url"], "head_sha": r["head_sha"]} for r in data["workflow_runs"]]
-                for run, item in zip(data["workflow_runs"], evidence["runs"]):
+                for run, item in zip(data["workflow_runs"], evidence["runs"], strict=False):
                     with urlopen(Request(run["jobs_url"], headers=headers), timeout=20) as response:
                         jobs = json.load(response)
                     item["jobs"] = [{"name": j["name"], "conclusion": j["conclusion"],
@@ -56,7 +57,7 @@ def collect(branch=None):
                         "failed_steps": [s["name"] for s in j.get("steps", []) if s["conclusion"] == "failure"]}
                         for j in jobs["jobs"]]
                     if "--logs" in sys.argv:
-                        for job, job_item in zip(jobs["jobs"], item["jobs"]):
+                        for job, job_item in zip(jobs["jobs"], item["jobs"], strict=False):
                             if job["conclusion"] == "failure":
                                 response = requests.get(job["url"] + "/logs", headers=headers, timeout=30)
                                 job_item["failure_log_tail"] = [line for line in response.text.splitlines()
@@ -89,7 +90,7 @@ if __name__ == "__main__":
     parser.add_argument("--head")
     parser.add_argument("--artifacts", action="store_true")
     args = parser.parse_args()
-    for attempt in range(40 if args.watch else 1):
+    for _attempt in range(40 if args.watch else 1):
         result = collect(args.branch)
         path = Path(__file__).resolve().parents[1] / "reports/remote-ci.json"
         path.write_text(json.dumps(result, indent=2), encoding="utf-8")

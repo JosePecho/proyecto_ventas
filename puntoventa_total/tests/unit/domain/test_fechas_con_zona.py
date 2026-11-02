@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
 
@@ -22,7 +22,7 @@ def test_apertura_cierre_y_acceso_usan_fechas_aware():
         assert valor.utcoffset() == timedelta(0)
 
 
-@pytest.mark.parametrize("tz", [timezone.utc, timezone(timedelta(hours=-5)), None])
+@pytest.mark.parametrize("tz", [UTC, timezone(timedelta(hours=-5)), None])
 def test_recojo_y_promocion_aceptan_fechas_consistentes(tz):
     inicio = (datetime.now(tz) + timedelta(days=2)).replace(minute=30, second=0, microsecond=0)
     pedido = Pedido(cliente_nombre="Ana")

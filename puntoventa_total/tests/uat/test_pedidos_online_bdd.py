@@ -1,10 +1,10 @@
 import pytest
 from django.core import mail
 from django.urls import reverse
-from pytest_bdd import given, when, then, scenarios
+from pytest_bdd import given, scenarios, then, when
 
-from tests.integration.test_pedidos_online import carrito, confirmar
 from src.modules.inventory.infrastructure.persistence.django_models.existencia_model import ExistenciaModel
+from tests.integration.test_pedidos_online import carrito, confirmar
 
 pytestmark = [pytest.mark.uat, pytest.mark.django_db]
 scenarios("features/pedidos_online.feature")

@@ -1,7 +1,18 @@
 @media (max-width: 768px) {
   #sidebar {
-    display: none;
+    width: 100%;
+    border-right: 0 !important;
+    border-bottom: 1px solid #dce6e9;
+    padding: .65rem 1rem !important;
   }
+
+  #sidebar .sidebar-heading { display: none; }
+  #sidebar .nav { flex-direction: row !important; flex-wrap: nowrap; overflow-x: auto; padding-bottom: .2rem; }
+  #sidebar .nav-link { white-space: nowrap; padding: .6rem .85rem; }
+  .navbar { padding: .65rem .25rem; }
+  .navbar-brand { font-size: 1rem; }
+  .navbar .navbar-nav { align-items: stretch; margin-top: .75rem; }
+  .navbar .nav-item:last-child .nav-link { width: 100%; text-align: left; }
 
   main {
     padding: 1rem !important;

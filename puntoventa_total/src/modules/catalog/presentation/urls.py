@@ -1,6 +1,7 @@
 from django.urls import path
-from src.modules.catalog.presentation.views.categoria_view import categoria_view
+
 from src.modules.catalog.presentation.views.catalogo_view import catalogo_view
+from src.modules.catalog.presentation.views.categoria_view import categoria_view
 from src.modules.catalog.presentation.views.producto_admin_view import (
     producto_descontinuar_view,
     producto_form_view,
@@ -18,4 +19,5 @@ urlpatterns = [
     path("productos/<uuid:producto_id>/descontinuar/", producto_descontinuar_view, name="producto_descontinuar"),
     path("productos/<uuid:producto_id>/", producto_detalle_view, name="producto_detalle"),
     path("categorias/", categoria_view, name="categorias"),
+    path("categorias/<uuid:categoria_id>/editar/", categoria_view, name="categoria_editar"),
 ]

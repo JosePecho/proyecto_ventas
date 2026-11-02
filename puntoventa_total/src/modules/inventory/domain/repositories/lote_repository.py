@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from src.modules.inventory.domain.entities.lote import Lote
 
 
 class LoteRepository(ABC):
     @abstractmethod
-    def buscar_por_id(self, lote_id) -> Optional[Lote]:
+    def buscar_por_id(self, lote_id) -> Lote | None:
         ...
 
     @abstractmethod

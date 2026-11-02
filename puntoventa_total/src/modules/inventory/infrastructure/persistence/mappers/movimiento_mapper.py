@@ -1,4 +1,5 @@
 import uuid
+
 from django.utils import timezone
 
 from src.modules.inventory.domain.entities.movimiento_stock import MovimientoStock

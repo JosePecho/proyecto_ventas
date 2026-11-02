@@ -1,7 +1,9 @@
 from django import forms
 
+from src.shared.infrastructure.form_validation import ValidatedForm
 
-class FiltroReporteForm(forms.Form):
+
+class FiltroReporteForm(ValidatedForm):
     RANGO_CHOICES = [
         ("hoy", "Hoy"),
         ("7", "Ultimos 7 dias"),

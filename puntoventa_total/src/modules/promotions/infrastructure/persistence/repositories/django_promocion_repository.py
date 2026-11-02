@@ -1,4 +1,4 @@
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from src.modules.promotions.domain.entities.promocion import Promocion
 from src.modules.promotions.domain.enums.estado_promocion import EstadoPromocion
@@ -11,7 +11,7 @@ class DjangoPromocionRepository(PromocionRepository):
     def __init__(self):
         self._mapper = PromocionMapper()
 
-    def buscar_por_id(self, promocion_id) -> Optional[Promocion]:
+    def buscar_por_id(self, promocion_id) -> Promocion | None:
         m = PromocionModel.objects.filter(pk=promocion_id).first()
         return self._mapper.a_dominio(m) if m else None
 
@@ -25,7 +25,7 @@ class DjangoPromocionRepository(PromocionRepository):
         qs = PromocionModel.objects.filter(activo=True, estado=EstadoPromocion.ACTIVA.value)
         return [self._mapper.a_dominio(m) for m in qs]
 
-    def activa_para_producto(self, producto_id: str) -> Optional[Promocion]:
+    def activa_para_producto(self, producto_id: str) -> Promocion | None:
         from django.utils import timezone
 
         m = (

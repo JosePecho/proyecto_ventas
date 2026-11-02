@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}Kardex{% endblock %}
 {% block content %}
-<h4 class="mb-3"><i class="bi bi-journal-text"></i> Kardex de movimientos</h4>
+<h4 class="mb-3"><i class="bi bi-journal-text" aria-hidden="true"></i> Kardex de movimientos</h4>
 <form class="row g-2 mb-3" method="get">
   {{ form.non_field_errors }}
   {% for campo in form.visible_fields %}<div class="col-md-3">{{ campo.label_tag }}{{ campo }}{{ campo.errors }}</div>{% endfor %}
@@ -9,7 +9,7 @@
   <div class="col-md-2"><button class="btn btn-primary w-100" type="submit">Consultar</button></div>
 </form>
 {% if pagina_dto %}
-<table class="table table-sm table-striped">
+<div class="table-responsive" role="region" aria-label="Tabla de datos" tabindex="0"><table class="table table-sm table-striped">
   <thead><tr><th>Fecha</th><th>Tipo</th><th>Cantidad</th><th>Resultado</th><th>Referencia</th><th>Observacion</th></tr></thead>
   <tbody>
   {% for m in pagina_dto.items %}
@@ -23,7 +23,7 @@
     </tr>
   {% endfor %}
   </tbody>
-</table>
+</table></div>
 <nav>
   {% if pagina_dto.tiene_anterior %}<a href="?producto_id={{ producto_id|urlencode }}&desde={{ request.GET.desde|urlencode }}&hasta={{ request.GET.hasta|urlencode }}&pagina={{ pagina_dto.pagina|add:'-1' }}">Anterior</a>{% endif %}
   <span>Pagina {{ pagina_dto.pagina }} / {{ pagina_dto.total_paginas }}</span>

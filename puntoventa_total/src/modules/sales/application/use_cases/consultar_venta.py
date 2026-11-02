@@ -17,9 +17,11 @@ class ConsultarVenta:
             raise VentaNoEncontrada(numero_ticket)
         return VentaOutputDTO.desde_agregado(agregado)
 
-    def del_dia(self, dia: date | None = None, pagina: int = 1, por_pagina: int = 25) -> PageDTO:
+    def del_dia(self, dia: date | None = None, pagina: int = 1, por_pagina: int = 25, cajero_id=None) -> PageDTO:
         dia = dia or date.today()
         ventas = self._repo.listar_por_fecha(dia, dia)
+        if cajero_id is not None:
+            ventas = [v for v in ventas if str(v.venta.cajero_id) == str(cajero_id)]
         inicio = (pagina - 1) * por_pagina
         fragmento = list(ventas)[inicio : inicio + por_pagina]
         return PageDTO(

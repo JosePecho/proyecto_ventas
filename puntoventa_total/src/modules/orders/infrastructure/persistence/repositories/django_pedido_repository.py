@@ -1,4 +1,4 @@
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from src.modules.orders.domain.aggregates.pedido_aggregate import PedidoAggregate
 from src.modules.orders.domain.repositories.pedido_repository import PedidoRepository
@@ -7,7 +7,7 @@ from src.modules.orders.infrastructure.persistence.mappers.pedido_mapper import 
 
 
 class DjangoPedidoRepository(PedidoRepository):
-    def buscar_por_id(self, pedido_id) -> Optional[PedidoAggregate]:
+    def buscar_por_id(self, pedido_id) -> PedidoAggregate | None:
         from django.db import connection
         qs = PedidoModel.objects.filter(pk=pedido_id)
         if connection.in_atomic_block:
@@ -15,7 +15,7 @@ class DjangoPedidoRepository(PedidoRepository):
         m = qs.prefetch_related("detalles").first()
         return PedidoMapper.agregado_a_dominio(m) if m else None
 
-    def buscar_por_numero(self, numero: str) -> Optional[PedidoAggregate]:
+    def buscar_por_numero(self, numero: str) -> PedidoAggregate | None:
         m = PedidoModel.objects.filter(numero=numero).prefetch_related("detalles").first()
         return PedidoMapper.agregado_a_dominio(m) if m else None
 

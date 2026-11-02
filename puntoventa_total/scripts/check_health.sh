@@ -18,19 +18,12 @@ verificar() {
 verificar "Web (healthz)" "$URL_BASE/healthz"
 verificar "Catalogo"      "$URL_BASE/catalogo/"
 
-# base de datos
-if python manage.py check --database default > /dev/null 2>&1; then
-  echo "[ok] base de datos accesible"
+# Configuracion, conexion SQL real, migraciones pendientes y cache configurada.
+if python scripts/check_runtime.py > /dev/null 2>&1; then
+  echo "[ok] entorno de la aplicacion operativo"
 else
-  echo "[FALLA] base de datos inaccesible"
+  echo "[FALLA] ejecutar python scripts/check_runtime.py para diagnosticar"
   FALLAS=$((FALLAS + 1))
-fi
-
-# redis / celery
-if python -c "import django,os; os.environ.setdefault('DJANGO_SETTINGS_MODULE','config.settings.development'); django.setup(); from django.core.cache import cache; cache.set('health','1',5); assert cache.get('health')=='1'" > /dev/null 2>&1; then
-  echo "[ok] cache Redis operativa"
-else
-  echo "[ADVERTENCIA] cache no disponible (se usara locmem en desarrollo)"
 fi
 
 exit "$FALLAS"

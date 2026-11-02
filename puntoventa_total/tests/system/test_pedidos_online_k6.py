@@ -1,17 +1,20 @@
 import json
 import os
-from pathlib import Path
 import subprocess
+from pathlib import Path
 
 import pytest
 from django.conf import settings
 from django.test import Client
 from django.urls import reverse
 
-from tests.system.test_k6_pos_real import pos_http_server  # noqa: F401
-from tests.integration.test_pedidos_online import carrito, confirmar, registrar, iniciar
-from src.modules.orders.infrastructure.persistence.django_models.pedido_model import PedidoModel
 from src.modules.inventory.infrastructure.persistence.django_models.existencia_model import ExistenciaModel
+from src.modules.orders.infrastructure.persistence.django_models.pedido_model import PedidoModel
+from tests.integration.test_pedidos_online import carrito as carrito
+from tests.integration.test_pedidos_online import confirmar as confirmar
+from tests.integration.test_pedidos_online import iniciar as iniciar
+from tests.integration.test_pedidos_online import registrar as registrar
+from tests.system.test_k6_pos_real import pos_http_server as pos_http_server  # noqa: F401
 
 pytestmark = [pytest.mark.system, pytest.mark.performance, pytest.mark.django_db(transaction=True),
               pytest.mark.skipif(not os.environ.get("QA_K6_BINARY"), reason="Requiere QA_K6_BINARY")]
