@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 
 from src.modules.orders.domain.enums.estado_pedido import EstadoPedido
 from src.shared.domain.entities.base_entity import BaseEntity
@@ -13,15 +12,15 @@ from src.shared.domain.value_objects.dni import DNI
 @dataclass
 class Pedido(BaseEntity):
     numero: str = ""
-    cliente_id: Optional[str] = None
+    cliente_id: str | None = None
     cliente_nombre: str = ""
-    cliente_dni: Optional[DNI] = None
+    cliente_dni: DNI | None = None
     cliente_telefono: str = ""
     cliente_email: str = ""
     estado: EstadoPedido = EstadoPedido.BORRADOR
     total: float = 0.0
     moneda: str = "PEN"
-    hora_recojo: Optional[datetime] = None
+    hora_recojo: datetime | None = None
     observaciones: str = ""
 
     def __post_init__(self) -> None:

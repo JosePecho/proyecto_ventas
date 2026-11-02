@@ -1,8 +1,7 @@
 from django import forms
 
-from src.shared.infrastructure.form_validation import ValidatedForm
-
 from src.modules.identity.domain.enums.rol_usuario import RolUsuario
+from src.shared.infrastructure.form_validation import ValidatedForm
 
 
 class UsuarioForm(ValidatedForm):

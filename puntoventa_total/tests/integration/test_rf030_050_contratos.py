@@ -1,5 +1,5 @@
 """RF-045/046/048: fronteras del día local, rankings y último administrador."""
-from datetime import datetime, timezone as utc
+from datetime import UTC, datetime
 from decimal import Decimal
 from uuid import uuid4
 
@@ -20,11 +20,11 @@ def test_reporte_incluye_dia_local_completo_y_excluye_dias_adyacentes(client):
     staff(client)
     cliente = ClienteModel.objects.create(id=uuid4(), nombre="Fronteras Lima")
     for instante, total, estado in [
-        (datetime(2026, 10, 17, 4, 59, 59, 999999, tzinfo=utc.utc), 100, "PAGADA"),
-        (datetime(2026, 10, 17, 5, tzinfo=utc.utc), 20, "PAGADA"),
-        (datetime(2026, 10, 18, 4, 59, 59, 999999, tzinfo=utc.utc), 30, "PAGADA"),
-        (datetime(2026, 10, 18, 5, tzinfo=utc.utc), 200, "PAGADA"),
-        (datetime(2026, 10, 17, 12, tzinfo=utc.utc), 999, "ANULADA"),
+        (datetime(2026, 10, 17, 4, 59, 59, 999999, tzinfo=UTC), 100, "PAGADA"),
+        (datetime(2026, 10, 17, 5, tzinfo=UTC), 20, "PAGADA"),
+        (datetime(2026, 10, 18, 4, 59, 59, 999999, tzinfo=UTC), 30, "PAGADA"),
+        (datetime(2026, 10, 18, 5, tzinfo=UTC), 200, "PAGADA"),
+        (datetime(2026, 10, 17, 12, tzinfo=UTC), 999, "ANULADA"),
     ]:
         venta = compra(cliente, total=total, estado=estado)
         VentaModel.objects.filter(pk=venta.id).update(fecha_creacion=instante)

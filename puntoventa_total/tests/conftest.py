@@ -1,8 +1,8 @@
 """Fixtures compartidas: datos de prueba, fakes y utilidades."""
 from __future__ import annotations
 
-import uuid
 import os
+import uuid
 from decimal import Decimal
 
 import pytest

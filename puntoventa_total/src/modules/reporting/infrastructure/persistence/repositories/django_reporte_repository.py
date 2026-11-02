@@ -1,13 +1,13 @@
 """Consultas agregadas con ORM de Django (optimizadas con values/annotate)."""
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import date
-from typing import Sequence
 
 from django.db.models import Count, Sum
-from src.shared.infrastructure.database.date_bounds import date_bound
 
 from src.modules.reporting.domain.repositories.reporte_repository import ReporteRepository
+from src.shared.infrastructure.database.date_bounds import date_bound
 
 
 class DjangoReporteRepository(ReporteRepository):
@@ -43,17 +43,21 @@ class DjangoReporteRepository(ReporteRepository):
         return self._utilidad_historica(desde, hasta)
 
     def _utilidad_historica(self, desde, hasta):
-        from src.modules.sales.infrastructure.persistence.django_models.detalle_venta_model import DetalleVentaModel
         from src.modules.reporting.domain.value_objects.utilidad_historica import agrupar_utilidad
+        from src.modules.sales.infrastructure.persistence.django_models.detalle_venta_model import (
+            DetalleVentaModel,
+        )
         inicio, fin = self._rango(desde, hasta)
         qs = DetalleVentaModel.objects.filter(venta__estado="PAGADA", venta__fecha_creacion__range=(inicio, fin)).select_related("venta").order_by("venta_id", "id")
-        return agrupar_utilidad([{"venta_id": str(l.venta_id), "producto_id": str(l.producto_id),
-            "producto_nombre": l.producto_nombre, "cantidad": l.cantidad, "importe": l.total,
-            "total_venta": l.venta.total, "costo_unitario": l.costo_unitario} for l in qs])
+        return agrupar_utilidad([{"venta_id": str(elemento.venta_id), "producto_id": str(elemento.producto_id),
+            "producto_nombre": elemento.producto_nombre, "cantidad": elemento.cantidad, "importe": elemento.total,
+            "total_venta": elemento.venta.total, "costo_unitario": elemento.costo_unitario} for elemento in qs])
 
 
     def rotacion_inventario(self, desde: date, hasta: date, dias_umbral: int = 60) -> Sequence[dict]:
-        from src.modules.sales.infrastructure.persistence.django_models.detalle_venta_model import DetalleVentaModel
+        from src.modules.sales.infrastructure.persistence.django_models.detalle_venta_model import (
+            DetalleVentaModel,
+        )
 
         inicio, fin = self._rango(desde, hasta)
         vendidos = {
@@ -72,7 +76,9 @@ class DjangoReporteRepository(ReporteRepository):
 
     def resumen_stock(self) -> Sequence[dict]:
         from src.modules.catalog.infrastructure.persistence.django_models.producto_model import ProductoModel
-        from src.modules.inventory.infrastructure.persistence.django_models.existencia_model import ExistenciaModel
+        from src.modules.inventory.infrastructure.persistence.django_models.existencia_model import (
+            ExistenciaModel,
+        )
 
         existencias = {str(e.producto_id): e.cantidad - e.reservada for e in ExistenciaModel.objects.all()}
         return [
@@ -88,6 +94,7 @@ class DjangoReporteRepository(ReporteRepository):
 
     def productos_mayor_ganancia(self) -> Sequence[dict]:
         from decimal import Decimal
+
         from src.modules.catalog.infrastructure.persistence.django_models.producto_model import ProductoModel
         resultado = []
         for p in ProductoModel.objects.filter(activo=True):

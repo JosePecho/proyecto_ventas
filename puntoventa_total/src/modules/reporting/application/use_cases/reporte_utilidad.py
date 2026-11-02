@@ -1,7 +1,8 @@
+from decimal import ROUND_HALF_UP, Decimal
+
 from src.modules.reporting.application.dto.utilidad_reporte_dto import UtilidadReporteDTO
 from src.modules.reporting.domain.repositories.reporte_repository import ReporteRepository
 from src.modules.reporting.domain.value_objects.rango_fechas import RangoFechas
-from decimal import Decimal, ROUND_HALF_UP
 
 
 class ReporteUtilidad:

@@ -5,11 +5,9 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_POST
-from src.shared.domain.exceptions.domain_exception import DomainException
-from src.modules.sales.application.dto.venta_output import VentaOutputDTO
-from src.modules.sales.presentation.permissions.venta_permissions import venta_propia
 
 from src.modules.catalog.infrastructure.factories import construir_producto_repository
+from src.modules.sales.application.dto.venta_output import VentaOutputDTO
 from src.modules.sales.application.use_cases.agregar_producto import AgregarProducto
 from src.modules.sales.application.use_cases.crear_venta import CrearVenta
 from src.modules.sales.application.use_cases.eliminar_producto import EliminarProducto
@@ -20,9 +18,11 @@ from src.modules.sales.infrastructure.factories import (
     construir_venta_repository,
 )
 from src.modules.sales.presentation.permissions.venta_permissions import (
-    requiere_cajero,
     requiere_caja_abierta,
+    requiere_cajero,
+    venta_propia,
 )
+from src.shared.domain.exceptions.domain_exception import DomainException
 
 
 @login_required

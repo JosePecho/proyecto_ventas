@@ -1,6 +1,6 @@
 """Reemplaza una clave Django debil en .env; no revela ni guarda copias de la clave."""
-from pathlib import Path
 import secrets
+from pathlib import Path
 
 
 def main():

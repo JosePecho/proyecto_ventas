@@ -7,7 +7,10 @@ from django.test import Client
 
 from src.modules.sales.infrastructure.persistence.django_models.venta_model import VentaModel
 from src.modules.sales.presentation.forms.pago_form import PagoForm
-from tests.system.test_flujo_pos_sistema import cajero, producto_con_stock, _abrir_caja, _venta_actual
+from tests.system.test_flujo_pos_sistema import _abrir_caja as _abrir_caja
+from tests.system.test_flujo_pos_sistema import _venta_actual as _venta_actual
+from tests.system.test_flujo_pos_sistema import cajero as cajero
+from tests.system.test_flujo_pos_sistema import producto_con_stock as producto_con_stock
 
 pytestmark = [pytest.mark.integration, pytest.mark.django_db]
 
@@ -191,8 +194,8 @@ def test_auditoria_no_oculta_registros_despues_del_numero_cien(client):
     assert respuesta.status_code == 200
     assert respuesta.context["pagina_dto"].total == 120
     assert len(respuesta.context["pagina_dto"].items) == 20
-    from html import unescape
     import re
+    from html import unescape
     from urllib.parse import parse_qs, urlsplit
     enlaces = re.findall(r'<a class="page-link" href="([^"]+)"', respuesta.content.decode())
     assert enlaces
@@ -202,7 +205,9 @@ def test_auditoria_no_oculta_registros_despues_del_numero_cien(client):
 
 def test_auditoria_inmutable_no_sobrescribe_un_registro_existente():
     from dataclasses import replace
+
     from django.db import IntegrityError, transaction
+
     from src.modules.auditing.domain.entities.registro_auditoria import RegistroAuditoria
     from src.modules.auditing.infrastructure.factories import construir_auditoria_repository
     repo = construir_auditoria_repository()
@@ -229,6 +234,7 @@ def test_healthz_comprueba_servicios_reales(client):
 @pytest.mark.parametrize("cantidad,total", [(1, "8.50"), (2, "8.50"), (3, "17.00"), (4, "17.00")])
 def test_cambiar_cantidad_recalcula_promocion_2x1(client, carrito, cantidad, total):
     from decimal import Decimal
+
     from src.modules.promotions.models import PromocionModel
     venta_id, producto_id = carrito
     PromocionModel.objects.create(id=uuid.uuid4(), nombre="Dos por uno", tipo="NX1", estado="ACTIVA",

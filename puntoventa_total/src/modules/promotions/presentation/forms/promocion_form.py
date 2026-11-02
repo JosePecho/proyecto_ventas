@@ -1,8 +1,7 @@
 from django import forms
 
-from src.shared.infrastructure.form_validation import ValidatedForm
-
 from src.modules.promotions.domain.enums.tipo_promocion import TipoPromocion
+from src.shared.infrastructure.form_validation import ValidatedForm
 
 
 class PromocionForm(ValidatedForm):
@@ -29,7 +28,7 @@ class PromocionForm(ValidatedForm):
                 datos["componentes"] = "null"
             else:
                 componentes = []
-                for producto, cantidad in zip(productos, cantidades):
+                for producto, cantidad in zip(productos, cantidades, strict=True):
                     try:
                         numero = int(cantidad)
                     except (ValueError, TypeError):

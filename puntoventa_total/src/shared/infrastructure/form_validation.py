@@ -2,10 +2,9 @@
 from django import forms
 from django.core.validators import RegexValidator
 
-
 FORMATOS = {
     "dni": (r"[0-9]{8}", "Ingresa exactamente 8 dígitos.", 8, "numeric"),
-    "telefono": (r"\+?[0-9]{7,15}", "Ingresa de 7 a 15 dígitos, con + opcional al inicio.", 16, "tel"),
+    "telefono": (r"9[0-9]{8}", "Ingresa un celular peruano de 9 dígitos que comience con 9, sin +51.", 9, "tel"),
     "codigo_barras": (r"(?:[0-9]{8}|[0-9]{12,14})", "Ingresa 8, 12, 13 o 14 dígitos.", 14, "numeric"),
 }
 
@@ -26,6 +25,9 @@ class ValidatedForm(forms.Form):
                 campo.validators.append(RegexValidator(r"\A(?:" + patron + r")\Z", mensaje))
                 campo.max_length = longitud
                 campo.widget.attrs.update(pattern=patron, title=mensaje, maxlength=longitud, inputmode=modo)
+                if clave == "telefono":
+                    campo.widget.attrs["minlength"] = 9
+                    campo.widget.attrs["data-phone-peru"] = ""
             elif isinstance(campo, forms.RegexField):
                 # El usuario admite Unicode en Python; no copiar \w a JavaScript.
                 if nombre == "username":

@@ -1,8 +1,9 @@
-import django
 from importlib.util import find_spec
 
+import django
+
 from .base import *  # noqa: F401,F403
-from .base import DEBUG, INSTALLED_APPS, MIDDLEWARE
+from .base import INSTALLED_APPS, MIDDLEWARE
 
 DEBUG = True
 

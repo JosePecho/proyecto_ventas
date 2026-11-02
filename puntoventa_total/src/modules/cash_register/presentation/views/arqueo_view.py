@@ -1,12 +1,15 @@
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
-from django.shortcuts import get_object_or_404
-from django.http import HttpResponseBadRequest
 from uuid import UUID
-from src.modules.cash_register.infrastructure.persistence.django_models.turno_caja_model import TurnoCajaModel
+
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseBadRequest
+from django.shortcuts import get_object_or_404, render
 
 from src.modules.cash_register.application.use_cases.consultar_arqueo import ConsultarArqueo
-from src.modules.cash_register.infrastructure.factories import construir_turno_repository, construir_ventas_turno_port
+from src.modules.cash_register.infrastructure.factories import (
+    construir_turno_repository,
+    construir_ventas_turno_port,
+)
+from src.modules.cash_register.infrastructure.persistence.django_models.turno_caja_model import TurnoCajaModel
 from src.modules.identity.presentation.permissions.role_required import role_required
 
 

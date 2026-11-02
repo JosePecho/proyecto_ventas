@@ -1,7 +1,6 @@
 """Genera los recursos SVG locales del catalogo, sin servicios externos."""
 from pathlib import Path
 
-
 DESTINO = Path(__file__).resolve().parents[1] / "static" / "images" / "productos"
 
 

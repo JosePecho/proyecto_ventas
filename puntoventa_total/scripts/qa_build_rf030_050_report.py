@@ -1,7 +1,7 @@
 """Genera el plan completo con código real versionado, sin duplicarlo a mano."""
-from pathlib import Path
 import json
-import xml.etree.ElementTree as ET
+from pathlib import Path
+from xml.etree import ElementTree
 
 from qa_rf030_050_evidence import perfil as validar_perfil
 
@@ -447,11 +447,11 @@ resultados = []
 for perfil in ("production", "qa"):
     prefix = f"rf030-050-{perfil}"
     try:
-        suites = list(ET.parse(ROOT / f"reports/{prefix}.xml").getroot().iter("testsuite"))
+        suites = list(ElementTree.parse(ROOT / f"reports/{prefix}.xml").getroot().iter("testsuite"))
         datos = {k: sum(int(s.get(k, 0)) for s in suites) for k in ("tests", "failures", "errors", "skipped")}
         datos["coverage"] = round(json.loads((ROOT / f"reports/{prefix}-coverage.json").read_text())["totals"]["percent_covered"], 2)
         resultados.append((perfil, datos))
-    except (FileNotFoundError, ET.ParseError, KeyError):
+    except (FileNotFoundError, ElementTree.ParseError, KeyError):
         pass
 try:
     validada = {nombre: validar_perfil(nombre) for nombre in ("production", "qa")}

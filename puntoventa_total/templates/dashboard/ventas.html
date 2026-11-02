@@ -5,7 +5,7 @@
 <h5>Métodos de pago</h5>
 {% for metodo, monto in metodos.items %}<p>{{ metodo }}: S/ {{ monto }}</p>{% endfor %}
 <div class="d-flex justify-content-between mb-3">
-  <h4><i class="bi bi-bar-chart"></i> Ventas {{ desde }} - {{ hasta }}</h4>
+  <h4><i class="bi bi-bar-chart" aria-hidden="true"></i> Ventas {{ desde }} - {{ hasta }}</h4>
   <div class="d-flex gap-2">
     <a class="btn btn-sm btn-outline-success" href="?desde={{ desde }}&hasta={{ hasta }}&formato=csv">CSV</a>
     <a class="btn btn-sm btn-outline-danger" href="?desde={{ desde }}&hasta={{ hasta }}&formato=pdf">PDF</a>

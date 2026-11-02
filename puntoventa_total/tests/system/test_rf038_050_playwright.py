@@ -1,15 +1,17 @@
+from uuid import uuid4
+
 import pytest
 
-from tests.system.test_e2e_pos_playwright import navegador  # noqa: F401
-from tests.integration.test_rf038_050 import PASSWORD, compra
+from src.modules.auditing.infrastructure.persistence.django_models.auditoria_model import AuditoriaModel
+from src.modules.catalog.infrastructure.persistence.django_models.categoria_model import CategoriaModel
+from src.modules.customers.infrastructure.persistence.django_models.cliente_model import ClienteModel
 from src.modules.identity.application.dto.usuario_input import UsuarioInputDTO
 from src.modules.identity.application.use_cases.crear_usuario import CrearUsuario
-from src.modules.identity.infrastructure.factories import construir_repositorio, construir_hasher
-from src.modules.catalog.infrastructure.persistence.django_models.categoria_model import CategoriaModel
+from src.modules.identity.infrastructure.factories import construir_hasher, construir_repositorio
 from src.modules.promotions.infrastructure.persistence.django_models.promocion_model import PromocionModel
-from src.modules.auditing.infrastructure.persistence.django_models.auditoria_model import AuditoriaModel
-from src.modules.customers.infrastructure.persistence.django_models.cliente_model import ClienteModel
-from uuid import uuid4
+from tests.integration.test_rf038_050 import PASSWORD as PASSWORD
+from tests.integration.test_rf038_050 import compra as compra
+from tests.system.test_e2e_pos_playwright import navegador as navegador  # noqa: F401
 
 pytestmark = [pytest.mark.system, pytest.mark.e2e, pytest.mark.django_db(transaction=True)]
 
@@ -67,8 +69,8 @@ def test_cliente_consulta_su_historial_web(navegador, live_server):
 
 
 def test_admin_crea_combo_desde_selectores_de_productos(navegador, live_server):
-    from tests.integration.test_pedidos_online import producto
     from src.modules.catalog.models import ProductoModel
+    from tests.integration.test_pedidos_online import producto as producto
     primero = producto()
     segundo = ProductoModel.objects.create(id=uuid4(), nombre="Jugo combo", codigo_barras="7751234567891",
                                            costo=1, precio_venta=5, estado="ACTIVO")
@@ -112,9 +114,10 @@ def test_admin_cancela_promocion_vencida_desde_navegador(navegador, live_server)
 
 def test_cajero_cobra_con_descuento_automatico_por_frecuencia(navegador, live_server):
     from decimal import Decimal
-    from tests.integration.test_pedidos_online import producto
-    from src.modules.sales.models import VentaModel
+
     from src.modules.inventory.models import ExistenciaModel
+    from src.modules.sales.models import VentaModel
+    from tests.integration.test_pedidos_online import producto as producto
     p = producto()
     cliente = ClienteModel.objects.create(id=uuid4(), nombre="Cliente recurrente", dni="12345678")
     compra(cliente, total=10, dias=2)

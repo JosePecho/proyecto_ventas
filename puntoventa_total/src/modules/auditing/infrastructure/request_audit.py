@@ -1,11 +1,11 @@
 """Auditoría de mutaciones HTTP dentro de la misma transacción de negocio."""
 from contextvars import ContextVar
-from uuid import uuid4
 from functools import wraps
+from uuid import uuid4
 
 from django.contrib.auth import logout
 from django.db import transaction
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_delete, post_save
 from django.shortcuts import redirect
 
 contexto = ContextVar("audit_request", default=None)
@@ -31,7 +31,9 @@ class RequestAuditMiddleware:
     def __call__(self, request):
         usuario_id = request.session.get("usuario_id")
         if request.user.is_authenticated and usuario_id:
-            from src.modules.identity.infrastructure.persistence.django_models.usuario_model import UsuarioModel
+            from src.modules.identity.infrastructure.persistence.django_models.usuario_model import (
+                UsuarioModel,
+            )
             usuario = UsuarioModel.objects.only("activo", "estado", "rol").filter(pk=usuario_id).first()
             if (usuario is None and request.session.get("identity_role")) or (usuario and (not usuario.activo or usuario.estado != "ACTIVO" or (
                 request.session.get("identity_role") and request.session["identity_role"] != usuario.rol

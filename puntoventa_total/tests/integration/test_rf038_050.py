@@ -9,18 +9,18 @@ from django.test import Client
 from django.urls import reverse
 from django.utils import timezone
 
+from src.modules.auditing.infrastructure.persistence.django_models.auditoria_model import AuditoriaModel
+from src.modules.catalog.infrastructure.persistence.django_models.categoria_model import CategoriaModel
+from src.modules.customers.infrastructure.persistence.django_models.cliente_model import ClienteModel
 from src.modules.identity.application.dto.usuario_input import UsuarioInputDTO
 from src.modules.identity.application.use_cases.crear_usuario import CrearUsuario
-from src.modules.identity.infrastructure.factories import construir_repositorio, construir_hasher
-from src.modules.customers.infrastructure.persistence.django_models.cliente_model import ClienteModel
+from src.modules.identity.infrastructure.factories import construir_hasher, construir_repositorio
 from src.modules.promotions.infrastructure.persistence.django_models.promocion_model import PromocionModel
-from src.modules.sales.infrastructure.persistence.django_models.venta_model import VentaModel
+from src.modules.promotions.infrastructure.tasks.actualizar_estado_promociones import run as actualizar_promos
+from src.modules.reporting.infrastructure.factories import construir_reporte_repository
 from src.modules.sales.infrastructure.persistence.django_models.detalle_venta_model import DetalleVentaModel
 from src.modules.sales.infrastructure.persistence.django_models.pago_model import PagoModel
-from src.modules.catalog.infrastructure.persistence.django_models.categoria_model import CategoriaModel
-from src.modules.auditing.infrastructure.persistence.django_models.auditoria_model import AuditoriaModel
-from src.modules.reporting.infrastructure.factories import construir_reporte_repository
-from src.modules.promotions.infrastructure.tasks.actualizar_estado_promociones import run as actualizar_promos
+from src.modules.sales.infrastructure.persistence.django_models.venta_model import VentaModel
 from tests.integration.test_pedidos_online import producto
 
 pytestmark = [pytest.mark.integration, pytest.mark.django_db]
@@ -217,13 +217,19 @@ def test_no_administradores_no_mutan_usuarios_ni_reportes(client, rol):
 
 def test_rf040_descuento_automatico_se_persiste_y_cobra_con_stock_real(client):
     from django.db import transaction
+
+    from src.modules.catalog.infrastructure.factories import construir_producto_repository
     from src.modules.sales.application.dto.venta_input import ProcesarPagoDTO
-    from src.modules.sales.application.use_cases.procesar_pago import ProcesarPago
     from src.modules.sales.application.use_cases.agregar_producto import AgregarProducto
+    from src.modules.sales.application.use_cases.procesar_pago import ProcesarPago
     from src.modules.sales.domain.aggregates.venta_aggregate import VentaAggregate
     from src.modules.sales.domain.entities.venta import Venta
-    from src.modules.sales.infrastructure.factories import construir_venta_repository, construir_inventario_port, construir_auditoria_port, construir_promociones_port
-    from src.modules.catalog.infrastructure.factories import construir_producto_repository
+    from src.modules.sales.infrastructure.factories import (
+        construir_auditoria_port,
+        construir_inventario_port,
+        construir_promociones_port,
+        construir_venta_repository,
+    )
     usuario = staff(client, "CAJERO")
     p = producto()
     cliente = ClienteModel.objects.create(id=uuid4(), nombre="Recurrente", dni="12345678")
@@ -275,7 +281,9 @@ def test_rf038_telefono_invalido_no_produce_500(client, telefono):
 
 def test_migracion_preserva_descuento_global_y_no_inventa_costos():
     from importlib import import_module
+
     from django.apps import apps
+
     from src.modules.sales.infrastructure.factories import construir_venta_repository
     cliente = ClienteModel.objects.create(id=uuid4(), nombre="Venta histórica")
     historica = compra(cliente, total=20, costo=None, estado="BORRADOR")

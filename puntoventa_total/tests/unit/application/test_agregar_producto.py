@@ -8,12 +8,12 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from src.modules.catalog.domain.exceptions.producto_exceptions import ProductoDescontinuado
+from src.modules.inventory.domain.exceptions.stock_exceptions import StockInsuficiente
 from src.modules.sales.application.use_cases.agregar_producto import AgregarProducto
 from src.modules.sales.domain.aggregates.venta_aggregate import VentaAggregate
 from src.modules.sales.domain.entities.venta import Venta
 from src.modules.sales.domain.exceptions.venta_exceptions import VentaNoEncontrada
-from src.modules.inventory.domain.exceptions.stock_exceptions import StockInsuficiente
-from src.modules.catalog.domain.exceptions.producto_exceptions import ProductoDescontinuado
 from src.shared.domain.exceptions.validation_exception import ValidationException
 from src.shared.domain.value_objects.monto import Monto
 

@@ -1,13 +1,13 @@
 """Ejecuta k6 real contra Django HTTP + BD de pruebas aislada."""
-from datetime import date
 import json
 import os
-from pathlib import Path
 import secrets
-import subprocess
 import socket
+import subprocess
 import sys
 import time
+from datetime import date
+from pathlib import Path
 from urllib.request import urlopen
 from uuid import uuid4
 

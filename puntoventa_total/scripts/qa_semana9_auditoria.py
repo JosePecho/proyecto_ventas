@@ -1,10 +1,10 @@
 """Demuestra que el test RN-08 detecta un mutante sin editar produccion."""
 from __future__ import annotations
 
-from pathlib import Path
 import subprocess
 import sys
-import xml.etree.ElementTree as ET
+from pathlib import Path
+from xml.etree import ElementTree
 
 ROOT = Path(__file__).resolve().parents[1]
 CASE = "tests/unit/domain/test_calculadora_venta.py::test_vuelto_negativo_lanza_pago_insuficiente"
@@ -47,7 +47,7 @@ def main() -> int:
     report = reports / "auditoria-mutante.xml"
     if codes != {"original": 0, "mutante": 1} or not report.exists():
         return 1
-    cases = ET.parse(report).findall(".//testcase")
+    cases = ElementTree.parse(report).findall(".//testcase")
     failures = [case.find("failure") for case in cases if case.find("failure") is not None]
     detected = (len(cases) == 1 and len(failures) == 1
                 and "DID NOT RAISE" in failures[0].get("message", ""))

@@ -1,5 +1,5 @@
+from collections.abc import Sequence
 from datetime import date
-from typing import Sequence
 
 from src.modules.inventory.domain.entities.movimiento_stock import MovimientoStock
 from src.modules.inventory.domain.repositories.movimiento_repository import MovimientoRepository

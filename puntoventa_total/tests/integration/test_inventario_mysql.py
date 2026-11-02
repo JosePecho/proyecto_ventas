@@ -9,8 +9,8 @@ import pytest
 from django.db import close_old_connections, connection, connections, transaction
 
 from src.modules.catalog.models import ProductoModel
-from src.modules.inventory.models import ExistenciaModel, LoteModel, MovimientoModel
 from src.modules.inventory.domain.exceptions.stock_exceptions import StockInsuficiente
+from src.modules.inventory.models import ExistenciaModel, LoteModel, MovimientoModel
 from src.modules.sales.infrastructure.adapters.inventario_adapter import InventarioAdapter
 
 pytestmark = [
@@ -58,7 +58,10 @@ def test_dos_escritores_no_pueden_consumir_el_mismo_stock(operacion):
 def test_dos_operaciones_sobre_la_misma_reserva_no_afectan_otro_pedido(operacion):
     from src.modules.inventory.application.use_cases.liberar_reserva import LiberarReserva
     from src.modules.inventory.domain.exceptions.stock_exceptions import ReservaYaConfirmada
-    from src.modules.inventory.infrastructure.factories import construir_reserva_repository, construir_stock_repository
+    from src.modules.inventory.infrastructure.factories import (
+        construir_reserva_repository,
+        construir_stock_repository,
+    )
 
     p = ProductoModel.objects.create(id=uuid4(), nombre="Reserva simultanea", codigo_barras="7751234567810",
                                     costo=5, precio_venta=10, estado="ACTIVO", stock_minimo=0)
@@ -103,7 +106,9 @@ def test_dos_primeras_recepciones_concurrentes_acumulan_stock():
     from src.modules.inventory.application.dto.lote_dto import RecepcionLoteDTO
     from src.modules.inventory.application.use_cases.recibir_mercaderia import RecibirMercaderia
     from src.modules.inventory.infrastructure.factories import (
-        construir_lote_repository, construir_movimiento_repository, construir_stock_repository,
+        construir_lote_repository,
+        construir_movimiento_repository,
+        construir_stock_repository,
     )
 
     p = ProductoModel.objects.create(id=uuid4(), nombre="Primeras recepciones", codigo_barras="7751234567811",

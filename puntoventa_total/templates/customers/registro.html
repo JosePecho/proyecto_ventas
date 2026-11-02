@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}Registro de cliente{% endblock %}
 {% block content %}
-<h4 class="mb-3"><i class="bi bi-person-plus"></i> Registrar cliente</h4>
+<h4 class="mb-3"><i class="bi bi-person-plus" aria-hidden="true"></i> Registrar cliente</h4>
 <form method="post" class="card card-body col-md-6">
   {% csrf_token %}
   {{ form.non_field_errors }}

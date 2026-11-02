@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}Cierre de caja{% endblock %}
 {% block content %}
-<h4 class="mb-3"><i class="bi bi-box-arrow-in-right"></i> Cierre de caja</h4>
+<h4 class="mb-3"><i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> Cierre de caja</h4>
 <div class="row">
   <div class="col-md-6">
     <div class="card mb-3">
@@ -18,7 +18,7 @@
       {% csrf_token %}
       <div class="mb-3"><label class="form-label">Conteo fisico (S/)</label>{{ form.monto_fisico }}</div>
       <div class="mb-3"><label class="form-label">Observaciones</label>{{ form.observaciones }}</div>
-      <button class="btn btn-danger w-100" type="submit"><i class="bi bi-lock"></i> Cerrar turno</button>
+      <button class="btn btn-danger w-100" type="submit"><i class="bi bi-lock" aria-hidden="true"></i> Cerrar turno</button>
     </form>
   </div>
   <div class="col-md-6">

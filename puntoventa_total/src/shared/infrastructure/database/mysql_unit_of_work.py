@@ -1,7 +1,7 @@
 """Unit of Work concreto sobre `transaction.atomic` de Django."""
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 from django.db import transaction
 
@@ -31,7 +31,7 @@ class MySQLUnitOfWork(IUnitOfWork):
             self._cache[tipo] = self._fabricas[tipo]()
         return self._cache[tipo]
 
-    def __enter__(self) -> "MySQLUnitOfWork":
+    def __enter__(self) -> MySQLUnitOfWork:
         self._transaccion = transaction.atomic(using=self._usando)
         self._transaccion.__enter__()
         return self

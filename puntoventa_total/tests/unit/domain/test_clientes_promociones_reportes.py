@@ -1,23 +1,24 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
 from uuid import uuid4
 
 import pytest
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from src.modules.customers.domain.services.frecuencia_compra import FrecuenciaCompra
 from src.modules.promotions.domain.entities.promocion import Promocion
 from src.modules.promotions.domain.value_objects.descuento import Descuento
-from src.modules.sales.domain.entities.detalle_venta import DetalleVenta
 from src.modules.reporting.domain.value_objects.utilidad_historica import agrupar_utilidad
-from src.shared.domain.value_objects.monto import Monto
+from src.modules.sales.domain.entities.detalle_venta import DetalleVenta
 from src.shared.domain.exceptions.domain_exception import DomainException
+from src.shared.domain.value_objects.monto import Monto
 
 pytestmark = pytest.mark.unit
 
 
 def test_compras_del_mismo_dia_son_recurrentes():
-    ahora = datetime.now(timezone.utc)
+    ahora = datetime.now(UTC)
     dias = FrecuenciaCompra.dias_entre_compras([ahora, ahora])
     assert FrecuenciaCompra.clasificar(dias) == "FRECUENTE"
     assert FrecuenciaCompra.clasificar(FrecuenciaCompra.dias_entre_compras([ahora])) == "SIN_DATOS"
@@ -46,7 +47,7 @@ def test_combo_invalido_no_se_construye(componentes):
 
 
 def test_promocion_no_vigente_en_instante_final():
-    fin = datetime.now(timezone.utc)
+    fin = datetime.now(UTC)
     promo = Promocion(nombre="10%", estado="ACTIVA", vigencia_hasta=fin)
     assert not promo.esta_vigente(fin)
 

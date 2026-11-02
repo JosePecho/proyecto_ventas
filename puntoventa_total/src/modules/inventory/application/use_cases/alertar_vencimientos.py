@@ -1,6 +1,6 @@
+from src.modules.inventory.application.ports.notificacion_stock_port import NotificacionStockPort
 from src.modules.inventory.domain.repositories.lote_repository import LoteRepository
 from src.modules.inventory.domain.services.politica_stock import PoliticaStock
-from src.modules.inventory.application.ports.notificacion_stock_port import NotificacionStockPort
 
 
 class AlertarVencimientos:

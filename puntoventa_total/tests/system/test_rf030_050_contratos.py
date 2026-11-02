@@ -6,10 +6,11 @@ from src.modules.identity.application.dto.usuario_input import UsuarioInputDTO
 from src.modules.identity.application.use_cases.crear_usuario import CrearUsuario
 from src.modules.identity.infrastructure.factories import construir_hasher, construir_repositorio
 from src.modules.inventory.models import ExistenciaModel
-from tests.integration.test_pedidos_online import carrito, confirmar
-from tests.integration.test_rf038_050 import PASSWORD
-from tests.system.test_e2e_pos_playwright import navegador  # noqa: F401
-from tests.system.test_rf038_050_playwright import login
+from tests.integration.test_pedidos_online import carrito as carrito
+from tests.integration.test_pedidos_online import confirmar as confirmar
+from tests.integration.test_rf038_050 import PASSWORD as PASSWORD
+from tests.system.test_e2e_pos_playwright import navegador as navegador  # noqa: F401
+from tests.system.test_rf038_050_playwright import login as login
 
 pytestmark = [pytest.mark.system, pytest.mark.e2e, pytest.mark.django_db(transaction=True)]
 

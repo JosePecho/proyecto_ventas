@@ -10,12 +10,12 @@ from django.shortcuts import render
 from django.views.decorators.cache import never_cache
 
 from src.modules.catalog.application.use_cases.listar_productos import ListarProductos
-from src.modules.catalog.presentation.stock_carrito import cantidades_en_carrito
 from src.modules.catalog.infrastructure.factories import (
     construir_categoria_repository,
-    construir_producto_repository,
     construir_disponibilidad_port,
+    construir_producto_repository,
 )
+from src.modules.catalog.presentation.stock_carrito import cantidades_en_carrito
 
 
 @never_cache
@@ -29,8 +29,8 @@ def catalogo_view(request):
     if categoria_id:
         try:
             categoria_id = str(UUID(categoria_id))
-        except ValueError:
-            raise Http404("Categoria no encontrada")
+        except ValueError as exc:
+            raise Http404("Categoria no encontrada") from exc
 
     pagina_dto = ListarProductos(construir_producto_repository()).ejecutar(
         pagina=pagina, termino=termino or None, categoria_id=categoria_id,

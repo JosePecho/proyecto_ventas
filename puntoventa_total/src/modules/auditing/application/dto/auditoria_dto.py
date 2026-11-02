@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass(frozen=True)
@@ -29,11 +28,11 @@ class AuditoriaDTO:
 
 @dataclass(frozen=True)
 class FiltroAuditoriaDTO:
-    accion: Optional[str] = None
-    entidad: Optional[str] = None
-    entidad_id: Optional[str] = None
-    usuario_id: Optional[str] = None
-    desde: Optional[str] = None
-    hasta: Optional[str] = None
-    limite: Optional[int] = None
+    accion: str | None = None
+    entidad: str | None = None
+    entidad_id: str | None = None
+    usuario_id: str | None = None
+    desde: str | None = None
+    hasta: str | None = None
+    limite: int | None = None
 

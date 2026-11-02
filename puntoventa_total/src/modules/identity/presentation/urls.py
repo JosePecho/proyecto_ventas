@@ -1,11 +1,12 @@
 from django.urls import path
+
 from src.modules.identity.presentation.views.login_view import login_view
 from src.modules.identity.presentation.views.logout_view import logout_view
 from src.modules.identity.presentation.views.usuario_view import (
     crear_usuario_view,
     desactivar_usuario_view,
-    lista_usuarios,
     editar_usuario_view,
+    lista_usuarios,
 )
 
 app_name = "identity"

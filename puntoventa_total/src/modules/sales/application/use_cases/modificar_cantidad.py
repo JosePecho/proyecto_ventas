@@ -15,7 +15,7 @@ class ModificarCantidad:
 
             raise VentaNoEncontrada(venta_id)
         agregado.modificar_cantidad(producto_id, cantidad)
-        linea = next(l for l in agregado.lineas if l.producto_id == producto_id)
+        linea = next(elemento for elemento in agregado.lineas if elemento.producto_id == producto_id)
         if self._inventario is not None and linea.requiere_stock:
             disponible = self._inventario.stock_disponible(producto_id)
             if cantidad > disponible:

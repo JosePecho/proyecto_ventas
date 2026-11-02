@@ -1,8 +1,8 @@
 """Reglas de calculo de totales, descuentos y cambio."""
 from __future__ import annotations
 
+from collections.abc import Sequence
 from decimal import Decimal
-from typing import Sequence
 
 from src.modules.sales.domain.entities.detalle_venta import DetalleVenta
 from src.modules.sales.domain.exceptions.venta_exceptions import PagoInsuficiente
@@ -17,7 +17,7 @@ class CalculadoraVenta:
         if not lineas:
             return Monto(0)
         moneda = lineas[0].precio_unitario.moneda
-        total = sum((l.subtotal.valor for l in lineas), Decimal("0"))
+        total = sum((elemento.subtotal.valor for elemento in lineas), Decimal("0"))
         return Monto(total, moneda)
 
     @classmethod
@@ -25,7 +25,7 @@ class CalculadoraVenta:
         if not lineas:
             return Monto(0)
         moneda = lineas[0].precio_unitario.moneda
-        total = sum((l.descuento.valor for l in lineas), Decimal("0"))
+        total = sum((elemento.descuento.valor for elemento in lineas), Decimal("0"))
         return Monto(total, moneda)
 
     @classmethod

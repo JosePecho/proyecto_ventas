@@ -1,4 +1,3 @@
-from typing import Optional
 from uuid import UUID
 
 from django.db import connection, transaction
@@ -18,11 +17,13 @@ class DjangoStockRepository(StockRepository):
             resultado[str(pid)] = cantidad - reservada
         return resultado
 
-    def obtener(self, producto_id: str) -> Optional[Existencia]:
+    def obtener(self, producto_id: str) -> Existencia | None:
         qs = ExistenciaModel.objects.filter(producto_id=producto_id)
         if connection.in_atomic_block:
             # Serializa tambien la primera recepcion, antes de crear la existencia.
-            from src.modules.catalog.infrastructure.persistence.django_models.producto_model import ProductoModel
+            from src.modules.catalog.infrastructure.persistence.django_models.producto_model import (
+                ProductoModel,
+            )
 
             list(ProductoModel.objects.select_for_update().filter(pk=producto_id).values_list("pk", flat=True))
             qs = qs.select_for_update()

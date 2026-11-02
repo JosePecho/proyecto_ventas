@@ -1,13 +1,13 @@
 """Conserva métricas por perfil y verifica evidencias reales de los cuatro niveles."""
 import argparse
-from datetime import datetime, timezone
 import hashlib
-from importlib.metadata import version
 import json
-from pathlib import Path
 import shutil
 import sys
-import xml.etree.ElementTree as ET
+from datetime import UTC, datetime
+from importlib.metadata import version
+from pathlib import Path
+from xml.etree import ElementTree
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORTS = ROOT / "reports"
@@ -42,7 +42,7 @@ def perfil(nombre):
     for path in artefactos(prefix):
         if huella_archivo(path) != procedencia["artifacts_sha256"][path.name]:
             raise ValueError(f"{nombre}: artefacto modificado desde la captura: {path.name}")
-    root = ET.parse(REPORTS / f"{prefix}.xml").getroot()
+    root = ElementTree.parse(REPORTS / f"{prefix}.xml").getroot()
     suites = list(root.iter("testsuite"))
     conteos = {k: sum(int(s.get(k, 0)) for s in suites) for k in ("tests", "failures", "errors", "skipped")}
     problemas = []
@@ -51,7 +51,7 @@ def perfil(nombre):
     cobertura = json.loads((REPORTS / f"{prefix}-coverage.json").read_text())["totals"]["percent_covered"]
     if cobertura < 80:
         problemas.append(f"Cobertura {cobertura} inferior a 80")
-    niveles = dict(unit=0, integration=0, system=0, uat=0)
+    niveles = {"unit": 0, "integration": 0, "system": 0, "uat": 0}
     for caso in root.iter("testcase"):
         classname = caso.get("classname", "")
         for nivel, carpetas in {"unit": ("tests.unit",), "integration": ("tests.integration",),
@@ -61,7 +61,7 @@ def perfil(nombre):
                 niveles[nivel] += 1
     if not all(niveles.values()) or sum(niveles.values()) != conteos["tests"]:
         raise ValueError(f"{nombre}: faltan niveles o casos sin clasificar: {niveles}")
-    unit_cases = list(ET.parse(REPORTS / f"{prefix}-unit.xml").getroot().iter("testcase"))
+    unit_cases = list(ElementTree.parse(REPORTS / f"{prefix}-unit.xml").getroot().iter("testcase"))
     if len(unit_cases) != niveles["unit"] or any(
         not c.get("classname", "").startswith("tests.unit.") or
         any(c.find(tag) is not None for tag in ("failure", "error", "skipped")) for c in unit_cases
@@ -111,7 +111,7 @@ def main():
         if not ejecucion["full"]:
             raise ValueError("La captura requiere una ejecución completa")
         fin = datetime.fromisoformat(ejecucion["executed_at"]).timestamp()
-        suites = list(ET.parse(REPORTS / f"{prefix}.xml").getroot().iter("testsuite"))
+        suites = list(ElementTree.parse(REPORTS / f"{prefix}.xml").getroot().iter("testsuite"))
         inicio = min(datetime.fromisoformat(s.get("timestamp")).timestamp()
                      for s in suites)
         misma_ejecucion = {}
@@ -124,7 +124,7 @@ def main():
             misma_ejecucion[tipo] = inicio <= fuente.stat().st_mtime <= fin
             shutil.copyfile(fuente, REPORTS / f"{prefix}-k6-{tipo}.json")
         procedencia = {
-            "captured_at": datetime.now(timezone.utc).isoformat(),
+            "captured_at": datetime.now(UTC).isoformat(),
             "executed_at": ejecucion["executed_at"],
             "database": {key: ejecucion[key] for key in ("engine", "version", "ephemeral", "container")},
             "python": sys.version.split()[0],

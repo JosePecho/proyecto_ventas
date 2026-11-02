@@ -1,7 +1,7 @@
 """Puerto de consultas agregadas (la capa de dominio no ve SQL)."""
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from datetime import date
-from typing import Sequence
 
 
 class ReporteRepository(ABC):

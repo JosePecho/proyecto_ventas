@@ -2,12 +2,12 @@ from unittest.mock import Mock
 
 import pytest
 
-from src.modules.catalog.application.use_cases.listar_productos import ListarProductos
-from src.modules.catalog.application.use_cases.filtrar_por_categoria import FiltrarPorCategoria
-from src.modules.catalog.application.use_cases.consultar_disponibilidad import ConsultarDisponibilidad
 from src.modules.catalog.application.ports.disponibilidad_port import DisponibilidadPort
-from src.modules.catalog.domain.repositories.producto_repository import ProductoRepository
+from src.modules.catalog.application.use_cases.consultar_disponibilidad import ConsultarDisponibilidad
+from src.modules.catalog.application.use_cases.filtrar_por_categoria import FiltrarPorCategoria
+from src.modules.catalog.application.use_cases.listar_productos import ListarProductos
 from src.modules.catalog.domain.exceptions.producto_exceptions import ProductoNoEncontrado
+from src.modules.catalog.domain.repositories.producto_repository import ProductoRepository
 
 pytestmark = pytest.mark.unit
 

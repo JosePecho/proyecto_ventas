@@ -1,8 +1,8 @@
 """Comprueba el entorno configurado sin cambiar datos ni mostrar credenciales."""
 import json
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 from uuid import uuid4
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -13,9 +13,9 @@ def main():
     import django
     django.setup()
     from django.conf import settings
-    from django.core.cache import cache
-    from django.core.checks import run_checks, ERROR
     from django.contrib.staticfiles import finders
+    from django.core.cache import cache
+    from django.core.checks import ERROR, run_checks
     from django.db import connection
     from django.db.migrations.executor import MigrationExecutor
 

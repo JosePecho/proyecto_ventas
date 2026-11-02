@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Optional
 
 from src.shared.domain.entities.base_entity import BaseEntity
 from src.shared.domain.exceptions.validation_exception import ValidationException
@@ -16,11 +15,11 @@ PATRON_EMAIL = re.compile(r"^[\w.+-]+@[\w-]+\.[\w.]+$")
 @dataclass
 class Cliente(BaseEntity):
     nombre: str = ""
-    dni: Optional[DNI] = None
+    dni: DNI | None = None
     email: str = ""
     telefono: str = ""
     direccion: str = ""
-    usuario_id: Optional[str] = None
+    usuario_id: str | None = None
     puntos_fidelidad: int = 0
 
     def __post_init__(self) -> None:

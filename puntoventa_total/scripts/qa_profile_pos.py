@@ -4,11 +4,11 @@ Genera el perfil de un POST de cobro sin modificar su logica ni sus assertions.
 No usar estas mediciones instrumentadas como evidencia del presupuesto HTTP.
 """
 import cProfile
-from functools import wraps
 import json
 import os
-from pathlib import Path
 import time
+from functools import wraps
+from pathlib import Path
 
 import pytest
 
@@ -19,6 +19,7 @@ def pytest_configure(config):
         raise RuntimeError("El perfil requiere el wrapper de MySQL efimero")
     from django.db import connection
     from django.test.utils import CaptureQueriesContext
+
     from src.modules.sales.application.use_cases.procesar_pago import ProcesarPago
 
     original = ProcesarPago.ejecutar

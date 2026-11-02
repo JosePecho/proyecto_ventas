@@ -3,16 +3,16 @@
 Uso: python scripts/qa_inventory_mysql_native.py --basedir RUTA_MYSQL [--full]
 """
 import argparse
-from datetime import datetime, timezone
 import json
 import os
-from pathlib import Path
 import secrets
 import socket
 import subprocess
 import sys
 import tempfile
 import time
+from datetime import UTC, datetime
+from pathlib import Path
 
 import pymysql
 
@@ -74,9 +74,9 @@ def main():
                         db = pymysql.connect(host="127.0.0.1", port=port, user="root", password="",
                                              connect_timeout=2, autocommit=True)
                         break
-                    except pymysql.OperationalError:
+                    except pymysql.OperationalError as exc:
                         if time.monotonic() >= deadline:
-                            raise TimeoutError("MySQL no estuvo disponible en 90 segundos")
+                            raise TimeoutError("MySQL no estuvo disponible en 90 segundos") from exc
                         time.sleep(0.25)
                 with db:
                     with db.cursor() as cursor:
@@ -100,10 +100,10 @@ def main():
                 result = subprocess.run([sys.executable, "-m", "pytest", *targets, "--reuse-db",
                     "-q", "-p", "no:cacheprovider", f"--junitxml=reports/{args.report_prefix}.xml", *coverage_args],
                     cwd=root, env=env)
-                evidence = dict(engine=engine, version=version, ephemeral=True, container=False,
-                                full=bool(args.full and not args.target), exit_code=result.returncode,
-                                executed_at=datetime.now(timezone.utc).isoformat(),
-                                timezone_fixture="UTC y America/Lima, fechas actuales")
+                evidence = {"engine": engine, "version": version, "ephemeral": True, "container": False,
+                                "full": bool(args.full and not args.target), "exit_code": result.returncode,
+                                "executed_at": datetime.now(UTC).isoformat(),
+                                "timezone_fixture": "UTC y America/Lima, fechas actuales"}
                 (reports / f"{args.report_prefix}.json").write_text(json.dumps(evidence, indent=2), encoding="utf-8")
                 print(json.dumps(evidence))
                 return result.returncode

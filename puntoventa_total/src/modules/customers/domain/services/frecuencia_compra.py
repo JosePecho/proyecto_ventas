@@ -1,8 +1,8 @@
 """Analitica simple de frecuencia de compra del cliente."""
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import datetime
-from typing import Sequence
 
 
 class FrecuenciaCompra:
@@ -11,7 +11,7 @@ class FrecuenciaCompra:
         ordenadas = sorted(f for f in fechas if f)
         if len(ordenadas) < 2:
             return 0.0
-        diferencias = [(b - a).total_seconds() / 86400 for a, b in zip(ordenadas, ordenadas[1:])]
+        diferencias = [(b - a).total_seconds() / 86400 for a, b in zip(ordenadas, ordenadas[1:], strict=False)]
         return max(0.01, round(sum(diferencias) / len(diferencias), 2))
 
     @classmethod

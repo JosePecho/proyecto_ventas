@@ -3,19 +3,18 @@ from __future__ import annotations
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect, render
+from django.db import transaction
+from django.shortcuts import get_object_or_404, redirect, render
 
 from src.modules.identity.application.dto.usuario_input import ActualizarUsuarioDTO, UsuarioInputDTO
 from src.modules.identity.application.use_cases.actualizar_usuario import ActualizarUsuario
 from src.modules.identity.application.use_cases.crear_usuario import CrearUsuario
 from src.modules.identity.application.use_cases.desactivar_usuario import DesactivarUsuario
 from src.modules.identity.infrastructure.factories import construir_hasher, construir_repositorio
+from src.modules.identity.infrastructure.persistence.django_models.usuario_model import UsuarioModel
 from src.modules.identity.presentation.forms.usuario_form import UsuarioForm
 from src.modules.identity.presentation.permissions.role_required import role_required
-from django.shortcuts import get_object_or_404
-from src.modules.identity.infrastructure.persistence.django_models.usuario_model import UsuarioModel
 from src.shared.domain.exceptions.domain_exception import DomainException
-from django.db import transaction
 
 
 @login_required

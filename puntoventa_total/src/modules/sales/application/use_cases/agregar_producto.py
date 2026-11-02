@@ -8,7 +8,6 @@ from src.modules.sales.application.ports.inventario_port import InventarioPort
 from src.modules.sales.application.ports.promociones_port import PromocionesPort
 from src.modules.sales.domain.repositories.venta_repository import VentaRepository
 from src.shared.domain.exceptions.validation_exception import ValidationException
-from src.shared.domain.value_objects.monto import Monto
 
 
 class AgregarProducto:

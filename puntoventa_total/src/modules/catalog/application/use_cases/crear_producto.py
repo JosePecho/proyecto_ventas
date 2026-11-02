@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from decimal import Decimal
-
 from src.modules.catalog.application.dto.producto_input import ProductoInputDTO
 from src.modules.catalog.application.dto.producto_output import ProductoOutputDTO
 from src.modules.catalog.domain.entities.producto import Producto

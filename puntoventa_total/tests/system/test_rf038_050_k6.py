@@ -1,17 +1,18 @@
 import json
 import os
-from pathlib import Path
 import subprocess
+from pathlib import Path
 from uuid import uuid4
 
 import pytest
 from django.conf import settings
 from django.test import Client
 
-from tests.system.test_k6_pos_real import pos_http_server  # noqa: F401
-from tests.integration.test_rf038_050 import staff, compra
 from src.modules.customers.infrastructure.persistence.django_models.cliente_model import ClienteModel
 from src.modules.sales.infrastructure.persistence.django_models.venta_model import VentaModel
+from tests.integration.test_rf038_050 import compra as compra
+from tests.integration.test_rf038_050 import staff as staff
+from tests.system.test_k6_pos_real import pos_http_server as pos_http_server  # noqa: F401
 
 pytestmark = [pytest.mark.system, pytest.mark.performance, pytest.mark.django_db(transaction=True),
               pytest.mark.skipif(not os.environ.get("QA_K6_BINARY"), reason="Requiere QA_K6_BINARY")]

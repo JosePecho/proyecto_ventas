@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect, render, get_object_or_404
 from django.db import IntegrityError
+from django.shortcuts import get_object_or_404, redirect, render
 
 from src.modules.catalog.application.use_cases.crear_categoria import CrearCategoria
-from src.modules.catalog.domain.exceptions.producto_exceptions import CategoriaNoEncontrada, DomainException
+from src.modules.catalog.domain.exceptions.producto_exceptions import DomainException
 from src.modules.catalog.infrastructure.factories import construir_categoria_repository
 from src.modules.catalog.presentation.forms.categoria_form import CategoriaForm
 from src.modules.identity.presentation.permissions.role_required import role_required

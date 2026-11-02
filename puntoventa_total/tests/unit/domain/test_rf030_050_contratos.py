@@ -1,5 +1,5 @@
 """Oráculos explícitos de estados y fronteras temporales RF-035/036/042."""
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from itertools import product
 
 import pytest
@@ -36,7 +36,7 @@ def test_matriz_completa_de_transiciones_del_pedido(origen, destino):
 @pytest.mark.parametrize("estado", list(EstadoPromocion))
 @pytest.mark.parametrize("offset,vigente", [(-1, False), (0, True), (59, True), (60, False)])
 def test_vigencia_inicio_inclusivo_fin_exclusivo(estado, offset, vigente):
-    inicio = datetime(2026, 10, 20, 12, tzinfo=timezone.utc)
+    inicio = datetime(2026, 10, 20, 12, tzinfo=UTC)
     promocion = Promocion(nombre="Frontera contractual", estado=estado,
                          vigencia_desde=inicio, vigencia_hasta=inicio + timedelta(seconds=60))
     assert promocion.esta_vigente(inicio + timedelta(seconds=offset)) is (

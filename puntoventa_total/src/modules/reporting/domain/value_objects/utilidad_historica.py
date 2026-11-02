@@ -1,5 +1,5 @@
 from collections import defaultdict
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import ROUND_HALF_UP, Decimal
 
 
 def agrupar_utilidad(detalles):
@@ -9,7 +9,7 @@ def agrupar_utilidad(detalles):
         por_venta[detalle["venta_id"]].append(detalle)
     productos = {}
     for lineas in por_venta.values():
-        base = sum((Decimal(str(l["importe"])) for l in lineas), Decimal(0))
+        base = sum((Decimal(str(elemento["importe"])) for elemento in lineas), Decimal(0))
         total = Decimal(str(lineas[0]["total_venta"]))
         restante = total
         for indice, linea in enumerate(lineas):

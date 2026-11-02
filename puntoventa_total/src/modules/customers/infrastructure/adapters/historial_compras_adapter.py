@@ -1,4 +1,4 @@
-from typing import Sequence
+from collections.abc import Sequence
 
 from src.modules.customers.application.ports.historial_compras_port import HistorialComprasPort
 

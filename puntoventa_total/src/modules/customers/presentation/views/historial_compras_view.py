@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseForbidden
-from src.modules.customers.infrastructure.persistence.django_models.cliente_model import ClienteModel
+from django.shortcuts import get_object_or_404, render
 
 from src.modules.customers.application.use_cases.calcular_frecuencia_compras import CalcularFrecuenciaCompras
 from src.modules.customers.application.use_cases.consultar_historial_compras import ConsultarHistorialCompras
-from src.modules.customers.infrastructure.factories import construir_cliente_repository, construir_historial_port
+from src.modules.customers.infrastructure.factories import (
+    construir_cliente_repository,
+    construir_historial_port,
+)
+from src.modules.customers.infrastructure.persistence.django_models.cliente_model import ClienteModel
 
 
 @login_required

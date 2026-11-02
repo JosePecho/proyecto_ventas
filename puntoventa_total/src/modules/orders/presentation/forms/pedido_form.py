@@ -1,8 +1,9 @@
+from datetime import timedelta
+
 from django import forms
+from django.utils import timezone
 
 from src.shared.infrastructure.form_validation import ValidatedForm
-from datetime import timedelta
-from django.utils import timezone
 
 
 def proximo_horario_recojo():
@@ -26,7 +27,7 @@ class PedidoForm(ValidatedForm):
     )
     cliente_nombre = forms.CharField(max_length=120, widget=forms.TextInput(attrs={"class": "form-control"}))
     cliente_telefono = forms.CharField(
-        max_length=20, required=False, widget=forms.TextInput(attrs={"class": "form-control"})
+        max_length=9, required=False, widget=forms.TextInput(attrs={"class": "form-control"})
     )
     cliente_dni = forms.CharField(
         max_length=8, required=False, widget=forms.TextInput(attrs={"class": "form-control"})
@@ -38,9 +39,8 @@ class PedidoForm(ValidatedForm):
     def clean_cliente_dni(self):
         dni = self.cleaned_data.get("cliente_dni", "")
         if dni:
-            from src.shared.domain.value_objects.dni import DNI
-
             from src.shared.domain.exceptions.validation_exception import ValidationException
+            from src.shared.domain.value_objects.dni import DNI
             try:
                 return str(DNI(dni))
             except ValidationException as exc:

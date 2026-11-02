@@ -20,10 +20,10 @@
     <a class="btn btn-outline-primary mb-3" href="{% url 'catalog:producto_editar' producto.id %}"><i class="bi bi-pencil-square" aria-hidden="true"></i> Actualizar precio / producto</a>
     {% endif %}
     <p class="{% if not disponibilidad.vendible or producto.requiere_stock and disponibilidad.stock_minimo %}text-danger{% else %}text-success{% endif %}">
-      {% if not producto.requiere_stock %}<i class="bi bi-check-circle"></i> Disponible
-      {% elif disponibilidad.vendible %}<i class="bi bi-check-circle"></i> {% if disponibilidad.stock_minimo %}Stock bajo{% else %}Disponible{% endif %}
+      {% if not producto.requiere_stock %}<i class="bi bi-check-circle" aria-hidden="true"></i> Disponible
+      {% elif disponibilidad.vendible %}<i class="bi bi-check-circle" aria-hidden="true"></i> {% if disponibilidad.stock_minimo %}Stock bajo{% else %}Disponible{% endif %}
         ({{ disponibilidad.stock_disponible }} u.)
-      {% else %}<i class="bi bi-x-circle"></i> Agotado (0 u.){% endif %}
+      {% else %}<i class="bi bi-x-circle" aria-hidden="true"></i> Agotado (0 u.){% endif %}
     </p>
     {% if user.is_authenticated and disponibilidad.vendible %}
       <form method="post" action="{% url 'orders:agregar' producto.id %}">
@@ -31,7 +31,7 @@
         <div class="product-purchase-controls">
           <label for="detalle-cantidad" class="form-label mb-0">Cantidad</label>
           <input id="detalle-cantidad" type="number" name="cantidad" value="1" min="1" {% if producto.requiere_stock %}max="{{ disponibilidad.stock_disponible }}"{% endif %} class="form-control" aria-label="Cantidad de {{ producto.nombre }}">
-          <button class="btn btn-primary" type="submit"><i class="bi bi-bag-plus"></i> Agregar al carrito</button>
+          <button class="btn btn-primary" type="submit"><i class="bi bi-bag-plus" aria-hidden="true"></i> Agregar al carrito</button>
         </div>
       </form>
     {% endif %}

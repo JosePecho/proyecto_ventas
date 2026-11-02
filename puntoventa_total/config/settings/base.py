@@ -1,8 +1,8 @@
 """Configuracion base compartida por todos los entornos."""
 from pathlib import Path
 
-import environ
 import django
+import environ
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 

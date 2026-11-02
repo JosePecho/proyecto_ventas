@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}Pedidos{% endblock %}
 {% block content %}
-<h4 class="mb-3">{% if cocina %}<i class="bi bi-journal-check"></i> Pedidos en cocina{% else %}<i class="bi bi-bag-check"></i> Mis pedidos{% endif %}</h4>
+<h4 class="mb-3">{% if cocina %}<i class="bi bi-journal-check" aria-hidden="true"></i> Pedidos en cocina{% else %}<i class="bi bi-bag-check" aria-hidden="true"></i> Mis pedidos{% endif %}</h4>
 <div class="table-responsive" role="region" aria-label="Tabla de datos" tabindex="0"><table class="table table-sm table-hover">
   <thead><tr><th>Numero</th><th>Cliente</th><th>Estado</th><th>Total</th><th>Recojo</th><th></th></tr></thead>
   <tbody>

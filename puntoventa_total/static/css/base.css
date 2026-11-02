@@ -95,6 +95,15 @@ code {
   border-radius: 3px;
 }
 
+.phone-warning {
+  width: min(28rem, calc(100vw - 2rem));
+  color: #0f172a;
+}
+
+.phone-warning::backdrop {
+  background: rgb(15 23 42 / 45%);
+}
+
 @media print {
   .no-print,
   .navbar,

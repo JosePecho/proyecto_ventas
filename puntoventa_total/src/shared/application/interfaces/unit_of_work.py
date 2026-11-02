@@ -19,7 +19,7 @@ class UnitOfWork(ABC):
         """Deshace los cambios pendientes."""
 
     @abstractmethod
-    def __enter__(self) -> "UnitOfWork":
+    def __enter__(self) -> UnitOfWork:
         ...
 
     @abstractmethod
@@ -52,7 +52,7 @@ class NullUnitOfWork(UnitOfWork):
     def rollback(self) -> None:
         """Sin cambios que deshacer."""
 
-    def __enter__(self) -> "NullUnitOfWork":
+    def __enter__(self) -> NullUnitOfWork:
         return self
 
     def __exit__(self, exc_type, exc, tb) -> None:

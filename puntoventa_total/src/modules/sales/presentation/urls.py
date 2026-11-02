@@ -1,5 +1,7 @@
 from django.urls import path
+
 from src.modules.sales.presentation.views.anulacion_view import anulacion_view
+from src.modules.sales.presentation.views.cliente_venta_view import asignar_cliente_view
 from src.modules.sales.presentation.views.pago_view import pago_view
 from src.modules.sales.presentation.views.pos_view import (
     agregar_producto_pos,
@@ -10,7 +12,6 @@ from src.modules.sales.presentation.views.pos_view import (
 )
 from src.modules.sales.presentation.views.ticket_view import ticket_view
 from src.modules.sales.presentation.views.venta_view import ventas_dia_view
-from src.modules.sales.presentation.views.cliente_venta_view import asignar_cliente_view
 
 app_name = "sales"
 

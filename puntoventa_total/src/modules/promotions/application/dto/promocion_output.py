@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass(frozen=True)
@@ -8,10 +7,10 @@ class PromocionOutputDTO:
     nombre: str
     tipo: str
     estado: str
-    producto_id: Optional[str]
+    producto_id: str | None
     descuento_valor: float
-    vigencia_desde: Optional[str]
-    vigencia_hasta: Optional[str]
+    vigencia_desde: str | None
+    vigencia_hasta: str | None
 
     @classmethod
     def desde_entidad(cls, p) -> "PromocionOutputDTO":

@@ -1,5 +1,7 @@
 """Unidades que el cliente aun puede agregar a su carrito."""
-from src.modules.orders.infrastructure.persistence.django_models.detalle_pedido_model import DetallePedidoModel
+from src.modules.orders.infrastructure.persistence.django_models.detalle_pedido_model import (
+    DetallePedidoModel,
+)
 
 
 def cantidades_en_carrito(request):

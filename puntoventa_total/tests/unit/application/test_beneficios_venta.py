@@ -5,8 +5,8 @@ import pytest
 
 from src.modules.sales.application.use_cases.preparar_beneficios import PrepararBeneficiosVenta
 from src.modules.sales.domain.aggregates.venta_aggregate import VentaAggregate
-from src.modules.sales.domain.entities.venta import Venta
 from src.modules.sales.domain.entities.pago import Pago
+from src.modules.sales.domain.entities.venta import Venta
 from src.shared.domain.exceptions.validation_exception import ValidationException
 from src.shared.domain.value_objects.monto import Monto
 

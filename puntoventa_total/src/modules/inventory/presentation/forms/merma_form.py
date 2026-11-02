@@ -1,8 +1,7 @@
 from django import forms
 
-from src.shared.infrastructure.form_validation import ValidatedForm
-
 from src.modules.inventory.domain.enums.motivo_merma import MotivoMerma
+from src.shared.infrastructure.form_validation import ValidatedForm
 
 
 class MermaForm(ValidatedForm):

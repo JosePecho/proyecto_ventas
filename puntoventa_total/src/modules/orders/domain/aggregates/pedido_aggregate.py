@@ -22,7 +22,7 @@ class PedidoAggregate:
         self._verificar_modificable()
         if isinstance(cantidad, bool) or not isinstance(cantidad, int) or cantidad <= 0:
             raise PedidoException("La cantidad debe ser un entero mayor a cero")
-        existente = next((l for l in self.lineas if l.producto_id == producto_id), None)
+        existente = next((elemento for elemento in self.lineas if elemento.producto_id == producto_id), None)
         if existente:
             existente.cambiar_cantidad(existente.cantidad + cantidad)
             self.recalcular_total()
@@ -49,7 +49,7 @@ class PedidoAggregate:
             raise PedidoException(f"El pedido en estado {self.pedido.estado.value} no admite cambios")
 
     def recalcular_total(self) -> float:
-        self.pedido.total = float(sum((l.subtotal.valor for l in self.lineas), 0))
+        self.pedido.total = float(sum((elemento.subtotal.valor for elemento in self.lineas), 0))
         return self.pedido.total
 
     def confirmar(self) -> None:
@@ -82,12 +82,12 @@ class PedidoAggregate:
     def resumen(self) -> list[dict]:
         return [
             {
-                "producto_id": l.producto_id,
-                "nombre": l.producto_nombre,
-                "cantidad": l.cantidad,
-                "precio": l.precio_unitario.a_float(),
-                "subtotal": l.subtotal.a_float(),
+                "producto_id": elemento.producto_id,
+                "nombre": elemento.producto_nombre,
+                "cantidad": elemento.cantidad,
+                "precio": elemento.precio_unitario.a_float(),
+                "subtotal": elemento.subtotal.a_float(),
             }
-            for l in self.lineas
+            for elemento in self.lineas
         ]
 

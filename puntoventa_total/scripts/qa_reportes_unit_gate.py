@@ -2,7 +2,7 @@
 import argparse
 import json
 from pathlib import Path
-import xml.etree.ElementTree as ET
+from xml.etree import ElementTree
 
 from coverage import Coverage
 
@@ -28,7 +28,7 @@ def main():
     parser.add_argument("--junit", default="reports/rf044-050-unit.xml")
     parser.add_argument("--data-file", default=".coverage")
     args = parser.parse_args()
-    reporte = ET.parse(ROOT / args.junit).getroot()
+    reporte = ElementTree.parse(ROOT / args.junit).getroot()
     casos = list(reporte.iter("testcase"))
     if not casos or any(not c.get("classname", "").startswith("tests.unit.") or
                         any(c.find(tag) is not None for tag in ("failure", "error", "skipped")) for c in casos):

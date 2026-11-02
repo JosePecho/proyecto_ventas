@@ -36,7 +36,9 @@ class ProcesarPago:
 
             agregado.venta.verificar_modificable()
             if self._promociones is not None:
-                from src.modules.sales.application.use_cases.preparar_beneficios import PrepararBeneficiosVenta
+                from src.modules.sales.application.use_cases.preparar_beneficios import (
+                    PrepararBeneficiosVenta,
+                )
                 PrepararBeneficiosVenta(self._repo, self._promociones).aplicar(agregado)
             total_anterior = agregado.venta.total
             pago = Pago(

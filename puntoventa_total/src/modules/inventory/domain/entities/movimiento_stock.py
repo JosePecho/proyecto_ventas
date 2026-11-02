@@ -3,11 +3,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 
 from src.modules.inventory.domain.enums.tipo_movimiento import TipoMovimiento
-from src.shared.domain.entities.base_entity import BaseEntity
 from src.shared.domain.clock import utc_now
+from src.shared.domain.entities.base_entity import BaseEntity
 
 
 @dataclass
@@ -19,7 +18,7 @@ class MovimientoStock(BaseEntity):
     referencia: str = ""
     usuario_id: str = ""
     observacion: str = ""
-    lote_id: Optional[str] = None
+    lote_id: str | None = None
     fecha: datetime = None
 
     def __post_init__(self) -> None:

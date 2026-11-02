@@ -1,12 +1,12 @@
 """Captura la suite completa y k6 por perfil antes de ejecutar el siguiente."""
 import argparse
-from datetime import datetime, timezone
 import hashlib
-from importlib.metadata import version, PackageNotFoundError
 import json
-from pathlib import Path
 import sys
-import xml.etree.ElementTree as ET
+from datetime import UTC, datetime
+from importlib.metadata import PackageNotFoundError, version
+from pathlib import Path
+from xml.etree import ElementTree
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORTS = ROOT / "reports"
@@ -27,7 +27,7 @@ def main():
     parser.add_argument("--capture", required=True, choices=("qa", "production"))
     args = parser.parse_args()
     prefijo = "site-final-" + args.capture
-    suite = ET.parse(REPORTS / f"{prefijo}.xml").getroot()
+    suite = ElementTree.parse(REPORTS / f"{prefijo}.xml").getroot()
     casos = list(suite.iter("testcase"))
     fallidos = sum(c.find("failure") is not None or c.find("error") is not None for c in casos)
     omitidos = sum(c.find("skipped") is not None for c in casos)
@@ -53,7 +53,7 @@ def main():
         except PackageNotFoundError:
             paquetes[paquete] = None
     resultado = {
-        "profile": args.capture, "captured_at": datetime.now(timezone.utc).isoformat(),
+        "profile": args.capture, "captured_at": datetime.now(UTC).isoformat(),
         "python": sys.version.split()[0], "django": version("Django"),
         "packages": paquetes,
         "source_sha256": fingerprint(), "tests": len(casos), "failed": fallidos,

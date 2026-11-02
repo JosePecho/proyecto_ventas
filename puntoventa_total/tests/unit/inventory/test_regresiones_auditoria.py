@@ -1,5 +1,5 @@
 """Regresiones de integridad detectadas por la auditoría de inventario."""
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone
 from decimal import Decimal
 from unittest.mock import Mock
 
@@ -28,7 +28,7 @@ def test_repetir_liberacion_preserva_otras_reservas():
     reservas.guardar.assert_called_once_with(reserva)
 
 
-@pytest.mark.parametrize("tz", [None, timezone.utc, timezone(timedelta(hours=-5))])
+@pytest.mark.parametrize("tz", [None, UTC, timezone(timedelta(hours=-5))])
 def test_expiracion_y_extension_respetan_zona_horaria(tz):
     reserva = ReservaStock(producto_id="p", cantidad=1,
                            expira_en=datetime.now(tz) + timedelta(days=1))

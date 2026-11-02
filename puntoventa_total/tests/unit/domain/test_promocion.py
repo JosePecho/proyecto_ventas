@@ -4,7 +4,6 @@ from decimal import Decimal
 import pytest
 
 from src.modules.promotions.domain.entities.promocion import Promocion
-from src.modules.promotions.domain.enums.estado_promocion import EstadoPromocion
 from src.modules.promotions.domain.enums.tipo_promocion import TipoPromocion
 from src.modules.promotions.domain.value_objects.descuento import Descuento
 from src.shared.domain.value_objects.monto import Monto

@@ -4,10 +4,10 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-from pathlib import Path
 import subprocess
 import time
 import zipfile
+from pathlib import Path
 
 import pymysql
 import requests

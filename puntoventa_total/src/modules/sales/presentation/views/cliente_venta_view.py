@@ -1,13 +1,13 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, redirect
-from django.http import HttpResponseBadRequest, HttpResponseNotAllowed
 from django.db import transaction
+from django.http import HttpResponseBadRequest, HttpResponseNotAllowed
+from django.shortcuts import get_object_or_404, redirect
 
-from src.modules.sales.presentation.permissions.venta_permissions import requiere_cajero
 from src.modules.customers.infrastructure.persistence.django_models.cliente_model import ClienteModel
-from src.modules.sales.infrastructure.persistence.django_models.venta_model import VentaModel
-from src.modules.sales.infrastructure.factories import construir_venta_repository, construir_promociones_port
 from src.modules.sales.application.use_cases.preparar_beneficios import PrepararBeneficiosVenta
+from src.modules.sales.infrastructure.factories import construir_promociones_port, construir_venta_repository
+from src.modules.sales.infrastructure.persistence.django_models.venta_model import VentaModel
+from src.modules.sales.presentation.permissions.venta_permissions import requiere_cajero
 
 
 @login_required

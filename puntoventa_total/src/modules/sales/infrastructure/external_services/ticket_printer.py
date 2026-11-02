@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import io
-from typing import Sequence
+from collections.abc import Sequence
 
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas

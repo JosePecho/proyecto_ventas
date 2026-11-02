@@ -5,7 +5,9 @@ from src.modules.orders.domain.aggregates.pedido_aggregate import PedidoAggregat
 from src.modules.orders.domain.entities.detalle_pedido import DetallePedido
 from src.modules.orders.domain.entities.pedido import Pedido
 from src.modules.orders.domain.enums.estado_pedido import EstadoPedido
-from src.modules.orders.infrastructure.persistence.django_models.detalle_pedido_model import DetallePedidoModel
+from src.modules.orders.infrastructure.persistence.django_models.detalle_pedido_model import (
+    DetallePedidoModel,
+)
 from src.modules.orders.infrastructure.persistence.django_models.pedido_model import PedidoModel
 from src.shared.domain.value_objects.dni import DNI
 from src.shared.domain.value_objects.monto import Monto

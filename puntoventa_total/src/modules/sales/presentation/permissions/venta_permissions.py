@@ -27,7 +27,9 @@ def requiere_caja_abierta(vista):
         from django.contrib import messages
         from django.shortcuts import redirect
 
-        from src.modules.cash_register.infrastructure.persistence.django_models.turno_caja_model import TurnoCajaModel
+        from src.modules.cash_register.infrastructure.persistence.django_models.turno_caja_model import (
+            TurnoCajaModel,
+        )
         turno = TurnoCajaModel.objects.filter(
             cajero_id=request.session.get("usuario_id"), estado="ABIERTO"
         ).first()

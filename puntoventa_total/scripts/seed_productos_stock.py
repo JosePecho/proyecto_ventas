@@ -9,8 +9,8 @@ import argparse
 import csv
 import json
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -26,9 +26,16 @@ from django.db import transaction  # noqa: E402
 from src.modules.catalog.application.dto.producto_input import ProductoInputDTO  # noqa: E402
 from src.modules.catalog.application.use_cases.crear_categoria import CrearCategoria  # noqa: E402
 from src.modules.catalog.application.use_cases.crear_producto import CrearProducto  # noqa: E402
-from src.modules.catalog.infrastructure.factories import construir_categoria_repository, construir_producto_repository  # noqa: E402
-from src.modules.catalog.infrastructure.persistence.django_models.producto_model import ProductoModel  # noqa: E402
-from src.modules.identity.infrastructure.persistence.django_models.usuario_model import UsuarioModel  # noqa: E402
+from src.modules.catalog.infrastructure.factories import (  # noqa: E402
+    construir_categoria_repository,
+    construir_producto_repository,
+)
+from src.modules.catalog.infrastructure.persistence.django_models.producto_model import (  # noqa: E402
+    ProductoModel,
+)
+from src.modules.identity.infrastructure.persistence.django_models.usuario_model import (  # noqa: E402
+    UsuarioModel,
+)
 from src.modules.inventory.application.dto.lote_dto import RecepcionLoteDTO  # noqa: E402
 from src.modules.inventory.application.use_cases.recibir_mercaderia import RecibirMercaderia  # noqa: E402
 from src.modules.inventory.infrastructure.factories import (  # noqa: E402
@@ -37,8 +44,9 @@ from src.modules.inventory.infrastructure.factories import (  # noqa: E402
     construir_stock_repository,
 )
 from src.modules.inventory.infrastructure.persistence.django_models.lote_model import LoteModel  # noqa: E402
-from src.modules.inventory.infrastructure.persistence.django_models.movimiento_model import MovimientoModel  # noqa: E402
-
+from src.modules.inventory.infrastructure.persistence.django_models.movimiento_model import (  # noqa: E402
+    MovimientoModel,
+)
 
 # Nombre, categoria, costo PEN, venta PEN, cantidad inicial.
 PRODUCTOS_NUEVOS = [

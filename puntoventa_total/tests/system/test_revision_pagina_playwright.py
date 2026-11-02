@@ -1,8 +1,11 @@
 """El cajero puede completar el flujo usando los controles visibles del POS."""
-import pytest
 from decimal import Decimal
 
-from tests.system.test_e2e_pos_playwright import navegador, datos_pos, _login
+import pytest
+
+from tests.system.test_e2e_pos_playwright import _login as _login
+from tests.system.test_e2e_pos_playwright import datos_pos as datos_pos
+from tests.system.test_e2e_pos_playwright import navegador as navegador
 
 pytestmark = [pytest.mark.system, pytest.mark.e2e, pytest.mark.django_db]
 

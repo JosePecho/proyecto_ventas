@@ -1,14 +1,13 @@
 """Seguimiento publico por numero de pedido."""
 from __future__ import annotations
 
-from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404
-from src.modules.orders.infrastructure.persistence.django_models.pedido_model import PedidoModel
+from django.shortcuts import get_object_or_404, render
 
 from src.modules.orders.application.use_cases.consultar_estado import ConsultarEstado
 from src.modules.orders.domain.exceptions.pedido_exceptions import PedidoException
 from src.modules.orders.infrastructure.factories import construir_pedido_repository
+from src.modules.orders.infrastructure.persistence.django_models.pedido_model import PedidoModel
 
 ESTADOS_FLUJO = ["BORRADOR", "CONFIRMADO", "EN_PREPARACION", "LISTO", "ENTREGADO"]
 

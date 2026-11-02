@@ -4,18 +4,18 @@ from uuid import uuid4
 import pytest
 from django.urls import reverse
 from django.utils import timezone
-from pytest_bdd import given, when, then, scenarios
+from pytest_bdd import given, scenarios, then, when
 
-from tests.integration.test_rf038_050 import staff, compra, promo_payload
-from tests.integration.test_pedidos_online import producto
-from src.modules.customers.infrastructure.persistence.django_models.cliente_model import ClienteModel
-from src.modules.catalog.infrastructure.persistence.django_models.categoria_model import CategoriaModel
-from src.modules.promotions.infrastructure.persistence.django_models.promocion_model import PromocionModel
-from src.modules.promotions.infrastructure.factories import construir_promocion_repository
-from src.modules.promotions.application.use_cases.calcular_descuento import CalcularDescuento
-from src.modules.promotions.infrastructure.tasks.actualizar_estado_promociones import run
 from src.modules.auditing.infrastructure.persistence.django_models.auditoria_model import AuditoriaModel
+from src.modules.catalog.infrastructure.persistence.django_models.categoria_model import CategoriaModel
+from src.modules.customers.infrastructure.persistence.django_models.cliente_model import ClienteModel
+from src.modules.promotions.application.use_cases.calcular_descuento import CalcularDescuento
+from src.modules.promotions.infrastructure.factories import construir_promocion_repository
+from src.modules.promotions.infrastructure.persistence.django_models.promocion_model import PromocionModel
+from src.modules.promotions.infrastructure.tasks.actualizar_estado_promociones import run
 from src.shared.domain.value_objects.monto import Monto
+from tests.integration.test_pedidos_online import producto
+from tests.integration.test_rf038_050 import compra, promo_payload, staff
 
 pytestmark = [pytest.mark.uat, pytest.mark.django_db]
 scenarios("features/clientes_promociones_admin.feature")
@@ -174,8 +174,8 @@ def deniega(contexto):
 
 @given("un carrito de dos soles para una cliente recurrente con fidelización vigente")
 def carrito_recurrente(client, contexto):
-    from src.modules.sales.domain.entities.venta import Venta
     from src.modules.sales.domain.aggregates.venta_aggregate import VentaAggregate
+    from src.modules.sales.domain.entities.venta import Venta
     from src.modules.sales.infrastructure.factories import construir_venta_repository
     cajero(client, contexto)
     p = producto()

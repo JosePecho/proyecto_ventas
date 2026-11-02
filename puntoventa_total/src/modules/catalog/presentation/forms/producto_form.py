@@ -23,7 +23,9 @@ class ProductoForm(ValidatedForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        from src.modules.catalog.infrastructure.persistence.django_models.categoria_model import CategoriaModel
+        from src.modules.catalog.infrastructure.persistence.django_models.categoria_model import (
+            CategoriaModel,
+        )
         self.fields["categoria_id"].queryset = CategoriaModel.objects.filter(activo=True)
 
     def clean_categoria_id(self):

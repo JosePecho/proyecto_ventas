@@ -2,9 +2,12 @@ from __future__ import annotations
 
 from src.modules.catalog.application.dto.producto_input import ActualizarProductoDTO
 from src.modules.catalog.application.dto.producto_output import ProductoOutputDTO
-from src.modules.catalog.domain.exceptions.producto_exceptions import ProductoNoEncontrado, CodigoBarrasDuplicado
-from src.shared.domain.value_objects.codigo_barras import CodigoBarras
+from src.modules.catalog.domain.exceptions.producto_exceptions import (
+    CodigoBarrasDuplicado,
+    ProductoNoEncontrado,
+)
 from src.modules.catalog.domain.repositories.producto_repository import ProductoRepository
+from src.shared.domain.value_objects.codigo_barras import CodigoBarras
 from src.shared.domain.value_objects.monto import Monto
 
 

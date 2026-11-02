@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional
 
 from src.modules.promotions.domain.enums.estado_promocion import EstadoPromocion
 from src.modules.promotions.domain.enums.tipo_promocion import TipoPromocion
@@ -17,13 +16,13 @@ class Promocion(BaseEntity):
     nombre: str = ""
     tipo: TipoPromocion = TipoPromocion.PORCENTAJE
     estado: EstadoPromocion = EstadoPromocion.BORRADOR
-    producto_id: Optional[str] = None
-    categoria_id: Optional[str] = None
-    descuento: Optional[Descuento] = None
+    producto_id: str | None = None
+    categoria_id: str | None = None
+    descuento: Descuento | None = None
     cantidad_requerida: int = 0
     cantidad_gratuita: int = 0
-    vigencia_desde: Optional[datetime] = None
-    vigencia_hasta: Optional[datetime] = None
+    vigencia_desde: datetime | None = None
+    vigencia_hasta: datetime | None = None
     aplica_clientes_frecuentes: bool = False
     componentes: list[dict] = field(default_factory=list)
 
@@ -107,7 +106,7 @@ class Promocion(BaseEntity):
         cero = Monto(0, moneda)
         if self.tipo != TipoPromocion.COMBO or not self.esta_vigente() or not self.descuento:
             return cero
-        por_producto = {l.producto_id: l for l in lineas}
+        por_producto = {elemento.producto_id: elemento for elemento in lineas}
         if any(c["producto_id"] not in por_producto for c in self.componentes):
             return cero
         paquetes = min(por_producto[c["producto_id"]].cantidad // c["cantidad"] for c in self.componentes)

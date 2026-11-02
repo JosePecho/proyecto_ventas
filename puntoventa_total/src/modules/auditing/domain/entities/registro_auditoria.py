@@ -5,6 +5,7 @@ import json
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
+
 from src.shared.domain.clock import utc_now
 
 ACCIONES_VALIDAS = {
@@ -37,7 +38,7 @@ class RegistroAuditoria:
         return json.dumps(self.detalle, ensure_ascii=False, default=str)
 
     @classmethod
-    def crear(cls, accion: str, entidad: str, entidad_id: str, usuario_id: str = "", detalle: dict | None = None, ip: str = "") -> "RegistroAuditoria":
+    def crear(cls, accion: str, entidad: str, entidad_id: str, usuario_id: str = "", detalle: dict | None = None, ip: str = "") -> RegistroAuditoria:
         return cls(
             accion=accion,
             entidad=entidad,

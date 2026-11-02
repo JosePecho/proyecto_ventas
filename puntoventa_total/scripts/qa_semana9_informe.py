@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 import re
-import xml.etree.ElementTree as ET
+from pathlib import Path
+from xml.etree import ElementTree
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -24,7 +24,7 @@ def main() -> None:
     measurements = {}
     for name in ("completa", "core", "ventas", "inventario", "catalogo", "fast", "slow", "core-fast", "minor"):
         summary = json.loads((ROOT / f"reports/semana9/{name}.json").read_text(encoding="utf-8"))
-        xml = ET.parse(ROOT / f"reports/semana9/{name}.xml").getroot()
+        xml = ElementTree.parse(ROOT / f"reports/semana9/{name}.xml").getroot()
         suite = xml if xml.tag == "testsuite" else xml.find("testsuite")
         elapsed = float(suite.attrib["time"])
         measurements[name] = summary["wall_seconds"]

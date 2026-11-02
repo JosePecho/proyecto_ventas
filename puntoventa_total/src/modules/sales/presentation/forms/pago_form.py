@@ -1,8 +1,7 @@
 from django import forms
 
-from src.shared.infrastructure.form_validation import ValidatedForm
-
 from src.modules.sales.domain.value_objects.metodo_pago import MetodoPago
+from src.shared.infrastructure.form_validation import ValidatedForm
 
 
 class PagoForm(ValidatedForm):

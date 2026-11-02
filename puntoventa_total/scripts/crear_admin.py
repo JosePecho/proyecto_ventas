@@ -3,9 +3,9 @@
 Uso: python scripts/crear_admin.py [--username admin] [--password Secreta123]
 """
 import argparse
-from getpass import getpass
 import os
 import sys
+from getpass import getpass
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -15,11 +15,17 @@ import django  # noqa: E402
 
 django.setup()
 
-from src.modules.identity.application.dto.usuario_input import ActualizarUsuarioDTO, UsuarioInputDTO  # noqa: E402
+from src.modules.identity.application.dto.usuario_input import (  # noqa: E402
+    ActualizarUsuarioDTO,
+    UsuarioInputDTO,
+)
 from src.modules.identity.application.use_cases.actualizar_usuario import ActualizarUsuario  # noqa: E402
 from src.modules.identity.application.use_cases.crear_usuario import CrearUsuario  # noqa: E402
 from src.modules.identity.domain.enums.rol_usuario import RolUsuario  # noqa: E402
-from src.modules.identity.infrastructure.factories import construir_hasher, construir_repositorio  # noqa: E402
+from src.modules.identity.infrastructure.factories import (  # noqa: E402
+    construir_hasher,
+    construir_repositorio,
+)
 
 
 def main() -> None:

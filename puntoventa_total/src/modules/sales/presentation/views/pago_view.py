@@ -6,15 +6,14 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.shortcuts import redirect, render
 
+from src.modules.inventory.domain.exceptions.stock_exceptions import StockException
 from src.modules.sales.application.use_cases.procesar_pago import ProcesarPago
 from src.modules.sales.domain.exceptions.venta_exceptions import VentaException
-from src.modules.inventory.domain.exceptions.stock_exceptions import StockException
-from src.shared.domain.exceptions.validation_exception import ValidationException
 from src.modules.sales.infrastructure.factories import (
     construir_auditoria_port,
     construir_inventario_port,
-    construir_venta_repository,
     construir_promociones_port,
+    construir_venta_repository,
 )
 from src.modules.sales.presentation.forms.pago_form import PagoForm
 from src.modules.sales.presentation.permissions.venta_permissions import (
@@ -22,6 +21,7 @@ from src.modules.sales.presentation.permissions.venta_permissions import (
     requiere_cajero,
     venta_propia,
 )
+from src.shared.domain.exceptions.validation_exception import ValidationException
 
 
 @login_required

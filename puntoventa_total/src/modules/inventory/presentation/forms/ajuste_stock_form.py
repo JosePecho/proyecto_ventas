@@ -1,8 +1,7 @@
 from django import forms
 
-from src.shared.infrastructure.form_validation import ValidatedForm
-
 from src.modules.inventory.domain.enums.tipo_movimiento import TipoMovimiento
+from src.shared.infrastructure.form_validation import ValidatedForm
 
 
 class AjusteStockForm(ValidatedForm):

@@ -1,6 +1,7 @@
 from django.urls import path
-from src.modules.catalog.presentation.views.categoria_view import categoria_view
+
 from src.modules.catalog.presentation.views.catalogo_view import catalogo_view
+from src.modules.catalog.presentation.views.categoria_view import categoria_view
 from src.modules.catalog.presentation.views.producto_admin_view import (
     producto_descontinuar_view,
     producto_form_view,

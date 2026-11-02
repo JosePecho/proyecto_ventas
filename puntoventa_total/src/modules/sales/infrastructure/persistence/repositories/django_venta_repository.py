@@ -1,13 +1,16 @@
-from typing import Optional, Sequence
+from collections.abc import Sequence
+
 from django.db import connection, transaction
 from django.utils import timezone
-from src.modules.sales.infrastructure.persistence.django_models.ticket_sequence_model import TicketSequenceModel
-from src.shared.infrastructure.database.date_bounds import date_bound
 
 from src.modules.sales.domain.aggregates.venta_aggregate import VentaAggregate
 from src.modules.sales.domain.repositories.venta_repository import VentaRepository
+from src.modules.sales.infrastructure.persistence.django_models.ticket_sequence_model import (
+    TicketSequenceModel,
+)
 from src.modules.sales.infrastructure.persistence.django_models.venta_model import VentaModel
 from src.modules.sales.infrastructure.persistence.mappers.venta_mapper import VentaMapper
+from src.shared.infrastructure.database.date_bounds import date_bound
 
 
 class DjangoVentaRepository(VentaRepository):
@@ -15,7 +18,7 @@ class DjangoVentaRepository(VentaRepository):
         # Identidad ORM local a esta instancia de repositorio/unidad de trabajo.
         self._cargadas = {}
 
-    def buscar_por_id(self, venta_id) -> Optional[VentaAggregate]:
+    def buscar_por_id(self, venta_id) -> VentaAggregate | None:
         qs = VentaModel.objects.filter(pk=venta_id)
         if connection.in_atomic_block:
             qs = qs.select_for_update()
@@ -24,7 +27,7 @@ class DjangoVentaRepository(VentaRepository):
             self._cargadas[str(m.pk)] = m
         return VentaMapper.agregado_a_dominio(m) if m else None
 
-    def buscar_por_numero_ticket(self, numero_ticket: str) -> Optional[VentaAggregate]:
+    def buscar_por_numero_ticket(self, numero_ticket: str) -> VentaAggregate | None:
         m = (
             VentaModel.objects.filter(numero_ticket=numero_ticket)
             .prefetch_related("detalles", "pagos")

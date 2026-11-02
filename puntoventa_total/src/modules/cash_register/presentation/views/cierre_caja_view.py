@@ -6,11 +6,13 @@ from django.db import transaction
 from django.shortcuts import redirect, render
 from django.urls import reverse
 
-from src.modules.cash_register.application.use_cases.consultar_arqueo import ConsultarArqueo
 from src.modules.cash_register.application.use_cases.cerrar_turno import CerrarTurno
+from src.modules.cash_register.application.use_cases.consultar_arqueo import ConsultarArqueo
 from src.modules.cash_register.domain.exceptions.caja_exceptions import CajaException
-from src.modules.cash_register.infrastructure.factories import construir_turno_repository
-from src.modules.cash_register.infrastructure.factories import construir_ventas_turno_port
+from src.modules.cash_register.infrastructure.factories import (
+    construir_turno_repository,
+    construir_ventas_turno_port,
+)
 from src.modules.cash_register.presentation.forms.cierre_form import CierreForm
 from src.modules.identity.presentation.permissions.role_required import role_required
 

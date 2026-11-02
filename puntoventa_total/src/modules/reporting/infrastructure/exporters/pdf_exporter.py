@@ -1,11 +1,11 @@
 import io
-from typing import Sequence
+from collections.abc import Sequence
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
-from reportlab.lib.styles import getSampleStyleSheet
 
 from src.modules.reporting.application.ports.exportador_reporte_port import ExportadorReportePort
 

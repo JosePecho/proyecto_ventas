@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
 
 from src.modules.sales.domain.enums.estado_venta import EstadoVenta
 from src.shared.domain.entities.base_entity import BaseEntity
@@ -12,8 +11,8 @@ from src.shared.domain.entities.base_entity import BaseEntity
 class Venta(BaseEntity):
     numero_ticket: str = ""
     cajero_id: str = ""
-    turno_caja_id: Optional[str] = None
-    cliente_id: Optional[str] = None
+    turno_caja_id: str | None = None
+    cliente_id: str | None = None
     estado: EstadoVenta = EstadoVenta.BORRADOR
     subtotal: float = 0.0
     descuento: float = 0.0

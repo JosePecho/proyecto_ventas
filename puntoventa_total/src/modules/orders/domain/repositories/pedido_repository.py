@@ -1,16 +1,16 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from src.modules.orders.domain.aggregates.pedido_aggregate import PedidoAggregate
 
 
 class PedidoRepository(ABC):
     @abstractmethod
-    def buscar_por_id(self, pedido_id) -> Optional[PedidoAggregate]:
+    def buscar_por_id(self, pedido_id) -> PedidoAggregate | None:
         ...
 
     @abstractmethod
-    def buscar_por_numero(self, numero: str) -> Optional[PedidoAggregate]:
+    def buscar_por_numero(self, numero: str) -> PedidoAggregate | None:
         ...
 
     @abstractmethod

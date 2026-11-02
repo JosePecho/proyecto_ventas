@@ -9,9 +9,9 @@ from django.test import Client
 from django.urls import reverse
 from django.utils import timezone
 
-from src.modules.identity.infrastructure.persistence.django_models.usuario_model import UsuarioModel
-from src.modules.customers.infrastructure.persistence.django_models.cliente_model import ClienteModel
 from src.modules.catalog.infrastructure.persistence.django_models.producto_model import ProductoModel
+from src.modules.customers.infrastructure.persistence.django_models.cliente_model import ClienteModel
+from src.modules.identity.infrastructure.persistence.django_models.usuario_model import UsuarioModel
 from src.modules.inventory.infrastructure.persistence.django_models.existencia_model import ExistenciaModel
 from src.modules.inventory.infrastructure.persistence.django_models.lote_model import LoteModel
 from src.modules.inventory.infrastructure.persistence.django_models.reserva_model import ReservaModel

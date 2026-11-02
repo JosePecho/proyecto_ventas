@@ -4,23 +4,25 @@ from unittest.mock import Mock
 
 import pytest
 
-from src.modules.reporting.application.use_cases.reporte_utilidad import ReporteUtilidad
-from src.modules.reporting.application.use_cases.reporte_ventas_diarias import ReporteVentasDiarias
-from src.modules.reporting.domain.repositories.reporte_repository import ReporteRepository
-from src.modules.reporting.domain.value_objects.utilidad_historica import agrupar_utilidad
-from src.shared.domain.exceptions.validation_exception import ValidationException
-from src.modules.auditing.domain.entities.registro_auditoria import RegistroAuditoria
-from src.modules.auditing.domain.repositories.auditoria_repository import AuditoriaRepository
 from src.modules.auditing.application.dto.auditoria_dto import FiltroAuditoriaDTO
 from src.modules.auditing.application.use_cases.consultar_auditoria import ConsultarAuditoria
-from src.modules.auditing.application.use_cases.registrar_auditoria import RegistrarAuditoria
 from src.modules.auditing.application.use_cases.rastrear_transaccion import RastrearTransaccion
-from src.modules.reporting.application.use_cases.reporte_ventas_por_fecha import ReporteVentasPorFecha
-from src.modules.reporting.application.use_cases.reporte_productos_mas_vendidos import ReporteProductosMasVendidos
-from src.shared.application.exceptions.application_exception import NotFoundException
+from src.modules.auditing.application.use_cases.registrar_auditoria import RegistrarAuditoria
+from src.modules.auditing.domain.entities.registro_auditoria import RegistroAuditoria
+from src.modules.auditing.domain.repositories.auditoria_repository import AuditoriaRepository
+from src.modules.catalog.domain.entities.categoria import Categoria
 from src.modules.identity.domain.entities.usuario import Usuario
 from src.modules.identity.domain.enums.rol_usuario import RolUsuario
-from src.modules.catalog.domain.entities.categoria import Categoria
+from src.modules.reporting.application.use_cases.reporte_productos_mas_vendidos import (
+    ReporteProductosMasVendidos,
+)
+from src.modules.reporting.application.use_cases.reporte_utilidad import ReporteUtilidad
+from src.modules.reporting.application.use_cases.reporte_ventas_diarias import ReporteVentasDiarias
+from src.modules.reporting.application.use_cases.reporte_ventas_por_fecha import ReporteVentasPorFecha
+from src.modules.reporting.domain.repositories.reporte_repository import ReporteRepository
+from src.modules.reporting.domain.value_objects.utilidad_historica import agrupar_utilidad
+from src.shared.application.exceptions.application_exception import NotFoundException
+from src.shared.domain.exceptions.validation_exception import ValidationException
 
 pytestmark = pytest.mark.unit
 

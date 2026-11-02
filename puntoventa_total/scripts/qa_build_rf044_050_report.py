@@ -1,7 +1,7 @@
 """Genera el plan del módulo 3.6 con código versionado y evidencia local."""
 import json
 from pathlib import Path
-import xml.etree.ElementTree as ET
+from xml.etree import ElementTree
 
 ROOT = Path(__file__).resolve().parents[1]
 PARTES = []
@@ -323,7 +323,7 @@ for nombre in ("qa", "production"):
         texto(f"| {nombre} | pendiente | pendiente | pendiente | pendiente | pendiente | pendiente | pendiente |")
         listos = False
         continue
-    tree = ET.parse(path).getroot()
+    tree = ElementTree.parse(path).getroot()
     suites = list(tree.iter("testsuite"))
     fallos = {k: sum(int(s.get(k, 0)) for s in suites) for k in ("failures", "errors", "skipped")}
     casos = list(tree.iter("testcase"))

@@ -24,9 +24,9 @@ class ConfirmarPedido:
             referencia = agregado.reservar_referencia()
             agregado.confirmar()
             # reserva stock primero: si algo falla, la transaccion lo revierte
-            for l in agregado.lineas:
-                if l.requiere_stock:
-                    self._inventario.reservar(l.producto_id, l.cantidad, referencia)
+            for elemento in agregado.lineas:
+                if elemento.requiere_stock:
+                    self._inventario.reservar(elemento.producto_id, elemento.cantidad, referencia)
             self._repo.guardar(agregado)
 
             return PedidoOutputDTO.desde_agregado(agregado)
