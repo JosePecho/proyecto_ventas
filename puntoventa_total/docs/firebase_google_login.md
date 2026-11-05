@@ -1,48 +1,23 @@
-# Acceso con Google
+# Registro e inicio de sesión con Google
 
-La rama `feature/firebase-google-login` parte del commit recuperable `ec0889e`.
-No hay migraciones. Los usuarios y permisos permanecen en la base local.
+## Recuperación y respaldo
 
-## Archivos de la integración
+- Rama: `feature/firebase-google-login`.
+- Commit recuperable anterior al registro automático: `744461e`.
+- Respaldo privado previo: `C:/Users/mallq/.puntoventa-backups/20261105T154442Z/puntoventa-completo.sql`.
+- Verificación: restauración en una base temporal aislada, comparación de las 28 tablas,
+  esquemas y 346 registros mediante SHA256 por registro. La base temporal se eliminó
+  después de aprobar la comparación. No se restauró sobre la base original.
+- El directorio tiene permisos restringidos al usuario de Windows y SYSTEM. No está
+  en Git ni en OneDrive. Su manifiesto es `verificacion.json` y no contiene datos de las filas.
 
-Modificados:
-
-- `.env` local, ignorado por Git: ruta de la cuenta de servicio y proyecto.
-- `.env.example` y `.env.development.example`: variables de ejemplo.
-- `config/settings/base.py`: configuración Firebase.
-- `requirements/base.txt`: dependencia Admin SDK.
-- `templates/identity/login.html`: botón y carga del módulo JS.
-- `src/modules/identity/domain/repositories/usuario_repository.py`: búsqueda inequívoca.
-- `src/modules/identity/infrastructure/persistence/repositories/django_usuario_repository.py`: consulta por correo único.
-- `src/modules/identity/presentation/urls.py`: endpoint Google.
-- `src/modules/identity/presentation/views/login_view.py`: reutilización de sesión y configuración pública.
-
-Nuevos:
-
-- `src/modules/identity/application/ports/google_identity_port.py`.
-- `src/modules/identity/application/use_cases/autenticar_google.py`.
-- `src/modules/identity/infrastructure/security/firebase_google_adapter.py`.
-- `src/modules/identity/presentation/views/google_login_view.py`.
-- `src/modules/identity/presentation/views/session_login.py`.
-- `static/js/identity/google_login.js`.
-- `scripts/check_firebase_login.py`.
-- `tests/unit/test_firebase_google_adapter.py`.
-- `tests/integration/test_google_login.py`.
-- `tests/system/test_google_login_playwright.py`.
-- Este documento.
-
-No se modificaron módulos de ventas, catálogo/productos, inventario, clientes,
-pedidos ni reportes. La utilidad de sesión conserva la consulta al perfil de cliente
-que ya realizaba el login anterior.
+`scripts/verificar_respaldo_google.py` corresponde a la comprobación previa de la
+base de 28 tablas. No debe repetirse sobre una base que ya tenga otras migraciones.
 
 ## Configuración
 
-Instalar `requirements/base.txt` en el entorno de destino sin cambiar la versión de
-Django del entorno actual solo por esta integración. La dependencia nueva es
-`firebase-admin==7.7.0`.
-
-Guardar la cuenta de servicio de `puntoventa-a7f93` fuera del repositorio y de
-carpetas sincronizadas. En `.env` (ignorado por Git):
+La dependencia de servidor es `firebase-admin==7.7.0`; los módulos web son Firebase
+App y Auth 13.2.0. Analytics no se inicializa. En `.env`, excluido de Git:
 
 ```dotenv
 GOOGLE_APPLICATION_CREDENTIALS=C:/Users/mallq/.firebase/puntoventa-a7f93-admin.json
@@ -50,83 +25,134 @@ FIREBASE_PROJECT_ID=puntoventa-a7f93
 FIREBASE_GOOGLE_ENABLED=True
 ```
 
-La configuración web es pública; ninguna clave privada se envía al navegador.
-No usar `FIREBASE_AUTH_EMULATOR_HOST`: el adaptador rechaza el emulador.
-El login tradicional funciona también con `FIREBASE_GOOGLE_ENABLED=False`.
+La configuración web es pública. No se envía ninguna clave privada al navegador ni
+se registran tokens. El adaptador rechaza `FIREBASE_AUTH_EMULATOR_HOST`.
 
-En Firebase Console, Authentication → Sign-in method, habilitar Google y configurar
-el correo de soporte. En Authentication → Settings → Authorized domains, agregar
-`localhost` y `127.0.0.1` sin esquema ni puerto. En producción usar HTTPS y autorizar
-el dominio real. No hace falta activar Analytics.
+Firebase Console → Authentication → Sign-in method: Google habilitado y correo de
+soporte configurado. Authentication → Settings → Authorized domains: `localhost` y
+`127.0.0.1`, sin esquema ni puerto. La última consulta remota confirmó ambos.
 
-La comprobación remota realizada encontró `localhost` autorizado y `127.0.0.1`
-ausente. Es necesario agregar este último para acceder desde la URL solicitada.
+El servidor necesita HTTPS saliente hacia los servicios Google para consultar
+certificados, revocación y cuentas. Ejecutarlo desde una terminal normal de VS Code
+o con permiso de red; un proceso dentro del entorno restringido de Codex devuelve
+`WinError 10013` y el acceso Google falla de forma segura con HTTP 503.
 
-## Política de autorización
+## Política y flujo
 
-`POST /login/google/` recibe JSON `{"id_token": "...", "next": "/catalogo/"}`
-y exige CSRF. Devuelve 200 con `redirect`, 400 para entradas inválidas, 403 para
-identidades no autorizadas, 409 si ya hay sesión o 503 si Firebase no está disponible.
-Las redirecciones solo permiten destinos locales seguros.
-La página de login usa `Cross-Origin-Opener-Policy: same-origin-allow-popups`
-para permitir la comunicación con la ventana OAuth; las demás páginas conservan
-su política existente. Las respuestas de autenticación no se almacenan en caché.
+1. **UID ya vinculado:** se recupera el usuario correspondiente y se comprueba que
+   siga activo y no bloqueado. Sus roles y permisos permanecen locales.
+2. **Gmail nuevo:** se muestra el formulario para completar nombre, DNI y celular.
+   El correo verificado es inmutable en el formulario; dirección opcional.
+3. **Correo existente sin vinculación:** se pide usuario/email, contraseña tradicional
+   y confirmación explícita. Esto también se exige a administradores y empleados.
+4. **Cliente con perfil ausente o incompleto:** completa los datos antes de iniciar
+   sesión. Un perfil de cliente desactivado o ambiguo se rechaza.
+5. **Resultado exitoso:** redirección directa al catálogo; se ignora `next` para Google.
 
-El Admin SDK verifica el ID token y su revocación. Se exige proveedor `google.com`,
-correo verificado y Gmail. Otros correos, incluido Workspace, requieren una futura
-vinculación explícita desde una sesión tradicional; no se confía en un supuesto
-claim `hd` dentro del token Firebase. No se asocian cuentas de terceros solo por
-coincidencia del correo.
+Solo se admite Gmail verificado con proveedor `google.com`. Los correos no Gmail
+siguen utilizando el acceso tradicional. Las cuentas nuevas reciben exclusivamente
+`CLIENTE`, nunca `is_staff` ni `is_superuser`, y una contraseña inutilizable.
+No se cambia la contraseña de cuentas existentes. Este cambio no añade un flujo
+para establecer contraseña en cuentas creadas exclusivamente mediante Google.
 
-Debe existir exactamente un usuario local con ese correo (sin distinguir mayúsculas),
-activo y no bloqueado. No se crean usuarios de negocio ni perfiles de cliente.
-Se conserva el rol local y las claves de sesión anteriores. La creación del usuario
-técnico Django para Google no concede `is_staff` ni `is_superuser`.
+El estado pendiente reside en la sesión de Django, caduca a los 10 minutos y no
+contiene el ID token. Antes de guardar se vuelve a consultar Firebase para comprobar
+baja, correo/proveedor y revocación. El usuario puede cancelar sin crear cuentas.
 
-Firebase puede crear un registro en su propia lista Authentication → Users al
-completar Google OAuth, incluso si Django rechaza el acceso. Ese registro remoto
-no autoriza el acceso al punto de venta.
+Se reutilizan `CrearUsuario`, `AutenticarUsuario`, `RegistrarCliente`, las validaciones
+de `RegistroClienteForm` y los repositorios existentes. DNI de 8 dígitos; celular
+peruano de 9 dígitos empezando por 9. Un DNI existente no vincula ni fusiona personas.
+No se omiten los registros inactivos al comprobar duplicados.
 
-Se usa persistencia Firebase en memoria y `signOut` después del intercambio.
-La sesión restante es Django y se cierra mediante el POST con CSRF existente.
-Desactivar el usuario o cambiar su rol mantiene la invalidación de sesión existente.
+El alta de usuario, perfil y vínculo se realiza en una transacción. Se revierte si
+falla el perfil, una restricción única o la creación de sesión. Los identificadores
+deterministas de usuario y las restricciones evitan duplicados concurrentes.
 
-## Prueba manual
+La sesión conserva `rol`, `identity_role`, `usuario_id` y `cliente_id`. El cierre sigue
+siendo el POST con CSRF existente. Firebase usa persistencia en memoria y `signOut`
+después del intercambio. Desactivar un usuario o cambiar su rol sigue invalidando
+su sesión mediante el middleware existente.
 
-1. Autorizar `127.0.0.1` en Firebase y reiniciar Django para cargar `.env`.
-2. Abrir `http://127.0.0.1:8000/` sin una sesión previa.
-3. Comprobar primero usuario/email y contraseña, y cerrar sesión.
-4. Pulsar **Continuar con Google** y elegir una cuenta Gmail ya registrada y activa
-   en el sistema. Verificar que solo aparezcan las funciones de su rol.
-5. Cerrar sesión y repetir con una cuenta desconocida: debe rechazarse.
-6. Cancelar el selector y comprobar que el formulario tradicional sigue disponible.
+## Migración
 
-No compartir tokens, el JSON de servicio ni su contenido. La prueba interactiva de
-una cuenta real debe realizarla su titular; las pruebas automatizadas no acreditan
-que una persona haya completado ese selector.
+`identity.0002_googlevinculomodel` crea únicamente `identity_google_vinculo`:
 
-Comprobaciones:
+- FK uno a uno a `identity_usuario`, con eliminación protegida.
+- Proyecto, UID, proveedor, correo y fecha de vinculación.
+- Clave SHA256 única de proyecto + UID: evita comparaciones de UID insensibles a
+  mayúsculas en MariaDB/MySQL.
+- Restricción única de proyecto + correo.
+
+No vincula automáticamente cuentas antiguas ni cambia las tablas comerciales.
+Django añade el tipo de contenido y los cuatro permisos técnicos del nuevo modelo;
+no se asignan a usuarios ni grupos. El script `aplicar_migracion_google.py` valida
+el respaldo, exige ese único paso pendiente y comprueba la conservación de datos
+previos, admitiendo únicamente esos metadatos nuevos de Django.
+
+## Archivos principales
+
+Todo el código de negocio nuevo se limita al módulo `identity`:
+
+- DTO/puertos de identidad Google y autenticación por vínculo.
+- Adaptador Firebase con verificación y revalidación de identidad.
+- Modelo, repositorio y migración del vínculo Google.
+- Coordinador transaccional `infrastructure/google_registration_service.py`.
+- Formularios y vistas de alta/vinculación, rutas y limpieza del estado pendiente
+  al establecer una sesión.
+- `templates/identity/google_datos.html`: continuación con las clases y estilos
+  actuales del login. No se alteró el CSS ni el diseño del login existente.
+- Scripts de respaldo, ensayo MariaDB y aplicación comprobada de la migración.
+- Pruebas de integración, concurrencia, adaptador Firebase y navegador.
+
+No se modifican archivos de ventas, productos/catálogo, inventario, clientes,
+pedidos ni reportes. El registro escribe perfiles de cliente utilizando su lógica
+existente, sin cambiar esas funcionalidades.
+
+## Comprobación manual
+
+1. Abrir `http://127.0.0.1:8000/` y cerrar cualquier sesión previa.
+2. Pulsar **Continuar con Google** y elegir un Gmail nuevo.
+3. Completar nombre, DNI único y celular. Tras guardar debe aparecer el catálogo
+   con los permisos de cliente.
+4. Cerrar sesión y repetir con ese Gmail: debe ir directamente al catálogo.
+5. Probar un correo local existente no vinculado: debe pedir sus credenciales y
+   consentimiento. Tras vincular, debe conservar su rol original.
+6. Verificar también el acceso tradicional con una cuenta que ya tenga contraseña.
+
+El selector real se comprueba sin introducir credenciales personales. Los escenarios
+de registro/vinculación se automatizan con navegador y backend reales sobre una
+base aislada, sustituyendo solamente la frontera Firebase/OAuth. La prueba con una
+cuenta Google personal corresponde a su titular.
 
 ```powershell
+rtk proxy .venv/Scripts/python.exe -m pytest -q -p no:cacheprovider
+rtk proxy .venv/Scripts/python.exe scripts/probar_google_mysql_local.py
 rtk proxy .venv/Scripts/python.exe scripts/check_firebase_login.py
-rtk proxy .venv/Scripts/python.exe -m pytest tests/integration/test_google_login.py tests/unit/test_firebase_google_adapter.py tests/system/test_google_login_playwright.py -q -p no:cacheprovider
+rtk proxy .venv/Scripts/python.exe manage.py runserver 127.0.0.1:8000 --noreload
 ```
 
-## Resultados de validación
+El ensayo MariaDB crea y usa un esquema QA independiente, y lo elimina solo cuando
+las pruebas pasan. Nunca ejecuta las pruebas contra la base de datos del punto de venta.
 
-- Suite completa: **1783 aprobadas, 12 omitidas, 0 fallos**.
-  Evidencia local: `reports/firebase-google-pruebas.xml`.
-- Las omisiones son 8 pruebas MySQL/InnoDB, 1 Redis y 3 k6; no acreditan ejecución
-  de esa infraestructura.
-- Las 40 pruebas específicas cubren tokens rechazados, revocación solicitada,
-  proveedor y correo, usuarios desconocidos/duplicados/inactivos/bloqueados,
-  todos los roles, perfil de cliente, CSRF, logout, redirecciones y login tradicional.
-- Cuatro escenarios Chromium: éxito, rechazo, cancelación y SDK inaccesible.
-  Usan una frontera OAuth controlada, no cuentas Google personales.
-- Ruff completo y `manage.py check --settings=config.settings.testing`: correctos.
-- 53/53 plantillas y 17/17 archivos JavaScript compilados.
-- Comprobación remota real: cuenta de servicio autenticada, proyecto coincidente,
-  consulta de dominios exitosa y módulos Firebase App/Auth 13.2.0 con HTTP 200.
-- Chromium con SDK real: botón habilitado en la web local. Captura en
-  `reports/login-google-real.png`; no se inició sesión con una cuenta personal.
-- Servidor local reiniciado: HTTP 200, botón presente y política de popup correcta.
+## Resultado verificado
+
+- Respaldo restaurado: 28/28 tablas, 346 registros y esquemas coincidentes.
+- Migración aplicada: `identity.0002_googlevinculomodel`. Se conservaron las 28 tablas
+  originales y sus registros; únicamente se añadieron la tabla de vínculos y los
+  metadatos de Django esperados. No se vincularon usuarios automáticamente.
+- Suite completa: **1836 aprobadas, 13 omitidas, 0 fallos**. Evidencia:
+  `reports/google-registro-completo.xml`.
+- MariaDB/InnoDB aislado: **52 aprobadas**, incluyendo concurrencia y rollback.
+  Evidencia: `reports/google-registro-mysql.xml`. Estas pruebas repiten casos de
+  la suite general: no deben sumarse como 52 casos únicos adicionales.
+- La suite general omite 8 casos MySQL/InnoDB de otros módulos, 1 Redis, 3 k6 y
+  el caso de concurrencia Google; este último sí pasó en el ensayo MariaDB aparte.
+- Chromium completó alta y vinculación contra Django real en una base de pruebas;
+  se controló solamente la frontera Firebase/OAuth.
+- Ruff, Django check y comprobación de migraciones pendientes: correctos.
+- 54/54 plantillas y 17/17 archivos JavaScript compilados.
+- Consulta remota real: cuenta de servicio correcta, ambos dominios locales
+  autorizados y módulos SDK 13.2.0 con HTTP 200.
+- Servidor reiniciado con acceso a la red: HTTP 200 y selector real de Google abierto
+  en `accounts.google.com`, sin mensajes de error. No se introdujeron credenciales
+  personales ni se crearon clientes de demostración en la base original.

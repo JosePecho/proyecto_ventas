@@ -17,6 +17,7 @@ def establecer_sesion(request, usuario, *, google=False):
     user.first_name = usuario.nombre_completo
     user.save()
     login(request, user)
+    request.session.pop("google_registro_pendiente", None)
     request.session["rol"] = usuario.rol
     request.session["identity_role"] = usuario.rol
     request.session["usuario_id"] = usuario.id
