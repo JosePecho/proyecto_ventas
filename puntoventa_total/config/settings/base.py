@@ -107,6 +107,19 @@ LOGIN_URL = "identity:login"
 LOGIN_REDIRECT_URL = "catalog:catalogo"
 LOGOUT_REDIRECT_URL = "identity:login"
 
+FIREBASE_PROJECT_ID = env("FIREBASE_PROJECT_ID", default="puntoventa-a7f93")
+GOOGLE_APPLICATION_CREDENTIALS = env("GOOGLE_APPLICATION_CREDENTIALS", default="")
+FIREBASE_GOOGLE_ENABLED = env.bool("FIREBASE_GOOGLE_ENABLED", default=bool(GOOGLE_APPLICATION_CREDENTIALS))
+FIREBASE_WEB_CONFIG = {
+    "apiKey": env("FIREBASE_WEB_API_KEY", default="AIzaSyCLf293mZQhQQAdpYp3IqVoquGF4lPP0ZQ"),
+    "authDomain": "puntoventa-a7f93.firebaseapp.com",
+    "projectId": FIREBASE_PROJECT_ID,
+    "storageBucket": "puntoventa-a7f93.firebasestorage.app",
+    "messagingSenderId": "423581048903",
+    "appId": "1:423581048903:web:36c379bf7ee922cb345162",
+    "measurementId": "G-BBNSTJC3F7",
+}
+
 # Cache (Redis) con fallback a memoria local si Redis no esta disponible
 REDIS_URL = env("REDIS_URL", default="redis://localhost:6379/0")
 CACHES = {

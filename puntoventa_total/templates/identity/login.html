@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Iniciar sesion{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
@@ -20,10 +21,25 @@
           {% endfor %}
           <button class="btn btn-primary w-100" type="submit">Ingresar</button>
         </form>
+        {% if firebase_enabled %}
+        <div class="d-flex align-items-center gap-3 my-3">
+          <hr class="flex-grow-1"><span class="text-muted small">O continúa con</span><hr class="flex-grow-1">
+        </div>
+        <button class="btn btn-outline-primary w-100" type="button" id="google-login"
+                data-endpoint="{% url 'identity:google_login' %}" disabled>
+          <i class="bi bi-google me-2" aria-hidden="true"></i>Continuar con Google
+        </button>
+        <p id="google-login-error" class="text-danger small mt-2 mb-0" role="alert" aria-live="polite"></p>
+        <noscript><p class="text-muted small">Activa JavaScript para continuar con Google.</p></noscript>
+        {{ firebase_config|json_script:"firebase-config" }}
+        {% endif %}
         <p class="text-center small mt-4 mb-0">¿Primera vez aquí? <a href="{% url 'customers:registro' %}">Crea tu cuenta</a></p>
       </div>
     </div>
   </div>
 </div>
+{% endblock %}
+{% block extra_js %}
+{% if firebase_enabled %}<script type="module" src="{% static 'js/identity/google_login.js' %}"></script>{% endif %}
 {% endblock %}
 

@@ -37,6 +37,10 @@ class DjangoUsuarioRepository(UsuarioRepository):
             qs = qs.filter(activo=True)
         return [self._mapper.a_dominio(m) for m in qs.order_by("username")]
 
+    def buscar_por_email_unico(self, email: str) -> Usuario | None:
+        modelos = list(UsuarioModel.objects.filter(email__iexact=email)[:2])
+        return self._mapper.a_dominio(modelos[0]) if len(modelos) == 1 else None
+
     def guardar(self, usuario: Usuario) -> Usuario:
         modelo = UsuarioModel.objects.filter(pk=usuario.id).first()
         modelo = self._mapper.a_modelo(usuario, modelo)

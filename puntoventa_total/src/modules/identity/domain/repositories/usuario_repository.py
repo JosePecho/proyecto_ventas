@@ -20,6 +20,11 @@ class UsuarioRepository(ABC):
     def buscar_por_email(self, email: str) -> Usuario | None:
         ...
 
+    def buscar_por_email_unico(self, email: str) -> Usuario | None:
+        """Rechaza coincidencias ambiguas, incluso con cuentas inactivas."""
+        coincidencias = [u for u in self.listar(incluir_inactivos=True) if u.email.casefold() == email.casefold()]
+        return coincidencias[0] if len(coincidencias) == 1 else None
+
     @abstractmethod
     def listar(self, incluir_inactivos: bool = False) -> Sequence[Usuario]:
         ...

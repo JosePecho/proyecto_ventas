@@ -1,15 +1,15 @@
 """Vista de inicio de sesion (usa el caso de uso AutenticarUsuario)."""
 from __future__ import annotations
 
+from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import login
 from django.shortcuts import redirect, render
-from django.utils.http import url_has_allowed_host_and_scheme
 
 from src.modules.identity.application.use_cases.autenticar_usuario import AutenticarUsuario
 from src.modules.identity.domain.exceptions.usuario_exceptions import UsuarioException
 from src.modules.identity.infrastructure.factories import construir_hasher, construir_repositorio
 from src.modules.identity.presentation.forms.login_form import LoginForm
+from src.modules.identity.presentation.views.session_login import destino_seguro, establecer_sesion
 
 
 def login_view(request):
@@ -37,35 +37,29 @@ def login_view(request):
             except UsuarioException as exc:
                 messages.error(request, str(exc))
             else:
-                from django.contrib.auth.models import User
-
-                user, _ = User.objects.get_or_create(
-                    username=usuario.username,
-                    defaults={"is_staff": usuario.rol == "ADMINISTRADOR"},
-                )
-                user.first_name = usuario.nombre_completo
-                user.save()
-                login(request, user)
-                request.session["rol"] = usuario.rol
-                request.session["identity_role"] = usuario.rol
-                request.session["usuario_id"] = usuario.id
-                request.session.pop("cliente_id", None)
-                if usuario.rol == "CLIENTE":
-                    from src.modules.customers.infrastructure.persistence.django_models.cliente_model import (
-                        ClienteModel,
-                    )
-                    cliente_id = ClienteModel.objects.filter(usuario_id=usuario.id, activo=True).values_list("id", flat=True).first()
-                    if cliente_id:
-                        request.session["cliente_id"] = str(cliente_id)
+                try:
+                    establecer_sesion(request, usuario)
+                except UsuarioException as exc:
+                    messages.error(request, str(exc))
+                    return render_login(request, form)
                 messages.success(request, f"Bienvenido {usuario.nombre_completo}")
-                destino = request.GET.get("next", "")
-                if not url_has_allowed_host_and_scheme(
-                    destino, allowed_hosts={request.get_host()}, require_https=request.is_secure()
-                ):
-                    destino = "catalog:catalogo"
-                return redirect(destino)
+                return redirect(destino_seguro(request, request.GET.get("next", "")))
     else:
         form = LoginForm()
 
-    return render(request, "identity/login.html", {"form": form})
+    return render_login(request, form)
+
+
+def render_login(request, form):
+    respuesta = render(request, "identity/login.html", contexto_login(form))
+    if settings.FIREBASE_GOOGLE_ENABLED:
+        # Solo esta página necesita comunicación con la ventana OAuth de Google.
+        respuesta["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups"
+    respuesta["Cache-Control"] = "no-store"
+    return respuesta
+
+
+def contexto_login(form):
+    return {"form": form, "firebase_enabled": settings.FIREBASE_GOOGLE_ENABLED,
+            "firebase_config": settings.FIREBASE_WEB_CONFIG}
 
