@@ -23,6 +23,7 @@ def test_carrito_visible_cantidad_eliminacion_y_cobro(live_server, navegador, da
     page.press("#buscador-pos", "Enter")
     linea = page.locator(f'[data-producto="{datos_pos.id}"]')
     linea.wait_for()
+    page.wait_for_load_state("load")
     assert linea.locator(".cantidad").input_value() == "1"
     linea.locator(".btn-mas").click()
     page.wait_for_function("document.querySelector('.cantidad')?.value === '2'")
