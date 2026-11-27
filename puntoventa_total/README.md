@@ -102,7 +102,7 @@ Para Redis/Celery real, CI levanta un Redis exclusivo y define `QA_REDIS_URL`.
 Localmente, definir esa variable solo hacia una instancia aislada de QA;
 `tests/integration/test_redis_celery_real.py` ejecuta un worker real, sin modo eager.
 El resto de las pruebas usa locmem/eager y no sustituye esa comprobacion.
-
+s
 La carga de cobro con k6 requiere `BASE_URL`, `PMV_USERNAME_PREFIX`, `PMV_PASSWORD`
 y `PMV_CODIGO`. Crear un cajero distinto por VU (prefijo1, prefijo2...), sin turno
 abierto previo, y stock suficiente para `VUS * ITERATIONS`. Cada VU conserva su
