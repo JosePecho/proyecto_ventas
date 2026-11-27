@@ -1,9 +1,9 @@
 """Entrega SMTP por socket real hacia un servidor local de pruebas."""
-import django
 from email.parser import BytesParser
 from socketserver import StreamRequestHandler, ThreadingTCPServer
 from threading import Thread
 
+import django
 import pytest
 
 from src.modules.orders.infrastructure.notifications.email_notifier import EmailNotifier
@@ -56,7 +56,10 @@ def test_email_pedido_se_entrega_por_smtp_al_cliente(settings, via):
                 assert EmailNotifier().notificar_pedido_listo("Ana", "ana@example.test", "P-SMTP-QA")
             else:
                 from uuid import uuid4
-                from src.modules.orders.infrastructure.persistence.django_models.pedido_model import PedidoModel
+
+                from src.modules.orders.infrastructure.persistence.django_models.pedido_model import (
+                    PedidoModel,
+                )
                 from src.modules.orders.infrastructure.tasks.enviar_notificacion_pedido import run
                 pedido = PedidoModel.objects.create(id=uuid4(), numero="P-SMTP-QA", cliente_nombre="Ana",
                                                      cliente_email="ana@example.test", estado="LISTO")

@@ -3,7 +3,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from src.modules.inventory.domain.exceptions.stock_exceptions import ExistenciaNegativa, StockException, StockInsuficiente
+from src.modules.inventory.domain.exceptions.stock_exceptions import (
+    ExistenciaNegativa,
+    StockException,
+    StockInsuficiente,
+)
 from src.shared.domain.entities.base_entity import BaseEntity
 
 
@@ -15,7 +19,8 @@ class Existencia(BaseEntity):
 
     def __post_init__(self) -> None:
         self._requerir(self.producto_id, "producto_id")
-        if type(self.cantidad) is not int or type(self.reservada) is not int:
+        # El contrato exige int exacto: bool y subclases no representan stock.
+        if type(self.cantidad) is not int or type(self.reservada) is not int:  # noqa: E721
             raise StockException("Las cantidades de stock deben ser enteras")
         if self.cantidad < 0 or self.reservada < 0:
             raise ExistenciaNegativa(self.producto_id)
@@ -61,7 +66,7 @@ class Existencia(BaseEntity):
         self.marcar_actualizado()
 
     def _validar_cantidad(self, cantidad: int) -> None:
-        if type(cantidad) is not int or cantidad <= 0:
+        if type(cantidad) is not int or cantidad <= 0:  # noqa: E721 - rechazar bool y subclases
             raise StockException(f"La cantidad debe ser positiva (recibido: {cantidad})")
 
     def con_stock_minimo(self, umbral: int) -> bool:

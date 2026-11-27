@@ -12,7 +12,9 @@ from src.modules.catalog.models import ProductoModel
 from src.modules.inventory.application.dto.lote_dto import RecepcionLoteDTO
 from src.modules.inventory.application.use_cases.recibir_mercaderia import RecibirMercaderia
 from src.modules.inventory.infrastructure.factories import (
-    construir_lote_repository, construir_movimiento_repository, construir_stock_repository,
+    construir_lote_repository,
+    construir_movimiento_repository,
+    construir_stock_repository,
 )
 from src.modules.inventory.models import ExistenciaModel, LoteModel, MovimientoModel
 
@@ -110,7 +112,7 @@ def consultar_alertas(contexto):
 
 @then("ve solo el lote que vence en 30 dias")
 def verificar_alertas(contexto):
-    assert [l.numero_lote for l in contexto["respuesta"].context["por_vencer"]] == ["UAT-30"]
+    assert [elemento.numero_lote for elemento in contexto["respuesta"].context["por_vencer"]] == ["UAT-30"]
 
 
 @given("otro producto con margen mayor y sin ventas")

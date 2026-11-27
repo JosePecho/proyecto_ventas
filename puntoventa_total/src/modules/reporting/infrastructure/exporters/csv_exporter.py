@@ -1,6 +1,6 @@
 import csv
 import io
-from typing import Sequence
+from collections.abc import Sequence
 
 from src.modules.reporting.application.ports.exportador_reporte_port import ExportadorReportePort
 

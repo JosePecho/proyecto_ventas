@@ -1,5 +1,5 @@
+from collections.abc import Sequence
 from datetime import date
-from typing import Sequence
 
 from src.modules.inventory.domain.entities.movimiento_stock import MovimientoStock
 from src.modules.inventory.domain.repositories.movimiento_repository import MovimientoRepository
@@ -13,7 +13,7 @@ class DjangoMovimientoRepository(MovimientoRepository):
 
     def guardar(self, movimiento: MovimientoStock) -> MovimientoStock:
         m = MovimientoModel.objects.filter(pk=movimiento.id).first()
-        self._mapper.a_modelo(movimiento, m).save()
+        self._mapper.a_modelo(movimiento, m).save(force_insert=m is None)
         return movimiento
 
     def _kardex_queryset(self, producto_id: str, desde=None, hasta=None):

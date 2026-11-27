@@ -1,18 +1,18 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from src.modules.catalog.domain.entities.producto import Producto
 
 
 class ProductoRepository(ABC):
     @abstractmethod
-    def buscar_por_id(self, producto_id) -> Optional[Producto]:
+    def buscar_por_id(self, producto_id) -> Producto | None:
         ...
 
     @abstractmethod
-    def buscar_por_codigo_barras(self, codigo: str) -> Optional[Producto]:
+    def buscar_por_codigo_barras(self, codigo: str) -> Producto | None:
         ...
 
     @abstractmethod

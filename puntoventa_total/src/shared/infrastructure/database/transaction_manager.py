@@ -1,8 +1,8 @@
 """Gestion central de transacciones de base de datos."""
 from __future__ import annotations
 
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
-from typing import Callable, Iterator
 
 from django.db import transaction
 

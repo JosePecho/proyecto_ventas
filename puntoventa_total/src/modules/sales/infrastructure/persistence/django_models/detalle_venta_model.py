@@ -2,6 +2,8 @@ from django.db import models
 
 
 class DetalleVentaModel(models.Model):
+    requiere_stock = models.BooleanField(default=True)
+    costo_unitario = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     id = models.UUIDField(primary_key=True, editable=False)
     venta = models.ForeignKey("sales.VentaModel", on_delete=models.CASCADE, related_name="detalles")
     producto_id = models.UUIDField(db_index=True)

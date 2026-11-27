@@ -3,12 +3,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 
 from src.modules.cash_register.domain.enums.estado_turno import EstadoTurno
 from src.modules.cash_register.domain.exceptions.caja_exceptions import TurnoYaCerrado
-from src.shared.domain.entities.base_entity import BaseEntity
 from src.shared.domain.clock import utc_now
+from src.shared.domain.entities.base_entity import BaseEntity
 from src.shared.domain.value_objects.monto import Monto
 
 
@@ -17,11 +16,11 @@ class TurnoCaja(BaseEntity):
     cajero_id: str = ""
     estado: EstadoTurno = EstadoTurno.ABIERTO
     monto_apertura: Monto = None
-    monto_cierre: Optional[Monto] = None
-    monto_sistema: Optional[Monto] = None
-    diferencia: Optional[Monto] = None
-    fecha_apertura: Optional[datetime] = None
-    fecha_cierre: Optional[datetime] = None
+    monto_cierre: Monto | None = None
+    monto_sistema: Monto | None = None
+    diferencia: Monto | None = None
+    fecha_apertura: datetime | None = None
+    fecha_cierre: datetime | None = None
     observaciones: str = ""
 
     def __post_init__(self) -> None:

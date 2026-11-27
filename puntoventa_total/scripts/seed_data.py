@@ -4,7 +4,6 @@ Uso: python scripts/seed_data.py
 """
 import os
 import sys
-from decimal import Decimal
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -15,15 +14,18 @@ import django  # noqa: E402
 django.setup()
 
 from src.modules.catalog.application.dto.producto_input import ProductoInputDTO  # noqa: E402
-from src.modules.catalog.application.use_cases.crear_producto import CrearProducto  # noqa: E402
 from src.modules.catalog.application.use_cases.crear_categoria import CrearCategoria  # noqa: E402
+from src.modules.catalog.application.use_cases.crear_producto import CrearProducto  # noqa: E402
 from src.modules.catalog.infrastructure.factories import (  # noqa: E402
     construir_categoria_repository,
     construir_producto_repository,
 )
 from src.modules.identity.application.dto.usuario_input import UsuarioInputDTO  # noqa: E402
 from src.modules.identity.application.use_cases.crear_usuario import CrearUsuario  # noqa: E402
-from src.modules.identity.infrastructure.factories import construir_hasher, construir_repositorio  # noqa: E402
+from src.modules.identity.infrastructure.factories import (  # noqa: E402
+    construir_hasher,
+    construir_repositorio,
+)
 
 CATEGORIAS = ["Bebidas", "Abarrotes", "Lacteos", "Snacks", "Limpieza"]
 

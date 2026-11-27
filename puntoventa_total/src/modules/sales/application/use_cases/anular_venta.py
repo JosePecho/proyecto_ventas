@@ -34,7 +34,8 @@ class AnularVenta:
 
             if pagada:
                 for linea in agregado.lineas:
-                    self._inventario.devolver(linea.producto_id, linea.cantidad, referencia, usuario_id)
+                    if linea.requiere_stock:
+                        self._inventario.devolver(linea.producto_id, linea.cantidad, referencia, usuario_id)
 
             self._repo.guardar(agregado)
             self._auditoria.registrar(

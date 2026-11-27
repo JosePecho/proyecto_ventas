@@ -1,0 +1,6 @@
+# Perfil QA y herramientas de pruebas/lint para el entorno .venv de Windows.
+-r qa-inventory-mysql.txt
+ruff==0.4.4
+freezegun==1.5.0
+responses==0.25.0
+pytest-xdist==3.6.1

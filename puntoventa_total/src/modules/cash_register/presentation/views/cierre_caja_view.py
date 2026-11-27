@@ -4,12 +4,15 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.shortcuts import redirect, render
+from django.urls import reverse
 
-from src.modules.cash_register.application.use_cases.consultar_arqueo import ConsultarArqueo
 from src.modules.cash_register.application.use_cases.cerrar_turno import CerrarTurno
+from src.modules.cash_register.application.use_cases.consultar_arqueo import ConsultarArqueo
 from src.modules.cash_register.domain.exceptions.caja_exceptions import CajaException
-from src.modules.cash_register.infrastructure.factories import construir_turno_repository
-from src.modules.cash_register.infrastructure.factories import construir_ventas_turno_port
+from src.modules.cash_register.infrastructure.factories import (
+    construir_turno_repository,
+    construir_ventas_turno_port,
+)
 from src.modules.cash_register.presentation.forms.cierre_form import CierreForm
 from src.modules.identity.presentation.permissions.role_required import role_required
 
@@ -40,9 +43,10 @@ def cierre_caja_view(request):
                 messages.error(request, str(exc))
             else:
                 request.session.pop("turno_caja_id", None)
+                request.session.pop("venta_actual", None)
                 mensajes = "Cierre exacto" if resultado.congruente else f"Diferencia: {resultado.diferencia:.2f}"
                 messages.success(request, f"Turno cerrado. {mensajes}")
-                return redirect("cash_register:arqueo")
+                return redirect(reverse("cash_register:arqueo") + f"?turno_id={turno_id}")
     else:
         form = CierreForm(initial={"monto_fisico": arqueo.saldo_sistema})
 

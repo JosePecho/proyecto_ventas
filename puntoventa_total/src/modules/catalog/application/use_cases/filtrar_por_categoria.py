@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from src.modules.catalog.application.dto.producto_output import ProductoOutputDTO
+from src.modules.catalog.application.use_cases.listar_productos import ListarProductos
 from src.modules.catalog.domain.repositories.producto_repository import ProductoRepository
 from src.shared.application.dto.pagination_dto import PageDTO
-from src.modules.catalog.application.use_cases.listar_productos import ListarProductos
 
 
 class FiltrarPorCategoria:

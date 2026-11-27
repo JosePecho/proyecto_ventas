@@ -1,8 +1,8 @@
 import pytest
-from pytest_bdd import given, when, then, scenarios
+from pytest_bdd import given, scenarios, then, when
 
-from tests.factories.catalogo_web import categoria, producto
 from src.modules.sales.infrastructure.adapters.inventario_adapter import InventarioAdapter
+from tests.factories.catalogo_web import categoria, producto
 
 pytestmark = [pytest.mark.uat, pytest.mark.django_db]
 scenarios('features/catalogo_web.feature')

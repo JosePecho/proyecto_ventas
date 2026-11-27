@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from src.modules.identity.application.dto.usuario_output import UsuarioOutputDTO
 from src.modules.identity.application.ports.password_hasher_port import PasswordHasherPort
-from src.modules.identity.domain.entities.usuario import Usuario
 from src.modules.identity.domain.exceptions.usuario_exceptions import (
     CredencialesInvalidas,
     UsuarioInactivo,

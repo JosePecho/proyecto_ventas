@@ -1,4 +1,5 @@
 from django.urls import path
+
 from src.modules.auditing.presentation.views.auditoria_view import auditoria_view
 
 app_name = "auditing"

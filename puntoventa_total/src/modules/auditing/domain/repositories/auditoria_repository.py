@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from datetime import date
-from typing import Optional, Sequence
 
 from src.modules.auditing.domain.entities.registro_auditoria import RegistroAuditoria
 
@@ -11,7 +11,7 @@ class AuditoriaRepository(ABC):
         ...
 
     @abstractmethod
-    def buscar_por_id(self, registro_id) -> Optional[RegistroAuditoria]:
+    def buscar_por_id(self, registro_id) -> RegistroAuditoria | None:
         ...
 
     @abstractmethod

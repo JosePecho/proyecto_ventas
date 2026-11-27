@@ -1,22 +1,21 @@
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass(frozen=True)
 class ClienteInputDTO:
     nombre: str
-    dni: Optional[str] = None
+    dni: str | None = None
     email: str = ""
     telefono: str = ""
     direccion: str = ""
-    usuario_id: Optional[str] = None
+    usuario_id: str | None = None
 
 
 @dataclass(frozen=True)
 class ActualizarClienteDTO:
     cliente_id: str
-    nombre: Optional[str] = None
-    email: Optional[str] = None
-    telefono: Optional[str] = None
-    direccion: Optional[str] = None
+    nombre: str | None = None
+    email: str | None = None
+    telefono: str | None = None
+    direccion: str | None = None
 

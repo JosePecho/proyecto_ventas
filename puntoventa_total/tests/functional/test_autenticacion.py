@@ -10,6 +10,7 @@ def test_login_requiere_credenciales(client):
 
 
 def test_logout_redirige_al_login(client):
-    respuesta = client.get("/logout/", follow=True)
+    assert client.get("/logout/").status_code == 405
+    respuesta = client.post("/logout/", follow=True)
     assert respuesta.status_code == 200
 

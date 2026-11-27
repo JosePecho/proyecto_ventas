@@ -1,8 +1,6 @@
 """Busqueda por texto libre sobre nombre/descripcion."""
 from __future__ import annotations
 
-from typing import Sequence
-
 from src.modules.catalog.application.dto.producto_output import ProductoOutputDTO
 from src.modules.catalog.domain.repositories.producto_repository import ProductoRepository
 from src.shared.infrastructure.cache.redis_cache import cache_resultado

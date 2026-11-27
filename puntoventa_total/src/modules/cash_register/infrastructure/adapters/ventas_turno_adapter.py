@@ -1,4 +1,4 @@
-from typing import Sequence
+from collections.abc import Sequence
 
 from src.modules.cash_register.application.ports.ventas_turno_port import VentasTurnoPort
 

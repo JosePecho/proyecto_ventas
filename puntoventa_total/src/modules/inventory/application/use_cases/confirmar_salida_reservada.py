@@ -1,10 +1,10 @@
 from src.modules.inventory.domain.entities.movimiento_stock import MovimientoStock
 from src.modules.inventory.domain.enums.tipo_movimiento import TipoMovimiento
 from src.modules.inventory.domain.exceptions.stock_exceptions import ReservaNoEncontrada
+from src.modules.inventory.domain.repositories.lote_repository import LoteRepository
 from src.modules.inventory.domain.repositories.movimiento_repository import MovimientoRepository
 from src.modules.inventory.domain.repositories.reserva_repository import ReservaRepository
 from src.modules.inventory.domain.repositories.stock_repository import StockRepository
-from src.modules.inventory.domain.repositories.lote_repository import LoteRepository
 from src.modules.inventory.domain.services.politica_stock import PoliticaStock
 from src.shared.application.interfaces.unit_of_work import NullUnitOfWork, UnitOfWork
 

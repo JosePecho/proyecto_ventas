@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import Optional
 
 
 @dataclass(frozen=True)
@@ -19,9 +18,9 @@ class LoteDTO:
     producto_id: str
     numero_lote: str
     cantidad_restante: int
-    costo_unitario: Optional[float]
+    costo_unitario: float | None
     proveedor: str
-    fecha_vencimiento: Optional[str]
+    fecha_vencimiento: str | None
     vencido: bool
 
     @classmethod

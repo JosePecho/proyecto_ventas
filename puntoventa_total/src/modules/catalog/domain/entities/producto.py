@@ -4,7 +4,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
-from typing import Optional
 
 from src.modules.catalog.domain.enums.estado_producto import EstadoProducto
 from src.modules.catalog.domain.exceptions.producto_exceptions import ProductoDescontinuado
@@ -20,13 +19,13 @@ class Producto(BaseEntity):
     descripcion: str = ""
     codigo_barras: CodigoBarras = None
     precio: Precio = None
-    categoria_id: Optional[str] = None
+    categoria_id: str | None = None
     estado: EstadoProducto = EstadoProducto.ACTIVO
     imagen: str = ""
     unidad_medida: str = "UND"
     requiere_stock: bool = True
     stock_minimo: int = 5
-    fecha_vencimiento: Optional[date] = None
+    fecha_vencimiento: date | None = None
 
     def __post_init__(self) -> None:
         self._requerir(self.nombre, "nombre", 150)

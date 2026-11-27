@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from src.modules.cash_register.domain.entities.movimiento_caja import MovimientoCaja
 from src.modules.cash_register.domain.entities.turno_caja import TurnoCaja
@@ -7,11 +7,11 @@ from src.modules.cash_register.domain.entities.turno_caja import TurnoCaja
 
 class TurnoRepository(ABC):
     @abstractmethod
-    def buscar_por_id(self, turno_id) -> Optional[TurnoCaja]:
+    def buscar_por_id(self, turno_id) -> TurnoCaja | None:
         ...
 
     @abstractmethod
-    def buscar_abierto_por_cajero(self, cajero_id: str) -> Optional[TurnoCaja]:
+    def buscar_abierto_por_cajero(self, cajero_id: str) -> TurnoCaja | None:
         ...
 
     @abstractmethod

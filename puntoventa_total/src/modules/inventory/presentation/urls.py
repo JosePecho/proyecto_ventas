@@ -1,4 +1,5 @@
 from django.urls import path
+
 from src.modules.inventory.presentation.views.alertas_view import alertas_view
 from src.modules.inventory.presentation.views.inventario_view import inventario_view
 from src.modules.inventory.presentation.views.kardex_view import kardex_view

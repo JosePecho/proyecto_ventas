@@ -1,4 +1,4 @@
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from src.modules.customers.domain.entities.cliente import Cliente
 from src.modules.customers.domain.repositories.cliente_repository import ClienteRepository
@@ -10,15 +10,15 @@ class DjangoClienteRepository(ClienteRepository):
     def __init__(self):
         self._mapper = ClienteMapper()
 
-    def buscar_por_id(self, cliente_id) -> Optional[Cliente]:
+    def buscar_por_id(self, cliente_id) -> Cliente | None:
         m = ClienteModel.objects.filter(pk=cliente_id).first()
         return self._mapper.a_dominio(m) if m else None
 
-    def buscar_por_dni(self, dni: str) -> Optional[Cliente]:
+    def buscar_por_dni(self, dni: str) -> Cliente | None:
         m = ClienteModel.objects.filter(dni=dni).first()
         return self._mapper.a_dominio(m) if m else None
 
-    def buscar_por_usuario(self, usuario_id: str) -> Optional[Cliente]:
+    def buscar_por_usuario(self, usuario_id: str) -> Cliente | None:
         m = ClienteModel.objects.filter(usuario_id=usuario_id).first()
         return self._mapper.a_dominio(m) if m else None
 

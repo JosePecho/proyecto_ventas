@@ -1,6 +1,7 @@
 """Factory-boy para productos del catalogo."""
-import factory
 from decimal import Decimal
+
+import factory
 
 from src.modules.catalog.domain.entities.producto import Producto
 from src.modules.catalog.domain.enums.estado_producto import EstadoProducto

@@ -7,9 +7,12 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
 from src.modules.catalog.infrastructure.persistence.django_models.producto_model import ProductoModel
-from src.modules.inventory.infrastructure.persistence.django_models.lote_model import LoteModel
-from src.modules.inventory.infrastructure.factories import construir_lote_repository, construir_stock_repository
 from src.modules.identity.presentation.permissions.role_required import role_required
+from src.modules.inventory.infrastructure.factories import (
+    construir_lote_repository,
+    construir_stock_repository,
+)
+from src.modules.inventory.infrastructure.persistence.django_models.lote_model import LoteModel
 
 
 @login_required

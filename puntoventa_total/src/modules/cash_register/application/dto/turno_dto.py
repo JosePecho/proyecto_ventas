@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass(frozen=True)
@@ -8,11 +7,11 @@ class TurnoDTO:
     cajero_id: str
     estado: str
     monto_apertura: float
-    monto_cierre: Optional[float]
-    monto_sistema: Optional[float]
-    diferencia: Optional[float]
+    monto_cierre: float | None
+    monto_sistema: float | None
+    diferencia: float | None
     fecha_apertura: str
-    fecha_cierre: Optional[str]
+    fecha_cierre: str | None
 
     @classmethod
     def desde_entidad(cls, turno) -> "TurnoDTO":

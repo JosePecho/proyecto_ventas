@@ -1,7 +1,7 @@
 """Excepcion base de todas las violaciones de reglas de negocio."""
 
 
-class DomainException(Exception):
+class DomainException(Exception):  # noqa: N818 - nombre publico de la jerarquia de dominio
     """Error imputable al usuario/rol que ejecuta la operacion (no es bug)."""
 
     codigo = "DOMINIO_INVALIDO"

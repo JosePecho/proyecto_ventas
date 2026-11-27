@@ -1,8 +1,8 @@
 """Calculo del arqueo y diferencias por metodo de pago."""
 from __future__ import annotations
 
+from collections.abc import Sequence
 from decimal import Decimal
-from typing import Sequence
 
 from src.modules.cash_register.domain.entities.movimiento_caja import MovimientoCaja
 from src.shared.domain.value_objects.monto import Monto

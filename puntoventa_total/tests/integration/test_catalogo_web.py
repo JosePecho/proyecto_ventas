@@ -5,9 +5,9 @@ from django.core.files.storage import default_storage
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 
-from tests.factories.catalogo_web import CATEGORIAS, categoria, producto
 from src.modules.catalog.models import ProductoModel
 from src.modules.sales.infrastructure.adapters.inventario_adapter import InventarioAdapter
+from tests.factories.catalogo_web import CATEGORIAS, categoria, producto
 
 pytestmark = [pytest.mark.integration, pytest.mark.django_db]
 

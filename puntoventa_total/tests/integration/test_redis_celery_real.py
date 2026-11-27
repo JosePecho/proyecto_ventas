@@ -3,9 +3,9 @@ import os
 from uuid import uuid4
 
 import pytest
-from django.conf import settings
 from celery import Celery
 from celery.contrib.testing.worker import start_worker
+from django.conf import settings
 from django.core.cache.backends.redis import RedisCache
 from redis import Redis
 
@@ -47,6 +47,7 @@ def test_cache_redis_y_tarea_en_worker_real(monkeypatch):
             assert negocio.get(timeout=10) == 0
             negocio.forget()
             from django.core import mail
+
             from src.modules.orders.infrastructure.persistence.django_models.pedido_model import PedidoModel
             pedido = PedidoModel.objects.create(id=uuid4(), numero="P-WORKER-QA", cliente_nombre="Ana",
                                                  cliente_email="ana@example.test", estado="LISTO")

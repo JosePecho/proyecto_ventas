@@ -1,9 +1,10 @@
-from .base import *  # noqa: F401,F403
-
 from pathlib import Path
 from tempfile import gettempdir
 from uuid import uuid4
+
 import django
+
+from .base import *  # noqa: F401,F403
 
 DEBUG = False
 

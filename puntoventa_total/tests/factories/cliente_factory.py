@@ -1,5 +1,5 @@
+
 import factory
-import uuid
 
 from src.modules.customers.domain.entities.cliente import Cliente
 

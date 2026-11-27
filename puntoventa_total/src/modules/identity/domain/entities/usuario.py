@@ -4,12 +4,11 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 
 from src.modules.identity.domain.enums.estado_usuario import EstadoUsuario
 from src.modules.identity.domain.enums.rol_usuario import RolUsuario
-from src.shared.domain.entities.base_entity import BaseEntity
 from src.shared.domain.clock import utc_now
+from src.shared.domain.entities.base_entity import BaseEntity
 from src.shared.domain.exceptions.validation_exception import ValidationException
 
 PATRON_USERNAME = re.compile(r"^[\w.]{4,30}$")
@@ -25,7 +24,7 @@ class Usuario(BaseEntity):
     rol: RolUsuario = RolUsuario.CAJERO
     estado: EstadoUsuario = EstadoUsuario.ACTIVO
     intentos_fallidos: int = 0
-    ultimo_acceso: Optional[datetime] = None
+    ultimo_acceso: datetime | None = None
 
     def __post_init__(self) -> None:
         self._requerir(self.username, "username", 30)

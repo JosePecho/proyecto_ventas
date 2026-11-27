@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Sequence
+from collections.abc import Sequence
 
 from src.modules.inventory.domain.entities.movimiento_stock import MovimientoStock
 

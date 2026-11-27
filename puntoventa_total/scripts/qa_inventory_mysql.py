@@ -1,10 +1,10 @@
 """Crea MySQL efimero y ejecuta pytest. Sin Docker/dependencias termina con 2."""
 import importlib.util
 import os
-from pathlib import Path
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
 

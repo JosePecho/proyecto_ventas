@@ -8,7 +8,6 @@ from src.modules.sales.application.dto.venta_input import ProcesarPagoDTO
 from src.modules.sales.application.use_cases.procesar_pago import ProcesarPago
 from src.modules.sales.domain.aggregates.venta_aggregate import VentaAggregate
 from src.modules.sales.domain.entities.venta import Venta
-from src.modules.sales.domain.enums.estado_venta import EstadoVenta
 from src.shared.domain.value_objects.monto import Monto
 
 pytestmark = pytest.mark.unit

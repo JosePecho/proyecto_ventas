@@ -18,6 +18,7 @@ def run(self, pedido_id: str, tipo: str = "listo") -> bool:
         return False
 
     from django.db import transaction
+
     from src.modules.orders.infrastructure.persistence.django_models.pedido_model import PedidoModel
     with transaction.atomic():
         pedido = PedidoModel.objects.select_for_update().filter(pk=pedido_id).first()

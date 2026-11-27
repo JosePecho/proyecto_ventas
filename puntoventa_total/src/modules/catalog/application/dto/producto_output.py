@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import Optional
 
 
 @dataclass(frozen=True)
@@ -12,12 +11,12 @@ class ProductoOutputDTO:
     costo: float
     precio_venta: float
     margen_pct: float
-    categoria: Optional[str]
+    categoria: str | None
     estado: str
     imagen: str
-    stock_disponible: Optional[int] = None
+    stock_disponible: int | None = None
     stock_minimo: int = 5
-    fecha_vencimiento: Optional[date] = None
+    fecha_vencimiento: date | None = None
     requiere_stock: bool = True
 
     @classmethod

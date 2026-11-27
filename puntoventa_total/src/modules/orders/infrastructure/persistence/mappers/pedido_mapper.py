@@ -5,7 +5,9 @@ from src.modules.orders.domain.aggregates.pedido_aggregate import PedidoAggregat
 from src.modules.orders.domain.entities.detalle_pedido import DetallePedido
 from src.modules.orders.domain.entities.pedido import Pedido
 from src.modules.orders.domain.enums.estado_pedido import EstadoPedido
-from src.modules.orders.infrastructure.persistence.django_models.detalle_pedido_model import DetallePedidoModel
+from src.modules.orders.infrastructure.persistence.django_models.detalle_pedido_model import (
+    DetallePedidoModel,
+)
 from src.modules.orders.infrastructure.persistence.django_models.pedido_model import PedidoModel
 from src.shared.domain.value_objects.dni import DNI
 from src.shared.domain.value_objects.monto import Monto
@@ -66,6 +68,7 @@ class PedidoMapper:
         modelo.activo = p.activo
         modelo.save()
 
+        modelo.detalles.exclude(pk__in=[linea.id for linea in agregado.lineas]).delete()
         for linea in agregado.lineas:
             d = DetallePedidoModel.objects.filter(pk=linea.id).first() or DetallePedidoModel(id=linea.id)
             d.id = linea.id if isinstance(linea.id, uuid.UUID) else uuid.UUID(str(linea.id))

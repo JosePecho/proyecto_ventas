@@ -1,11 +1,11 @@
+from collections.abc import Sequence
 from datetime import date
-from typing import Optional, Sequence
-from src.shared.infrastructure.database.date_bounds import date_bound
 
 from src.modules.auditing.domain.entities.registro_auditoria import RegistroAuditoria
 from src.modules.auditing.domain.repositories.auditoria_repository import AuditoriaRepository
 from src.modules.auditing.infrastructure.persistence.django_models.auditoria_model import AuditoriaModel
 from src.modules.auditing.infrastructure.persistence.mappers.auditoria_mapper import AuditoriaMapper
+from src.shared.infrastructure.database.date_bounds import date_bound
 
 
 class DjangoAuditoriaRepository(AuditoriaRepository):
@@ -13,11 +13,11 @@ class DjangoAuditoriaRepository(AuditoriaRepository):
         self._mapper = AuditoriaMapper()
 
     def guardar(self, registro: RegistroAuditoria) -> RegistroAuditoria:
-        m = AuditoriaModel.objects.filter(pk=registro.id).first()
-        AuditoriaMapper.a_modelo(registro, m).save()
+        # Auditoria es append-only: no consultar ni sobrescribir registros previos.
+        AuditoriaMapper.a_modelo(registro).save(force_insert=True)
         return registro
 
-    def buscar_por_id(self, registro_id) -> Optional[RegistroAuditoria]:
+    def buscar_por_id(self, registro_id) -> RegistroAuditoria | None:
         m = AuditoriaModel.objects.filter(pk=registro_id).first()
         return self._mapper.a_dominio(m) if m else None
 

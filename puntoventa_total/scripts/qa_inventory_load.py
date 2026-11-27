@@ -1,14 +1,14 @@
 """Carga HTTP autenticada y acotada sobre las pantallas reales de inventario."""
 import argparse
-from concurrent.futures import ThreadPoolExecutor
-from html.parser import HTMLParser
-from http.cookiejar import CookieJar
 import json
 import math
 import os
+from concurrent.futures import ThreadPoolExecutor
+from html.parser import HTMLParser
+from http.cookiejar import CookieJar
 from time import perf_counter
 from urllib.parse import urlencode, urlsplit
-from urllib.request import build_opener, HTTPCookieProcessor, Request
+from urllib.request import HTTPCookieProcessor, Request, build_opener
 
 
 class TokenCSRF(HTMLParser):

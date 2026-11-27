@@ -2,16 +2,16 @@
 
 Exit 1 = hay hallazgos reproducidos. No es una prueba de aceptacion aprobada.
 """
-from datetime import datetime, timezone
 import json
+from datetime import UTC, datetime
 from unittest.mock import Mock
 
 from src.modules.inventory.application.use_cases.liberar_reserva import LiberarReserva
 from src.modules.inventory.domain.entities.existencia import Existencia
 from src.modules.inventory.domain.entities.reserva_stock import ReservaStock
 from src.modules.inventory.domain.exceptions.stock_exceptions import StockException
-from src.modules.inventory.domain.repositories.stock_repository import StockRepository
 from src.modules.inventory.domain.repositories.reserva_repository import ReservaRepository
+from src.modules.inventory.domain.repositories.stock_repository import StockRepository
 
 
 def main():
@@ -26,9 +26,9 @@ def main():
                       "reservada_esperada": 2, "reservada_observada": existencia.reservada,
                       "reproducido": existencia.reservada != 2},
     }
-    r = ReservaStock(producto_id="p1", cantidad=1, expira_en=datetime.now(timezone.utc))
+    r = ReservaStock(producto_id="p1", cantidad=1, expira_en=datetime.now(UTC))
     try:
-        r.expirada
+        _ = r.expirada
     except TypeError:
         resultados["QA-INV-02"] = {"descripcion": "Expiracion mezcla datetime naive y aware", "reproducido": True}
     else:

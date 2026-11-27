@@ -1,21 +1,22 @@
-{% load static %}
+{% load static producto_imagen %}
 <div class="col">
   <a href="{% url 'catalog:producto_detalle' producto.id %}" class="text-decoration-none">
-    <div class="card h-100 producto-card" data-producto-id="{{ producto.id }}">
+    <div class="card producto-card" data-producto-id="{{ producto.id }}">
       {% if producto.imagen %}<img src="{{ producto.imagen }}" class="card-img-top" alt="{{ producto.nombre }}">
-      {% else %}<img src="{% static 'images/placeholder.png' %}" class="card-img-top" alt="">{% endif %}
+      {% else %}<img src="{% imagen_ilustrativa producto.nombre %}?v=transparent" class="card-img-top" alt="Ilustración de {{ producto.nombre }}" loading="lazy">{% endif %}
       <div class="card-body">
         <h6 class="card-title text-dark">{{ producto.nombre }}</h6>
         <span class="fw-bold text-primary">S/ {{ producto.precio_venta|floatformat:2 }}</span>
         {% if not producto.requiere_stock %}<span class="badge bg-success ms-1">Disponible</span>
         {% elif producto.stock_disponible <= 0 %}<span class="badge bg-danger ms-1">Agotado</span>
+        {% elif producto.stock_disponible <= producto.stock_minimo %}<span class="badge bg-danger ms-1">Stock bajo: {{ producto.stock_disponible }} u.</span>
         {% else %}<span class="badge bg-success ms-1">Disponible: {{ producto.stock_disponible }} u.</span>{% endif %}
       </div>
     </div>
   </a>
   {% if producto.stock_disponible > 0 or not producto.requiere_stock %}
   <form method="post" action="{% url 'orders:agregar' producto.id %}">{% csrf_token %}
-    <input type="number" name="cantidad" value="1" min="1" {% if producto.requiere_stock %}max="{{ producto.stock_disponible }}"{% endif %} aria-label="Cantidad de {{ producto.nombre }}">
+    <label class="quantity-control"><span>Cantidad</span><input class="form-control" type="number" name="cantidad" value="1" min="1" {% if producto.requiere_stock %}max="{{ producto.stock_disponible }}"{% endif %} aria-label="Cantidad de {{ producto.nombre }}"></label>
     <button type="submit" class="btn btn-primary btn-sm">Agregar al carrito</button>
   </form>
   {% endif %}

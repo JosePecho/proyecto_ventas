@@ -1,8 +1,8 @@
 """Motor: selecciona la mejor promocion aplicable a un producto."""
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import datetime
-from typing import Optional, Sequence
 
 from src.modules.promotions.domain.entities.promocion import Promocion
 from src.modules.promotions.domain.enums.tipo_promocion import TipoPromocion
@@ -10,7 +10,7 @@ from src.shared.domain.value_objects.monto import Monto
 
 
 class MotorPromociones:
-    ORDEN_PRECEDENCIA = (TipoPromocion.NX1, TipoPromocion.PORCENTAJE, TipoPromocion.MONTO_FIJO, TipoPromocion.PRECIO_ESPECIAL)
+    ORDEN_PRECEDENCIA = (TipoPromocion.NX1, TipoPromocion.PORCENTAJE, TipoPromocion.MONTO_FIJO, TipoPromocion.PRECIO_ESPECIAL, TipoPromocion.COMBO)
 
     @classmethod
     def vigentes(cls, promociones: Sequence[Promocion], momento: datetime | None = None) -> list[Promocion]:
@@ -19,7 +19,7 @@ class MotorPromociones:
     @classmethod
     def mejor_para_producto(
         cls, promociones: Sequence[Promocion], producto_id: str, monto_base: Monto, cantidad: int = 1
-    ) -> tuple[Optional[Promocion], Monto]:
+    ) -> tuple[Promocion | None, Monto]:
         candidatas = [p for p in cls.vigentes(promociones) if p.cubre_producto(producto_id)]
         mejor_promo, mejor_monto = None, Monto(0, monto_base.moneda)
         for promo in sorted(candidatas, key=lambda p: cls.ORDEN_PRECEDENCIA.index(p.tipo)):
@@ -29,7 +29,7 @@ class MotorPromociones:
         return mejor_promo, mejor_monto
 
     @classmethod
-    def promocion_activa_para(cls, producto_id: str) -> Optional[dict]:
+    def promocion_activa_para(cls, producto_id: str) -> dict | None:
         """Helper estatico usado por el adaptador del POS."""
         from src.modules.promotions.infrastructure.factories import construir_promocion_repository
 

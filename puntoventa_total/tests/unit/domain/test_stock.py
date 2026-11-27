@@ -11,7 +11,7 @@ from src.modules.inventory.domain.exceptions.stock_exceptions import StockInsufi
 from src.modules.inventory.domain.services.politica_stock import PoliticaStock
 from src.shared.domain.value_objects.monto import Monto
 
-pytestmark = pytest.mark.unit
+pytestmark = [pytest.mark.unit, pytest.mark.core, pytest.mark.fast, pytest.mark.inventario]
 
 
 def test_entrada_incrementa_stock_y_disponible():

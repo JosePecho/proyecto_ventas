@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from unittest.mock import patch
 
 import pytest
@@ -55,5 +55,5 @@ def test_limites_de_dia_lima_y_datetime_conservado(settings):
     fin = date_bound(date(2026, 10, 16), end=True)
     assert inicio.utcoffset() == timedelta(hours=-5)
     assert (inicio.hour, fin.hour, fin.minute) == (0, 23, 59)
-    instante = datetime(2026, 10, 16, 12, tzinfo=timezone.utc)
+    instante = datetime(2026, 10, 16, 12, tzinfo=UTC)
     assert date_bound(instante) == instante

@@ -1,7 +1,7 @@
 """Adaptador concreto del puerto DisponibilidadPort (anti-corruption layer)."""
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 from src.modules.catalog.application.ports.disponibilidad_port import DisponibilidadPort
 

@@ -1,14 +1,14 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from unittest.mock import Mock
 
 import pytest
 
+from src.modules.orders.application.use_cases.confirmar_pedido import ConfirmarPedido
 from src.modules.orders.domain.aggregates.pedido_aggregate import PedidoAggregate
 from src.modules.orders.domain.entities.pedido import Pedido
 from src.modules.orders.domain.enums.estado_pedido import EstadoPedido
 from src.modules.orders.domain.exceptions.pedido_exceptions import PedidoException
-from src.modules.orders.application.use_cases.confirmar_pedido import ConfirmarPedido
 from src.shared.domain.value_objects.monto import Monto
 
 pytestmark = pytest.mark.unit
@@ -37,7 +37,7 @@ def test_cantidad_invalida_no_modifica_linea_existente(cantidad):
 
 @pytest.mark.parametrize("segundos", [1, 59])
 def test_franja_rechaza_segundos(segundos):
-    hora = (datetime.now(timezone.utc) + timedelta(days=1)).replace(minute=30, second=segundos, microsecond=0)
+    hora = (datetime.now(UTC) + timedelta(days=1)).replace(minute=30, second=segundos, microsecond=0)
     with pytest.raises(PedidoException):
         Pedido(cliente_nombre="Ana").asignar_hora_recojo(hora)
 

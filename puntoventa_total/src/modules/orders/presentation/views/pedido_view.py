@@ -4,10 +4,10 @@ from __future__ import annotations
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render
 
+from src.modules.identity.presentation.permissions.role_required import role_required
 from src.modules.orders.application.use_cases.consultar_estado import ConsultarEstado
 from src.modules.orders.infrastructure.factories import construir_pedido_repository
 from src.modules.orders.infrastructure.persistence.django_models.pedido_model import PedidoModel
-from src.modules.identity.presentation.permissions.role_required import role_required
 from src.modules.orders.presentation.ownership import pedido_propio
 
 
@@ -36,10 +36,11 @@ def detalle_pedido_view(request, pedido_id):
 
 @login_required
 def cancelar_pedido_view(request, pedido_id):
-    from django.db import transaction
-    from django.shortcuts import redirect
-    from django.http import HttpResponseNotAllowed
     from django.contrib import messages
+    from django.db import transaction
+    from django.http import HttpResponseNotAllowed
+    from django.shortcuts import redirect
+
     from src.modules.orders.application.use_cases.cancelar_pedido import CancelarPedido
     from src.modules.orders.infrastructure.factories import construir_inventario_port
     from src.shared.domain.exceptions.domain_exception import DomainException
@@ -62,16 +63,17 @@ def cancelar_pedido_view(request, pedido_id):
 @login_required
 @role_required("ADMINISTRADOR", "GERENTE", "CAJERO")
 def cambiar_estado_view(request, pedido_id):
+    from django.contrib import messages
     from django.db import transaction
     from django.http import HttpResponseBadRequest, HttpResponseNotAllowed
     from django.shortcuts import redirect
-    from django.contrib import messages
-    from src.shared.domain.exceptions.domain_exception import DomainException
-    from src.modules.orders.application.use_cases.preparar_pedido import PrepararPedido
-    from src.modules.orders.application.use_cases.marcar_pedido_listo import MarcarPedidoListo
+
     from src.modules.orders.application.use_cases.entregar_pedido import EntregarPedido
+    from src.modules.orders.application.use_cases.marcar_pedido_listo import MarcarPedidoListo
+    from src.modules.orders.application.use_cases.preparar_pedido import PrepararPedido
     from src.modules.orders.infrastructure.factories import construir_inventario_port
     from src.modules.orders.infrastructure.tasks.enviar_notificacion_pedido import run
+    from src.shared.domain.exceptions.domain_exception import DomainException
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
     estado = request.POST.get("estado")

@@ -1,0 +1,19 @@
+{
+  "paths": [
+    "tests/unit/domain/test_calculadora_venta.py",
+    "tests/unit/domain/test_stock.py",
+    "tests/unit/domain/test_producto.py",
+    "tests/integration/test_producto_repository.py"
+  ],
+  "suites": {
+    "completa": "",
+    "core": "core",
+    "ventas": "ventas",
+    "inventario": "inventario",
+    "catalogo": "catalogo",
+    "fast": "fast and not slow",
+    "slow": "slow and not fast",
+    "core-fast": "core and fast and not slow",
+    "minor": "minor"
+  }
+}

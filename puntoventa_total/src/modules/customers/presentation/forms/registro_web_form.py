@@ -6,8 +6,6 @@ from .registro_cliente_form import RegistroClienteForm
 
 
 class RegistroWebForm(RegistroClienteForm):
-    telefono = forms.RegexField(r"^\+?[0-9]{7,15}$", max_length=16,
-                                error_messages={"invalid": "Ingresa un teléfono de 7 a 15 dígitos"})
     password = forms.CharField(label="Contraseña", widget=forms.PasswordInput)
     password_confirmacion = forms.CharField(label="Repetir contraseña", widget=forms.PasswordInput)
 

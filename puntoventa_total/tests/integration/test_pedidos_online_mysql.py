@@ -3,15 +3,15 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Barrier
 
 import pytest
-from django.db import connection, close_old_connections, connections, transaction
+from django.db import close_old_connections, connection, connections, transaction
 
-from tests.integration.test_pedidos_online import carrito
-from src.modules.orders.application.use_cases.confirmar_pedido import ConfirmarPedido
-from src.modules.orders.application.use_cases.cancelar_pedido import CancelarPedido
-from src.modules.orders.domain.exceptions.pedido_exceptions import PedidoException
-from src.modules.orders.infrastructure.factories import construir_inventario_port, construir_pedido_repository
 from src.modules.inventory.infrastructure.persistence.django_models.existencia_model import ExistenciaModel
 from src.modules.inventory.infrastructure.persistence.django_models.reserva_model import ReservaModel
+from src.modules.orders.application.use_cases.cancelar_pedido import CancelarPedido
+from src.modules.orders.application.use_cases.confirmar_pedido import ConfirmarPedido
+from src.modules.orders.domain.exceptions.pedido_exceptions import PedidoException
+from src.modules.orders.infrastructure.factories import construir_inventario_port, construir_pedido_repository
+from tests.integration.test_pedidos_online import carrito
 
 pytestmark = [pytest.mark.integration, pytest.mark.django_db(transaction=True),
               pytest.mark.skipif(connection.vendor != "mysql", reason="Requiere MySQL/InnoDB real")]

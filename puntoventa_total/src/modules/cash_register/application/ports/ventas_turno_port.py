@@ -1,6 +1,6 @@
 """Puerto al modulo de ventas para consolidar el arqueo."""
 from abc import ABC, abstractmethod
-from typing import Sequence
+from collections.abc import Sequence
 
 
 class VentasTurnoPort(ABC):

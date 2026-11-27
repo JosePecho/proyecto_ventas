@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
-from typing import Optional
 
 from src.shared.domain.entities.base_entity import BaseEntity
 from src.shared.domain.value_objects.monto import Monto
@@ -15,10 +14,10 @@ class Lote(BaseEntity):
     numero_lote: str = ""
     cantidad_inicial: int = 0
     cantidad_restante: int = 0
-    costo_unitario: Optional[Monto] = None
+    costo_unitario: Monto | None = None
     proveedor: str = ""
-    fecha_vencimiento: Optional[date] = None
-    fecha_recepcion: Optional[date] = None
+    fecha_vencimiento: date | None = None
+    fecha_recepcion: date | None = None
 
     def __post_init__(self) -> None:
         self._requerir(self.producto_id, "producto_id")
@@ -34,7 +33,7 @@ class Lote(BaseEntity):
         return self.cantidad_restante == 0
 
     @property
-    def dias_para_vencer(self) -> Optional[int]:
+    def dias_para_vencer(self) -> int | None:
         if not self.fecha_vencimiento:
             return None
         return (self.fecha_vencimiento - date.today()).days

@@ -1,0 +1,23 @@
+---
+description: Contratos y pruebas del módulo 3.6 RF-044 a RF-050
+globs: puntoventa_total/src/modules/reporting/**/*.py,puntoventa_total/src/modules/auditing/**/*.py,puntoventa_total/templates/dashboard/*.html,puntoventa_total/templates/auditing/*.html,puntoventa_total/tests/**/*reportes_administracion*
+alwaysApply: false
+---
+
+Lee puntoventa_total/docs/requirements/reportes_admin_rf044_rf050.md y
+puntoventa_total/docs/testing/plan_maestro_rf044_050.md antes de modificar estos contratos.
+
+- Prueba dominio/aplicación con pytest y mocks de puertos; prohíbe ORM en Unit.
+- Ventas y utilidad solo incluyen PAGADA. Conserva fechas locales de America/Lima y costos históricos.
+- Margen sobre ventas = utilidad/ingresos*100, no recargo sobre costo. Redondea HALF_UP a dos decimales.
+- Si faltan costos o ingresos del producto son cero, el margen de la fila no está disponible.
+- No sumes porcentajes de productos para calcular el margen global: pondera sus ingresos/costos.
+- Reportes permiten ADMINISTRADOR/GERENTE; usuarios y auditoría exigen ADMINISTRADOR.
+- Mantén al último administrador y revoca sesiones ante cambio de rol o desactivación.
+- Auditoría debe aceptar CREAR/ACTUALIZAR/ELIMINAR emitidos por el middleware y rechazar acciones arbitrarias.
+- Valida fechas, UUID de actor y página de auditoría; entrada inválida devuelve 400. No captures secretos del request.
+- Reproduce el fallo antes de cambiar expectativas y prueba actor, acción y fecha después de una mutación real.
+- Ejecuta Unit, MySQL efímero, Chromium/k6 y UAT; conserva JUnit, cobertura y traces privados.
+- Ejecuta scripts/qa_reportes_unit_gate.py después de la cobertura unitaria: incluye archivos no importados.
+- No reduzcas umbrales, no omitas casos y no reintentes hasta conseguir verde. Documenta el diagnóstico.
+- Usa rtk para shell. CI remoto, Testcontainers ejecutado y aceptación del PO requieren evidencia propia.

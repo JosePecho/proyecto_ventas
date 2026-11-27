@@ -1,0 +1,12 @@
+[run]
+# Python 3.14: sysmon no admite los contextos dinamicos de pytest-cov.
+core = ctrace
+source = src
+omit =
+    */migrations/*
+    */tests/*
+    src/modules/*/apps.py
+    src/modules/*/models.py
+
+[json]
+show_contexts = true

@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.shortcuts import redirect, render
 
+from src.modules.identity.presentation.permissions.role_required import role_required
 from src.modules.inventory.application.dto.lote_dto import RecepcionLoteDTO
 from src.modules.inventory.application.use_cases.recibir_mercaderia import RecibirMercaderia
 from src.modules.inventory.domain.exceptions.stock_exceptions import StockException
@@ -15,7 +16,6 @@ from src.modules.inventory.infrastructure.factories import (
     construir_stock_repository,
 )
 from src.modules.inventory.presentation.forms.recepcion_form import RecepcionForm
-from src.modules.identity.presentation.permissions.role_required import role_required
 from src.shared.domain.exceptions.validation_exception import ValidationException
 
 

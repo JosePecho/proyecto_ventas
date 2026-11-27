@@ -1,4 +1,4 @@
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from src.modules.cash_register.domain.entities.movimiento_caja import MovimientoCaja
 from src.modules.cash_register.domain.entities.turno_caja import TurnoCaja
@@ -12,11 +12,11 @@ from src.modules.cash_register.infrastructure.persistence.mappers.turno_mapper i
 
 
 class DjangoTurnoRepository(TurnoRepository):
-    def buscar_por_id(self, turno_id) -> Optional[TurnoCaja]:
+    def buscar_por_id(self, turno_id) -> TurnoCaja | None:
         m = TurnoCajaModel.objects.filter(pk=turno_id).first()
         return TurnoMapper.turno_a_dominio(m) if m else None
 
-    def buscar_abierto_por_cajero(self, cajero_id: str) -> Optional[TurnoCaja]:
+    def buscar_abierto_por_cajero(self, cajero_id: str) -> TurnoCaja | None:
         m = TurnoCajaModel.objects.filter(cajero_id=cajero_id, estado=EstadoTurno.ABIERTO.value).first()
         return TurnoMapper.turno_a_dominio(m) if m else None
 

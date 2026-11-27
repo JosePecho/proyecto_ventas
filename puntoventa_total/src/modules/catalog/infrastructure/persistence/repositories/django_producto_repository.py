@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from django.db import IntegrityError
 from django.db.models import Q
@@ -26,11 +26,11 @@ class DjangoProductoRepository(ProductoRepository):
             qs = qs.filter(categoria_id=categoria_id)
         return qs
 
-    def buscar_por_id(self, producto_id) -> Optional[Producto]:
+    def buscar_por_id(self, producto_id) -> Producto | None:
         m = ProductoModel.objects.filter(pk=producto_id).select_related("categoria").first()
         return self._mapper.a_dominio(m) if m else None
 
-    def buscar_por_codigo_barras(self, codigo: str) -> Optional[Producto]:
+    def buscar_por_codigo_barras(self, codigo: str) -> Producto | None:
         m = ProductoModel.objects.filter(codigo_barras=codigo).first()
         return self._mapper.a_dominio(m) if m else None
 

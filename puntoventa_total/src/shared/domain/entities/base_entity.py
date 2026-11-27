@@ -6,8 +6,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
-from src.shared.domain.events.domain_event import DomainEvent
 from src.shared.domain.clock import utc_now
+from src.shared.domain.events.domain_event import DomainEvent
 from src.shared.domain.exceptions.validation_exception import ValidationException
 
 

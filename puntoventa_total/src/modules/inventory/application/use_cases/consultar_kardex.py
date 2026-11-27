@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
-
 from src.modules.inventory.application.dto.movimiento_dto import MovimientoDTO
 from src.modules.inventory.domain.repositories.movimiento_repository import MovimientoRepository
 from src.shared.application.dto.pagination_dto import PageDTO
@@ -14,8 +12,8 @@ class ConsultarKardex:
     def ejecutar(
         self,
         producto_id: str,
-        desde: Optional[str] = None,
-        hasta: Optional[str] = None,
+        desde: str | None = None,
+        hasta: str | None = None,
         pagina: int = 1,
         por_pagina: int = 50,
     ) -> PageDTO[MovimientoDTO]:

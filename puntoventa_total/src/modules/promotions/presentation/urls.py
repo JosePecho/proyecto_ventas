@@ -1,4 +1,5 @@
 from django.urls import path
+
 from src.modules.promotions.presentation.views.promocion_view import promocion_editar_view, promocion_view
 from src.modules.promotions.presentation.views.promociones_activas_view import promociones_activas_view
 

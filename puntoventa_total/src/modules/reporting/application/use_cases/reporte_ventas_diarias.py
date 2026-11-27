@@ -12,6 +12,7 @@ class ReporteVentasDiarias:
         filas = self._repo.ventas_por_dia(dia, dia)
         total = sum((f["total"] for f in filas), 0)
         return {
+            "metodos_pago": self._repo.totales_por_metodo_pago(dia, dia),
             "fecha": dia.isoformat(),
             "ventas": list(filas),
             "total": float(total),

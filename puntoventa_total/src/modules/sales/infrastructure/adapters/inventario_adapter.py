@@ -1,7 +1,7 @@
 """Adaptador InventarioPort -> modulo inventory (capa anticorrupcion)."""
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 from django.db import transaction
 
@@ -22,12 +22,15 @@ from src.modules.sales.application.ports.inventario_port import InventarioPort
 
 class InventarioAdapter(InventarioPort):
     def descontar(self, producto_id: str, cantidad: int, referencia: str, usuario_id: str = "") -> int:
-        return DescontarStock(
-            construir_stock_repository(),
-            construir_lote_repository(),
-            construir_movimiento_repository(),
-            uow=transaction.atomic(),
-        ).ejecutar(producto_id, cantidad, referencia, usuario_id)
+        stock_repo = construir_stock_repository()
+        lote_repo = construir_lote_repository()
+        with transaction.atomic():
+            with stock_repo.cache_scope(), lote_repo.cache_scope():
+                return DescontarStock(
+                    stock_repo,
+                    lote_repo,
+                    construir_movimiento_repository(),
+                ).ejecutar(producto_id, cantidad, referencia, usuario_id)
 
     def reservar(self, producto_id: str, cantidad: int, referencia: str) -> str:
         return ReservarStock(
@@ -73,8 +76,9 @@ class InventarioAdapter(InventarioPort):
                 break
         if pendiente:
             # Compatibilidad con ventas historicas sin trazabilidad por lote.
-            from src.modules.inventory.domain.entities.lote import Lote
             from uuid import uuid4
+
+            from src.modules.inventory.domain.entities.lote import Lote
             lotes_repo.guardar(Lote(producto_id=producto_id, numero_lote=f"DEV-{uuid4().hex[:12]}",
                                    cantidad_inicial=pendiente, cantidad_restante=pendiente))
         construir_stock_repository().guardar(existencia)

@@ -3,8 +3,13 @@ from src.modules.promotions.application.ports.frecuencia_cliente_port import Fre
 
 class FrecuenciaClienteAdapter(FrecuenciaClientePort):
     def clasificacion(self, cliente_id: str) -> str:
-        from src.modules.customers.application.use_cases.calcular_frecuencia_compras import CalcularFrecuenciaCompras
-        from src.modules.customers.infrastructure.factories import construir_cliente_repository, construir_historial_port
+        from src.modules.customers.application.use_cases.calcular_frecuencia_compras import (
+            CalcularFrecuenciaCompras,
+        )
+        from src.modules.customers.infrastructure.factories import (
+            construir_cliente_repository,
+            construir_historial_port,
+        )
 
         resultado = CalcularFrecuenciaCompras(construir_cliente_repository(), construir_historial_port()).ejecutar(
             cliente_id

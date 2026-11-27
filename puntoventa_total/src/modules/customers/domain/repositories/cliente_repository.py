@@ -1,20 +1,20 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from src.modules.customers.domain.entities.cliente import Cliente
 
 
 class ClienteRepository(ABC):
     @abstractmethod
-    def buscar_por_id(self, cliente_id) -> Optional[Cliente]:
+    def buscar_por_id(self, cliente_id) -> Cliente | None:
         ...
 
     @abstractmethod
-    def buscar_por_dni(self, dni: str) -> Optional[Cliente]:
+    def buscar_por_dni(self, dni: str) -> Cliente | None:
         ...
 
     @abstractmethod
-    def buscar_por_usuario(self, usuario_id: str) -> Optional[Cliente]:
+    def buscar_por_usuario(self, usuario_id: str) -> Cliente | None:
         ...
 
     @abstractmethod

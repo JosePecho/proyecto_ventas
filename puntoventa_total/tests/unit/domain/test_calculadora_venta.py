@@ -13,7 +13,7 @@ from src.modules.sales.domain.services.calculadora_venta import CalculadoraVenta
 from src.shared.domain.exceptions.validation_exception import ValidationException
 from src.shared.domain.value_objects.monto import Monto
 
-pytestmark = pytest.mark.unit
+pytestmark = [pytest.mark.unit, pytest.mark.core, pytest.mark.fast, pytest.mark.ventas]
 
 
 def _linea(cantidad: int, precio: str, pct: str = "0") -> DetalleVenta:

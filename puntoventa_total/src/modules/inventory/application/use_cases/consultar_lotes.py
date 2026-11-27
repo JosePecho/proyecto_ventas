@@ -7,8 +7,8 @@ class ConsultarLotes:
         self._repo = repo
 
     def ejecutar(self, producto_id: str, solo_pendientes: bool = True) -> list[LoteDTO]:
-        return [LoteDTO.desde_entidad(l) for l in self._repo.listar_por_producto(producto_id, solo_pendientes)]
+        return [LoteDTO.desde_entidad(elemento) for elemento in self._repo.listar_por_producto(producto_id, solo_pendientes)]
 
     def ejecutar_vencidos(self) -> list[LoteDTO]:
-        return [LoteDTO.desde_entidad(l) for l in self._repo.lotes_vencidos()]
+        return [LoteDTO.desde_entidad(elemento) for elemento in self._repo.lotes_vencidos()]
 

@@ -17,7 +17,7 @@ class AgregarProductoPedido:
         if agregado is None:
             from src.modules.orders.domain.exceptions.pedido_exceptions import PedidoNoEncontrado
             raise PedidoNoEncontrado(pedido_id)
-        acumulada = cantidad + sum(l.cantidad for l in agregado.lineas if l.producto_id == str(producto.id))
+        acumulada = cantidad + sum(elemento.cantidad for elemento in agregado.lineas if elemento.producto_id == str(producto.id))
         if producto.requiere_stock:
             disponible = self._inventario.stock_disponible(str(producto.id))
             if disponible < acumulada:

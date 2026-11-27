@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass(frozen=True)
@@ -14,10 +13,10 @@ class UsuarioOutputDTO:
     rol: str
     estado: str
     activo: bool
-    ultimo_acceso: Optional[str] = None
+    ultimo_acceso: str | None = None
 
     @classmethod
-    def desde_entidad(cls, usuario) -> "UsuarioOutputDTO":
+    def desde_entidad(cls, usuario) -> UsuarioOutputDTO:
         return cls(
             id=str(usuario.id),
             username=usuario.username,

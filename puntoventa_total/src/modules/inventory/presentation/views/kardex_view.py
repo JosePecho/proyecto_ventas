@@ -3,9 +3,9 @@ from __future__ import annotations
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
+from src.modules.identity.presentation.permissions.role_required import role_required
 from src.modules.inventory.application.use_cases.consultar_kardex import ConsultarKardex
 from src.modules.inventory.infrastructure.factories import construir_movimiento_repository
-from src.modules.identity.presentation.permissions.role_required import role_required
 from src.modules.inventory.presentation.forms.kardex_form import KardexForm
 
 

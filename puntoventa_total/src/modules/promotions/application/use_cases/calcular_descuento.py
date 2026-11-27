@@ -1,4 +1,3 @@
-from src.modules.promotions.domain.entities.promocion import Promocion
 from src.modules.promotions.domain.repositories.promocion_repository import PromocionRepository
 from src.modules.promotions.domain.services.motor_promociones import MotorPromociones
 from src.shared.domain.value_objects.monto import Monto

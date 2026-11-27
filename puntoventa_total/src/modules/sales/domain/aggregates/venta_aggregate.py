@@ -1,9 +1,9 @@
 """Agregado Venta: invariantes de carrito, totales y transiciones de estado."""
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from decimal import Decimal
-from typing import Optional, Sequence
 
 from src.modules.sales.domain.entities.detalle_venta import DetalleVenta
 from src.modules.sales.domain.entities.pago import Pago
@@ -26,8 +26,8 @@ class VentaAggregate:
     descuento_venta_pct: Decimal = Decimal("0")
 
     def agregar_producto(self, producto_id: str, nombre: str, cantidad: int, precio: Monto) -> DetalleVenta:
-        self.venta.verificar_modificable()
-        existente = next((l for l in self.lineas if l.producto_id == producto_id), None)
+        self._verificar_carrito_modificable()
+        existente = next((elemento for elemento in self.lineas if elemento.producto_id == producto_id), None)
         if existente:
             raise ProductoYaAgregado(nombre)
         linea = DetalleVenta(
@@ -41,26 +41,31 @@ class VentaAggregate:
         return linea
 
     def modificar_cantidad(self, producto_id: str, nueva_cantidad: int) -> None:
-        self.venta.verificar_modificable()
+        self._verificar_carrito_modificable()
         linea = self._linea(producto_id)
         linea.cambiar_cantidad(nueva_cantidad)
 
     def eliminar_producto(self, producto_id: str) -> None:
-        self.venta.verificar_modificable()
+        self._verificar_carrito_modificable()
         self.lineas.remove(self._linea(producto_id))
 
     def aplicar_descuento_linea(self, producto_id: str, pct: Decimal) -> None:
-        self.venta.verificar_modificable()
+        self._verificar_carrito_modificable()
         self._linea(producto_id).aplicar_descuento_pct(pct)
 
     def aplicar_descuento_venta(self, pct: Decimal) -> None:
-        self.venta.verificar_modificable()
+        self._verificar_carrito_modificable()
         if pct < 0 or pct > 50:
             raise VentaException("El descuento de venta no puede superar el 50%")
         self.descuento_venta_pct = pct
 
+    def _verificar_carrito_modificable(self):
+        self.venta.verificar_modificable()
+        if self.pagos:
+            raise VentaException("No se puede modificar el carrito despues de iniciar el pago")
+
     def _linea(self, producto_id: str) -> DetalleVenta:
-        linea = next((l for l in self.lineas if l.producto_id == producto_id), None)
+        linea = next((elemento for elemento in self.lineas if elemento.producto_id == producto_id), None)
         if linea is None:
             raise VentaException(f"El producto {producto_id} no esta en la venta")
         return linea
@@ -130,14 +135,14 @@ class VentaAggregate:
     def resumen_lineas(self) -> Sequence[dict]:
         return [
             {
-                "producto_id": l.producto_id,
-                "nombre": l.producto_nombre,
-                "cantidad": l.cantidad,
-                "precio_unitario": l.precio_unitario.a_float(),
-                "subtotal": l.subtotal.a_float(),
-                "descuento": l.descuento.a_float(),
-                "total": l.total.a_float(),
+                "producto_id": elemento.producto_id,
+                "nombre": elemento.producto_nombre,
+                "cantidad": elemento.cantidad,
+                "precio_unitario": elemento.precio_unitario.a_float(),
+                "subtotal": elemento.subtotal.a_float(),
+                "descuento": elemento.descuento.a_float(),
+                "total": elemento.total.a_float(),
             }
-            for l in self.lineas
+            for elemento in self.lineas
         ]
 

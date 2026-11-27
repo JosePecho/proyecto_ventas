@@ -1,4 +1,4 @@
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from src.modules.catalog.domain.entities.categoria import Categoria
 from src.modules.catalog.domain.repositories.categoria_repository import CategoriaRepository
@@ -10,11 +10,11 @@ class DjangoCategoriaRepository(CategoriaRepository):
     def __init__(self):
         self._mapper = CategoriaMapper()
 
-    def buscar_por_id(self, categoria_id) -> Optional[Categoria]:
+    def buscar_por_id(self, categoria_id) -> Categoria | None:
         m = CategoriaModel.objects.filter(pk=categoria_id).first()
         return self._mapper.a_dominio(m) if m else None
 
-    def buscar_por_slug(self, slug: str) -> Optional[Categoria]:
+    def buscar_por_slug(self, slug: str) -> Categoria | None:
         m = CategoriaModel.objects.filter(slug=slug).first()
         return self._mapper.a_dominio(m) if m else None
 

@@ -1,6 +1,6 @@
 """Puerto al modulo de ventas para el historial del cliente."""
 from abc import ABC, abstractmethod
-from typing import Sequence
+from collections.abc import Sequence
 
 
 class HistorialComprasPort(ABC):
